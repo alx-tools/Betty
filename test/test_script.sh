@@ -13,7 +13,7 @@ while read check; do
   #echo "Test 25 lines checker:"
   c_suffix=".c"
   result_suffix="_result"
-  ../Betty $samples_dir/$check$c_suffix > $output_file
+  ../Betty.py $samples_dir/$check$c_suffix > $output_file
   diff $samples_dir/$check$result_suffix $output_file > /dev/null
   if [ $? -ne 0 ]; then
     echo -e "\033[0;31mFail\033[0m"
