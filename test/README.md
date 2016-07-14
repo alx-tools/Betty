@@ -2,7 +2,7 @@
 
 ##How to create a new test ?
 
-You can simply create a new test by creating two files:
+You can simply create a new test by creating two files in the `samples` folder:
 * A source file name `<name>.c`:
   * In this source file, put some C code that respect or not the Kernel-style
   * This code will not be compiled, so you can put any variable name, or call any variable function.
