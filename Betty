@@ -26,26 +26,22 @@ class Betty:
 
     def check_nbline(self):
         if self.file[-2:] == ".c":
-            if self.line[:1] == '}':
+            if self.line[:1] == '}' and self.is_func == 1:
                 self.is_func = 0
                 self.nb_funcline = 0
-            if self.line[:1] == '{':
+            elif self.line[:1] == '{' and self.is_func == 0:
                 self.is_func = 1
                 self.nb_funcline = 0
-                self.nb_func = self.nb_func + 1
-                if self.nb_func == 6:
+                self.nb_func += 1
+                if self.nb_func > 5:
                     self.mark += 1
                     self.print_error('more than 5 functions in file')
             else:
                 if self.nb_func >= 1 and self.is_func:
-                    self.nb_funcline = self.nb_funcline + 1
+                    self.nb_funcline += 1
                     if self.nb_funcline > 25:
                         self.mark += 1
                         self.print_error('more than 25 lines in function')
-
-    def check_line(self):
-        if is_commented(self.line) == False:
-            self.check_nbline()
 
     def print_error(self, msg):
         print "Error in",self.file,"in line",self.nb_line,":",msg
@@ -66,8 +62,8 @@ class Betty:
                 self.cant_open(file)
             else:
                 for self.line in fd.readlines():
-                    self.check_line()
-                    self.nb_line = self.nb_line + 1
+                    self.check_nbline()
+                    self.nb_line += 1
                     fd.close()
 
 def get_files(argv):
@@ -78,11 +74,6 @@ def get_files(argv):
         if test:
             li.append(arg)
     return li
-
-def is_commented(line):
-    if ((line[0] == '/' or line[0] == '*') and line[1] == '*'):
-        return True
-    return False
 
 def help():
     print "Help"
