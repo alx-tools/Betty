@@ -4,6 +4,14 @@
 # Version: 0.0.1
 #
 
+'''
+Betty takes in the name of a file from command line and scans the given file for the number of functions
+and number of lines per function.
+If the number of functions exceeds 5, an error is printed.
+An error is also printed if the number of lines in a function exceeds 25.
+A mark is assigned and printed for the conformity of the file to kernel-style: 0 for True, 1 for False.
+'''
+
 import sys,re
 
 version = '0.0.1'
