@@ -25,6 +25,11 @@ class Betty:
             print "Scan",self.file
 
     def check_nbline(self):
+        '''
+        check_nbline checks the number of functions in the file and the number of lines in each function.
+        if the number of functions exceeds 5, check_nbline prints an error.
+        if the number of lines in a function exceeds 25, check_nbline prints an error.
+        '''
         if self.file[-2:] == ".c":
             if self.line[:1] == '}' and self.is_func == 1:
                 self.is_func = 0
