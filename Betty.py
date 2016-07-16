@@ -108,6 +108,8 @@ def main():
         print "Usage: Betty.py <files_to_scan>"
     if checker.score:
         print "Mark:",-checker.mark,
+        print ( "No limits exceeded for number of functions per file or number of lines per function." if checker.mark==0
+                else "You have corrections to make.")
 
 if __name__ == "__main__":
     main()
