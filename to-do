@@ -1,0 +1,3 @@
+* Check that each function is commented.
+* Check that function comment is written in /* * */ format.
+* Check ratio of comments per line, issuing a warning if ratio is high.
