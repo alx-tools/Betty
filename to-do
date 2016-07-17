@@ -2,4 +2,6 @@
 * Check that each function is commented.
 * Check that function comment is written in /* * */ format.
 * Check ratio of comments per line, issuing a warning if ratio is high.
+* Check that no line is longer than 80 chars.
 * Check that first open and end brackets per program start on new line, but that all the rest of the open brackets start on the same line as its initializing code. Maybe issue a recommendation instead of a mark down?
+* Maybe create a strict mode, where everything kernel-related is checked and enforced mark-wise; and lenient mode, where warnings may be issued but pass/fail mark not necessarily affected by all checks.
