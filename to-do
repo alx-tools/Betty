@@ -1,4 +1,5 @@
-* make sure that each Betty function has a docstring, according to Python conventions.
+* Make sure that each Betty function has a docstring, according to Python conventions.
+* Modify Betty such that comment lines are not counted as part of length of function (unless Ju thinks this is necessary)
 * Check that each function is commented.
 * Check that function comment is written in /* * */ format.
 * Check ratio of comments per line, issuing a warning if ratio is high.
