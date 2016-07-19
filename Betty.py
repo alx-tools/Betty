@@ -19,7 +19,7 @@ class Betty:
         self.nb_line = 1
         self.nb_funcline = 0
         self.nb_func = 0
-        self.is_func = 0
+        self.in_scope = 0
         print "Scan",self.file
 
     # This function will be called for each line of a file
@@ -29,26 +29,27 @@ class Betty:
         # If the checked file is a C source file
         if self.file[-2:] == ".c":
             # If the current checked line starts with an opening brace
-            # and that we are not already in the scope of a function
-            # it means that this is the beginning of a new function.
-            if self.line[:1] == '{' and self.is_func == 0:
-                self.is_func = 1
-                self.nb_funcline = 0
-                self.nb_func += 1
+            # it means that we are entering a scope
+            if self.line[:1] == '{':
+                self.in_scope += 1
+                # If the scope depth is one
+                # we are in a new function scope
+                if self.in_scope == 1:
+                    self.nb_funcline = 0
+                    self.nb_func += 1
                 # Check if the function counter is greater than 5
                 if self.nb_func > 5:
                     self.mark += 1
                     self.print_error('more than 5 functions in file')
             # If the current checked line starts with a closing brace
-            # and that we are already in the scope of a function
-            # it means that this is the end of the current checked function
-            elif self.line[:1] == '}' and self.is_func == 1:
-                self.is_func = 0
-                self.nb_funcline = 0
+            # it means that we are going out of a scope
+            elif self.line[:1] == '}':
+                self.in_scope -= 1
             else:
                 # If the current checked line is in the scope of a function
+                # or in a nested one (still in the scope of a function)
                 # We check the number of line counted inside this function
-                if self.is_func:
+                if self.in_scope >= 1:
                     self.nb_funcline += 1
                     if self.nb_funcline > 25:
                         self.mark += 1
