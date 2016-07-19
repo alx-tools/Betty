@@ -48,6 +48,8 @@ my @ignore = ();
 my $help = 0;
 my $configuration_file = ".checkpatch.conf";
 my $max_line_length = 80;
+my $max_func_length = 40;
+my $max_funcs = 5;
 my $ignore_perl_version = 0;
 my $minimum_perl_version = 5.10.0;
 my $min_conf_desc_length = 4;
@@ -194,6 +196,8 @@ GetOptions(
 	'show-types!'	=> \$show_types,
 	'list-types!'	=> \$list_types,
 	'max-line-length=i' => \$max_line_length,
+	'max-func-length=i' => \$max_func_length,
+	'max-funcs=i' => \$max_funcs,
 	'min-conf-desc-length=i' => \$min_conf_desc_length,
 	'root=s'	=> \$root,
 	'summary!'	=> \$summary,
@@ -2191,6 +2195,10 @@ sub process {
 	$realcnt = 0;
 	$linenr = 0;
 	$fixlinenr = -1;
+	my $nbfunc = 0;
+	my $inscope = 0;
+	my $funclines = 0;
+
 	foreach my $line (@lines) {
 		$linenr++;
 		$fixlinenr++;
@@ -3736,6 +3744,32 @@ sub process {
 				fix_insert_line($fixlinenr, "\+{");
 				if ($line2 !~ /^\s*$/) {
 					fix_insert_line($fixlinenr, "\+\t" . trim($line2));
+				}
+			}
+		}
+
+# check number of functions
+# and number of lines per function
+		if ($line =~ /.*}.*/) {
+			$inscope--;
+		}
+
+		if ($inscope >= 1) {
+			$funclines++;
+			if ($funclines > $max_func_length) {
+				WARN("FUNCTIONS",
+				  "More than $max_func_length lines in a function\n");
+			}
+		}
+
+		if ($line =~ /.*{.*/) {
+			$inscope++;
+			if ($inscope == 1) {
+				$nbfunc++;
+				$funclines = 0;
+				if ($nbfunc > $max_funcs) {
+					ERROR("FUNCTIONS",
+					  "More than $max_funcs functions in the file\n");
 				}
 			}
 		}
