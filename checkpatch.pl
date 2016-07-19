@@ -569,7 +569,7 @@ if (open(my $spelling, '<', $spelling_file)) {
 	}
 	close($spelling);
 } else {
-	warn "No typos will be found - file '$spelling_file': $!\n";
+	#warn "No typos will be found - file '$spelling_file': $!\n";
 }
 
 if ($codespell) {
@@ -3204,9 +3204,14 @@ sub process {
 			#print "realcnt<$realcnt> ctx_cnt<$ctx_cnt>\n";
 			#print "pre<$pre_ctx>\nline<$line>\nctx<$ctx>\nnext<$lines[$ctx_ln - 1]>\n";
 
-			if ($ctx !~ /{\s*/ && defined($lines[$ctx_ln - 1]) && $lines[$ctx_ln - 1] =~ /^\+\s*{/) {
+			# if ($ctx !~ /{\s*/ && defined($lines[$ctx_ln - 1]) && $lines[$ctx_ln - 1] =~ /^\+\s*{/) {
+			# 	ERROR("OPEN_BRACE",
+			# 	      "that open brace { should be on the next line\n" .
+			# 		"$here\n$ctx\n$rawlines[$ctx_ln - 1]\n");
+			# }
+			if ($line =~ /\s*{/) {
 				ERROR("OPEN_BRACE",
-				      "that open brace { should be on the previous line\n" .
+				      "that open brace { should be on the next line\n" .
 					"$here\n$ctx\n$rawlines[$ctx_ln - 1]\n");
 			}
 			if ($level == 0 && $pre_ctx !~ /}\s*while\s*\($/ &&
@@ -3736,10 +3741,25 @@ sub process {
 		}
 
 # open braces for enum, union and struct go on the same line.
-		if ($line =~ /^.\s*{/ &&
-		    $prevline =~ /^.\s*(?:typedef\s+)?(enum|union|struct)(?:\s+$Ident)?\s*$/) {
+		# if ($line =~ /^.\s*{/ &&
+		#     $prevline =~ /^.\s*(?:typedef\s+)?(enum|union|struct)(?:\s+$Ident)?\s*$/) {
+		# 	if (ERROR("OPEN_BRACE",
+		# 		  "open brace '{' following $1 go on the same line\n" . $hereprev) &&
+		# 	    $fix && $prevline =~ /^\+/ && $line =~ /^\+/) {
+		# 		fix_delete_line($fixlinenr - 1, $prevrawline);
+		# 		fix_delete_line($fixlinenr, $rawline);
+		# 		my $fixedline = rtrim($prevrawline) . " {";
+		# 		fix_insert_line($fixlinenr, $fixedline);
+		# 		$fixedline = $rawline;
+		# 		$fixedline =~ s/^(.\s*){\s*/$1\t/;
+		# 		if ($fixedline !~ /^\+\s*$/) {
+		# 			fix_insert_line($fixlinenr, $fixedline);
+		# 		}
+		# 	}
+		# }
+		if ($line =~ /^.\s*(?:typedef\s+)?(enum|union|struct)(?:\s+$Ident)?\s*{/) {
 			if (ERROR("OPEN_BRACE",
-				  "open brace '{' following $1 go on the same line\n" . $hereprev) &&
+				  "open brace '{' following $1 go on the next line\n" . $hereprev) &&
 			    $fix && $prevline =~ /^\+/ && $line =~ /^\+/) {
 				fix_delete_line($fixlinenr - 1, $prevrawline);
 				fix_delete_line($fixlinenr, $rawline);
