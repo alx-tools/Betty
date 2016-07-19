@@ -1,5 +1,5 @@
 # Betty
-Kernel-style C code checker written in Python
+Kernel-style C code checker written in Perl.
 
 `checkpatch.pl` from [Linux Kernel repository](http://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git) is under the [GNU GPL License version 2](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html)
 
