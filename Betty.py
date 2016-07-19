@@ -1,12 +1,12 @@
 #!/usr/bin/python
 #
 # Betty Kernel-style C code checker
-# Version: 0.0.2
+# Version: 0.1.1
 #
 
 import sys,re
 
-version = '0.0.2'
+version = '0.1.1'
 
 # This class represents the checker
 class Betty:
@@ -22,8 +22,7 @@ class Betty:
         self.in_scope = 0
         print "Scan",self.file
 
-    # This function will be called for each line of a file
-    # to count the number of functions
+    # This function count the number of functions in a file
     # and the number of lines in each function
     def check_nbline(self):
         # If the checked file is a C source file
@@ -55,6 +54,20 @@ class Betty:
                         self.mark += 1
                         self.print_error('more than 25 lines in function')
 
+    # This function check if a line
+    # in the scope of a function
+    # is more than 80 colums long
+    def check_nbcol(self):
+        line = self.line.replace('\t', '    ')
+        if self.in_scope >= 1 and line[80:]:
+            self.mark += 1
+            self.print_error('more than 80 columns in a line')
+
+    # This function will be called for each line of a file
+    def check_line(self):
+        self.check_nbline()
+        self.check_nbcol()
+
     # Print an error found in a file
     # and print the line itself
     def print_error(self, msg):
@@ -72,7 +85,7 @@ class Betty:
                 print "Can't open file",self.file
             else:
                 for self.line in fd.readlines():
-                    self.check_nbline()
+                    self.check_line()
                     self.nb_line += 1
                 fd.close()
 

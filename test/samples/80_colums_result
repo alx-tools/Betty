@@ -1,0 +1,5 @@
+Scan samples/80_colums.c
+Error in samples/80_colums.c in line 7 : more than 80 columns in a line
+  if (something != 1024 && something_else == 98 || another_thing  + 1234 >= 402)
+
+Mark: -1
