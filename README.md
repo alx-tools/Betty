@@ -1,2 +1,2 @@
 # Betty
-Kernel-style C code checker wrote in Python
+Kernel-style C code checker written in Python
