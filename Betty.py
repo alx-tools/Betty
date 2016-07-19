@@ -1,80 +1,94 @@
 #!/usr/bin/python
 #
 # Betty Kernel-style C code checker
-# Version: 0.0.1
+# Version: 0.0.2
 #
 
 import sys,re
 
-version = '0.0.1'
+version = '0.0.2'
 
+# This class represents the checker
 class Betty:
     def __init__(self):
-        self.user = []
-        self.verbose = 0
-        self.score = 1
-        self.printline = 0
         self.mark = 0
 
+    # This function reset all the variables relatives to a file
+    # it is called when we start to check a new file
     def new_file(self):
         self.nb_line = 1
         self.nb_funcline = 0
         self.nb_func = 0
         self.is_func = 0
-        if self.verbose == 1:
-            print "Scan",self.file
+        print "Scan",self.file
 
+    # This function will be called for each line of a file
+    # to count the number of functions
+    # and the number of lines in each function
     def check_nbline(self):
+        # If the checked file is a C source file
         if self.file[-2:] == ".c":
-            if self.line[:1] == '}' and self.is_func == 1:
-                self.is_func = 0
-                self.nb_funcline = 0
-            elif self.line[:1] == '{' and self.is_func == 0:
+            # If the current checked line starts with an opening brace
+            # and that we are not already in the scope of a function
+            # it means that this is the beginning of a new function.
+            if self.line[:1] == '{' and self.is_func == 0:
                 self.is_func = 1
                 self.nb_funcline = 0
                 self.nb_func += 1
+                # Check if the function counter is greater than 5
                 if self.nb_func > 5:
                     self.mark += 1
                     self.print_error('more than 5 functions in file')
+            # If the current checked line starts with a closing brace
+            # and that we are already in the scope of a function
+            # it means that this is the end of the current checked function
+            elif self.line[:1] == '}' and self.is_func == 1:
+                self.is_func = 0
+                self.nb_funcline = 0
             else:
-                if self.nb_func >= 1 and self.is_func:
+                # If the current checked line is in the scope of a function
+                # We check the number of line counted inside this function
+                if self.is_func:
                     self.nb_funcline += 1
                     if self.nb_funcline > 25:
                         self.mark += 1
                         self.print_error('more than 25 lines in function')
 
+    # Print an error found in a file
+    # and print the line itself
     def print_error(self, msg):
         print "Error in",self.file,"in line",self.nb_line,":",msg
-        if self.printline:
-            print self.line
+        print self.line
 
-    def cant_open(self, file):
-        if (self.verbose or file == sys.argv[1]):
-            print "Can't open file",file
-
+    # Open each file of 'files' one by one
+    # For each file, we will proceed for check line by line
     def scan_files(self, files):
-        for file_name in files:
-            self.file = file_name
+        for self.file in files:
             self.new_file()
             try:
-                fd = open(file_name, 'r')
+                fd = open(self.file, 'r')
             except IOError:
-                self.cant_open(file)
+                print "Can't open file",self.file
             else:
                 for self.line in fd.readlines():
                     self.check_nbline()
                     self.nb_line += 1
-                    fd.close()
+                fd.close()
 
+# This function returns a list
+# that contains all the files in @argv
+# that ends with extensions '.c' or '.h'
 def get_files(argv):
     li = []
     pattern = re.compile('[.]c$|[.]h$')
-    for arg in sys.argv:
+    for arg in argv:
         test = re.search(pattern, arg)
         if test:
             li.append(arg)
     return li
 
+# Prints informations and indications
+# about the script
 def help():
     print "Help"
     print "Betty version " + str(version)
@@ -84,17 +98,19 @@ def help():
 def main():
     if '-help' in sys.argv[1:]:
         help()
+    # No parameter...
     if len(sys.argv) == 1:
         print "Usage: Betty.py <files_to_scan>"
         sys.exit()
+    # Create a new Betty instance
     checker = Betty()
+    # Get the list of all '.c' and '.h' files
     files = get_files(sys.argv)
     try:
         checker.scan_files(files)
     except NameError:
         print "Usage: Betty.py <files_to_scan>"
-    if checker.score:
-        print "Mark:",-checker.mark,
+    print "Mark:",-checker.mark,
 
 if __name__ == "__main__":
     main()
