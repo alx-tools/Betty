@@ -1,5 +1,11 @@
 # Betty
 
+### Run
+Run the followin command to check id your code fits the Kernel style:
+```
+./checkpatch.pl --no-tree --terse -f <your_file(s)>
+```
+
 ### License
 ```
   Kernel-style C code checker written in Perl.
