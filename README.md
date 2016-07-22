@@ -1,9 +1,12 @@
 # Betty
 
 ### Run
-Run the followin command to check id your code fits the Kernel style:
+Run the followin command to check id your code/doc fits the Kernel style:
 ```
 ./checkpatch.pl --no-tree --terse -f <your_file(s)>
+```
+```
+./kernel-doc.pl -list <file>
 ```
 
 ### License
