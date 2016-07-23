@@ -4616,7 +4616,7 @@ sub process {
 		if ($line=~/^.\s*}\s*else\s*/ &&
 		    $previndent == $indent) {
 			if (ERROR("ELSE_AFTER_BRACE",
-				  "else should following close brace '}' sould be on the next line\n" . $hereprev) &&
+				  "else statement following close brace '}' sould be on the next line\n" . $hereprev) &&
 			    $fix && $prevline =~ /^\+/ && $line =~ /^\+/) {
 				fix_delete_line($fixlinenr - 1, $prevrawline);
 				fix_delete_line($fixlinenr, $rawline);
