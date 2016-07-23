@@ -122,6 +122,10 @@ EOM
 	exit($exitcode);
 }
 
+sub checkUpdate {
+	
+}
+
 sub uniq {
 	my %seen;
 	return grep { !$seen{$_}++ } @_;
@@ -4580,10 +4584,27 @@ sub process {
 
 		# Check for }<nl>else {, these must be at the same
 		# indent level to be relevant to each other.
-		if ($prevline=~/}\s*$/ and $line=~/^.\s*else\s*/ &&
+		# if ($prevline=~/}\s*$/ and $line=~/^.\s*else\s*/ &&
+		#     $previndent == $indent) {
+		# 	if (ERROR("ELSE_AFTER_BRACE",
+		# 		  "else should follow close brace '}'\n" . $hereprev) &&
+		# 	    $fix && $prevline =~ /^\+/ && $line =~ /^\+/) {
+		# 		fix_delete_line($fixlinenr - 1, $prevrawline);
+		# 		fix_delete_line($fixlinenr, $rawline);
+		# 		my $fixedline = $prevrawline;
+		# 		$fixedline =~ s/}\s*$//;
+		# 		if ($fixedline !~ /^\+\s*$/) {
+		# 			fix_insert_line($fixlinenr, $fixedline);
+		# 		}
+		# 		$fixedline = $rawline;
+		# 		$fixedline =~ s/^(.\s*)else/$1} else/;
+		# 		fix_insert_line($fixlinenr, $fixedline);
+		# 	}
+		# }
+		if ($line=~/^.\s*}\s*else\s*/ &&
 		    $previndent == $indent) {
 			if (ERROR("ELSE_AFTER_BRACE",
-				  "else should follow close brace '}'\n" . $hereprev) &&
+				  "else should following close brace '}' sould be on the next line\n" . $hereprev) &&
 			    $fix && $prevline =~ /^\+/ && $line =~ /^\+/) {
 				fix_delete_line($fixlinenr - 1, $prevrawline);
 				fix_delete_line($fixlinenr, $rawline);
