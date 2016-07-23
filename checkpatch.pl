@@ -4389,15 +4389,31 @@ sub process {
 		}
 
 # return is not a function
-		if (defined($stat) && $stat =~ /^.\s*return(\s*)\(/s) {
+		# if (defined($stat) && $stat =~ /^.\s*return(\s*)\(/s) {
+		# 	my $spacing = $1;
+		# 	if ($^V && $^V ge 5.10.0 &&
+		# 	    $stat =~ /^.\s*return\s*($balanced_parens)\s*;\s*$/) {
+		# 		my $value = $1;
+		# 		$value = deparenthesize($value);
+		# 		if ($value =~ m/^\s*$FuncArg\s*(?:\?|$)/) {
+		# 			ERROR("RETURN_PARENTHESES",
+		# 			      "return is not a function, parentheses are not required\n" . $herecurr);
+		# 		}
+		# 	} elsif ($spacing !~ /\s+/) {
+		# 		ERROR("SPACING",
+		# 		      "space required before the open parenthesis '('\n" . $herecurr);
+		# 	}
+		# }
+		#print "STAT:$stat\n";
+		if (defined($stat) && $stat =~ /^.\s*return(\s*).*/s) {
 			my $spacing = $1;
 			if ($^V && $^V ge 5.10.0 &&
-			    $stat =~ /^.\s*return\s*($balanced_parens)\s*;\s*$/) {
+			    $stat !~ /^.\s*return\s*($balanced_parens)\s*;\s*$/) {
 				my $value = $1;
 				$value = deparenthesize($value);
-				if ($value =~ m/^\s*$FuncArg\s*(?:\?|$)/) {
+				if ($value =~ m/^\s*$FuncArg\s*(?:\?)|$/) {
 					ERROR("RETURN_PARENTHESES",
-					      "return is not a function, parentheses are not required\n" . $herecurr);
+					      "parentheses are required on a return statement\n" . $herecurr);
 				}
 			} elsif ($spacing !~ /\s+/) {
 				ERROR("SPACING",
