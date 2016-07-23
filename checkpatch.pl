@@ -122,10 +122,6 @@ EOM
 	exit($exitcode);
 }
 
-sub checkUpdate {
-	
-}
-
 sub uniq {
 	my %seen;
 	return grep { !$seen{$_}++ } @_;
