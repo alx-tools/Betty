@@ -9,24 +9,8 @@ Run the followin command to check if your code/doc fits the Kernel style:
 ./kernel-doc.pl -list <file>
 ```
 
-### License
-```
-  Kernel-style C code checker written in Perl.
-  Copyright (C) 2016  Holberton School Inc.
-  
-  This program is free software: you can redistribute it and/or modify
-  it under the terms of the GNU General Public License as published by
-  the Free Software Foundation, either version 3 of the License, or
-  any later version.
-  
-  This program is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU General Public License for more details.
-  
-  You should have received a copy of the GNU General Public License
-  along with this program.  If not, see <http://www.gnu.org/licenses/>.
-```
+### Atom editor
+Here's [a package](https://atom.io/packages/kernel-docstring) for Atom to generate Kernel-style documentation for your C functions
 
 #### [checkpatch.pl](https://github.com/holbertonschool/Betty/blob/master/checkpatch.pl)
  * From [Linux Kernel repository](http://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/tree/scripts/checkpatch.pl)
