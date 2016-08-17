@@ -1,7 +1,7 @@
 # Betty
 
 ### Run
-Run the followin command to check if your code/doc fits the Kernel style:
+Run the following command to check if your code/doc fits the Holberton Style (mostly inspired from the Linux Kernel style):
 ```
 ./checkpatch.pl --no-tree --terse -f <your_file(s)>
 ```
