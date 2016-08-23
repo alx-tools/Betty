@@ -1065,6 +1065,12 @@ sub line_stats {
 	return (length($line), length($white));
 }
 
+sub real_length {
+	my ($line) = @_;
+
+	return (length($line));
+}
+
 my $sanitise_quote = '';
 
 sub sanitise_line_reset {
@@ -2071,6 +2077,7 @@ sub process {
 	my $stashrawline="";
 
 	my $length;
+	my $real_length;
 	my $indent;
 	my $previndent=0;
 	my $stashindent=0;
@@ -2248,6 +2255,7 @@ sub process {
 
 			# Measure the line length and indent.
 			($length, $indent) = line_stats($rawline);
+			$real_length = real_length($rawline);
 
 			# Track the previous line.
 			($prevline, $stashline) = ($stashline, $line);
@@ -2767,7 +2775,7 @@ sub process {
 # if LONG_LINE is ignored, the other 2 types are also ignored
 #
 
-		if ($line =~ /^\+/ && $length > $max_line_length) {
+		if ($line =~ /^\+/ && $real_length > $max_line_length) {
 			my $msg_type = "LONG_LINE";
 
 			# Check the allowed long line types first
@@ -2800,7 +2808,7 @@ sub process {
 			if ($msg_type ne "" &&
 			    (show_type("LONG_LINE") || show_type($msg_type))) {
 				WARN($msg_type,
-				     "line over $max_line_length characters\n" . $herecurr);
+				     "line over $max_line_length characters ($real_length)\n" . $herecurr);
 			}
 		}
 
