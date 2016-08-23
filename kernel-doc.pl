@@ -39,6 +39,16 @@ use strict;
 # 25/07/2012 - Added support for HTML5
 # -- Dan Luedtke <mail@danrl.de>
 
+my $V = '1.0';
+
+sub printVersion {
+
+	print << "EOM";
+Version: $V
+EOM
+	exit(0);
+}
+
 sub usage {
     my $message = <<"EOF";
 Usage: $0 [OPTION ...] FILE ...
@@ -402,7 +412,9 @@ reset_state();
 
 while ($ARGV[0] =~ m/^-(.*)/) {
     my $cmd = shift @ARGV;
-    if ($cmd eq "-html") {
+		if ($cmd eq "--version") {
+			printVersion();
+    } elsif ($cmd eq "-html") {
 	$output_mode = "html";
 	@highlights = @highlights_html;
 	$blankline = $blankline_html;
@@ -2439,7 +2451,7 @@ sub dump_function($$) {
 
 	create_parameterlist($args, ',', $file);
     } else {
-	print STDERR "${file}:$.: warning: cannot understand function prototype: '$prototype'\n";
+	print STDERR "${file}:$.: fatal: cannot understand function prototype: '$prototype'\n";
 	return;
     }
 
@@ -2897,7 +2909,7 @@ sub process_file($) {
 	}
     }
     if ($initial_section_counter == $section_counter) {
-	print STDERR "${file}:1: warning: no structured comments found\n";
+	print STDOUT "${file}:1: warning: no structured comments found\n";
 	if (($function_only == 1) && ($show_not_found == 1)) {
 	    print STDERR "    Was looking for '$_'.\n" for keys %function_table;
 	}

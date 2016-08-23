@@ -46,6 +46,7 @@ my @use = ();
 my %ignore_type = ();
 my @ignore = ();
 my $help = 0;
+my $printVersion = 0;
 my $configuration_file = ".checkpatch.conf";
 my $max_line_length = 80;
 my $max_func_length = 40;
@@ -57,6 +58,15 @@ my $spelling_file = "$D/spelling.txt";
 my $codespell = 0;
 my $codespellfile = "/usr/share/codespell/dictionary.txt";
 my $color = 1;
+
+sub printVersion {
+	my ($exitcode) = @_;
+
+	print << "EOM";
+Version: $V
+EOM
+	exit($exitcode);
+}
 
 sub help {
 	my ($exitcode) = @_;
@@ -212,10 +222,12 @@ GetOptions(
 	'codespellfile=s'	=> \$codespellfile,
 	'color!'	=> \$color,
 	'h|help'	=> \$help,
-	'version'	=> \$help
+	'version'	=> \$printVersion
 ) or help(1);
 
 help(0) if ($help);
+
+printVersion(0) if ($printVersion);
 
 list_types(0) if ($list_types);
 
@@ -3768,6 +3780,16 @@ sub process {
 				$nbfunc++;
 				$funclines = 0;
 				if ($nbfunc > $max_funcs) {
+					my $tmpline = $realline - 1;
+					if ($showfile) {
+						$prefix = "$realfile:$tmpline: ";
+					} elsif ($emacs) {
+						if ($file) {
+							$prefix = "$realfile:$tmpline: ";
+						} else {
+							$prefix = "$realfile:$tmpline: ";
+						}
+					}
 					ERROR("FUNCTIONS",
 					  "More than $max_funcs functions in the file\n");
 				}
@@ -4429,9 +4451,19 @@ sub process {
 		    $linenr >= 3 &&
 		    $lines[$linenr - 3] =~ /^[ +]/ &&
 		    $lines[$linenr - 3] !~ /^[ +]\s*$Ident\s*:/) {
-			WARN("RETURN_VOID",
-			     "void function return statements are not generally useful\n" . $hereprev);
-               }
+					my $tmpline = $realline - 1;
+					if ($showfile) {
+						$prefix = "$realfile:$tmpline: ";
+					} elsif ($emacs) {
+						if ($file) {
+							$prefix = "$realfile:$tmpline: ";
+						} else {
+							$prefix = "$realfile:$tmpline: ";
+						}
+					}
+					WARN("RETURN_VOID",
+						"void function return statements are not generally useful\n" . $hereprev);
+					}
 
 # if statements using unnecessary parentheses - ie: if ((foo == bar))
 		if ($^V && $^V ge 5.10.0 &&
