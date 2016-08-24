@@ -3782,7 +3782,7 @@ sub process {
 			}
 		}
 
-		if ($line =~ /.*{.*/) {
+		if ($prevline =~ /^(.(?:typedef\s*)?(?:(?:$Storage|$Inline)\s*)*\s*$Type\s*(?:\b$Ident|\(\*\s*$Ident\))\s*)\(/s && $line =~ /.*{.*/) {
 			$inscope++;
 			if ($inscope == 1) {
 				$nbfunc++;
