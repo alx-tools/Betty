@@ -3782,9 +3782,9 @@ sub process {
 			}
 		}
 
-		if ($prevline =~ /^(.(?:typedef\s*)?(?:(?:$Storage|$Inline)\s*)*\s*$Type\s*(?:\b$Ident|\(\*\s*$Ident\))\s*)\(/s && $line =~ /.*{.*/) {
+		if ($line =~ /.*{.*/) {
 			$inscope++;
-			if ($inscope == 1) {
+			if ($prevline =~ /^(.(?:typedef\s*)?(?:(?:$Storage|$Inline)\s*)*\s*$Type\s*(?:\b$Ident|\(\*\s*$Ident\))\s*)\(/s && $inscope == 1) {
 				$nbfunc++;
 				$funclines = 0;
 				if ($nbfunc > $max_funcs) {
