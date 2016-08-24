@@ -4435,7 +4435,7 @@ sub process {
 		# 	}
 		# }
 		#print "STAT:$stat\n";
-		if (defined($stat) && $stat =~ /^.\s*return(\s*).*/s) {
+		if (defined($stat) && $stat !~ /^.\s*return\s*;\s*$/ && $stat =~ /^.\s*return(\s*).*/s) {
 			my $spacing = $1;
 			if ($^V && $^V ge 5.10.0 &&
 			    $stat !~ /^.\s*return\s*($balanced_parens)\s*;\s*$/) {
