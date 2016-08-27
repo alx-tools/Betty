@@ -5779,6 +5779,17 @@ sub process {
 			     "externs should be avoided in .c files\n" .  $herecurr);
 		}
 
+		# check for new typedefs in source files
+				if ($realfile =~ /\.c$/ &&
+				    $line =~ /\btypedef\s/ &&
+				    $line !~ /\btypedef\s+$Type\s*\(\s*\*?$Ident\s*\)\s*\(/ &&
+				    $line !~ /\btypedef\s+$Type\s+$Ident\s*\(/ &&
+				    $line !~ /\b$typeTypedefs\b/ &&
+				    $line !~ /\b__bitwise(?:__|)\b/) {
+					WARN("NEW_TYPEDEFS",
+					     "typedefs should be avoided in .c files\n" . $herecurr);
+				}
+
 # checks for new __setup's
 		if ($rawline =~ /\b__setup\("([^"]*)"/) {
 			my $name = $1;
