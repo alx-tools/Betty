@@ -3821,6 +3821,13 @@ sub process {
 		# 		}
 		# 	}
 		# }
+		#
+		if ($realfile =~ /\.c$/ &&
+		    $line =~ /^.\s*(?:typedef\s+)?(enum|union|struct)(?:\s+$Ident)?\s*.*/) {
+					WARN("STRUCT_DEF",
+						"$1 definition should be avoided in .c files\n");
+		}
+
 		if ($line =~ /^.\s*(?:typedef\s+)?(enum|union|struct)(?:\s+$Ident)?\s*{/) {
 			if (ERROR("OPEN_BRACE",
 				  "open brace '{' following $1 go on the next line\n" . $hereprev) &&
@@ -3838,14 +3845,14 @@ sub process {
 		}
 
 # missing space after union, struct or enum definition
-		if ($line =~ /^.\s*(?:typedef\s+)?(enum|union|struct)(?:\s+$Ident){1,2}[=\{]/) {
-			if (WARN("SPACING",
-				 "missing space after $1 definition\n" . $herecurr) &&
-			    $fix) {
-				$fixed[$fixlinenr] =~
-				    s/^(.\s*(?:typedef\s+)?(?:enum|union|struct)(?:\s+$Ident){1,2})([=\{])/$1 $2/;
-			}
-		}
+		# if ($line =~ /^.\s*(?:typedef\s+)?(enum|union|struct)(?:\s+$Ident){1,2}[=\{]/) {
+		# 	if (WARN("SPACING",
+		# 		 "missing space after $1 definition\n" . $herecurr) &&
+		# 	    $fix) {
+		# 		$fixed[$fixlinenr] =~
+		# 		    s/^(.\s*(?:typedef\s+)?(?:enum|union|struct)(?:\s+$Ident){1,2})([=\{])/$1 $2/;
+		# 	}
+		# }
 
 # Function pointer declarations
 # check spacing between type, funcptr, and args
