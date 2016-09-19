@@ -3205,7 +3205,8 @@ sub process {
 
 # if/while/etc brace do not go on next line, unless defining a do while loop,
 # or if that brace on the next line is for something else
-		if ($line =~ /(.*)\b((?:if|while|for|switch|(?:[a-z_]+|)for_each[a-z_]+)\s*\(|do\b|else\b)/ && $line !~ /^.\s*\#/) {
+		#if ($line =~ /(.*)\b((?:if|while|for|switch|(?:[a-z_]+|)for_each[a-z_]+)\s*\(|do\b|else\b)/ && $line !~ /^.\s*\#/) {
+		if ($line =~ /(.*)\b((?:if|while|for|switch|(?:[a-z_]+|)for_each[a-z_]+)\s*\(|else\b)/ && $line !~ /^.\s*\#/) {
 			my $pre_ctx = "$1$2";
 
 			my ($level, @ctx) = ctx_statement_level($linenr, $realcnt, 0);
@@ -3419,7 +3420,7 @@ sub process {
 
 # check for initialisation to aggregates open brace on the next line
 		if ($line =~ /^.\s*{/ &&
-		    $prevline =~ /(?:^|[^=])=\s*$/) {
+		    ($prevline =~ /(?:^|[^=])=\s*$/ || $prevline =~ /\s*do\s*/)) {
 			if (ERROR("OPEN_BRACE",
 				  "that open brace { should be on the previous line\n" . $hereprev) &&
 			    $fix && $prevline =~ /^\+/ && $line =~ /^\+/) {
