@@ -4138,9 +4138,9 @@ sub process {
 				# none after.  May be left adjacent to another
 				# unary operator, or a cast
 				} elsif ($op eq '!' || $op eq '~' ||
-					 $opv eq '*U' || $opv eq '-U' ||
+					 $opv eq '*U' || $opv eq '-U' || $opv eq '+U' ||
 					 $opv eq '&U' || $opv eq '&&U') {
-					if ($ctx !~ /[WEBC]x./ && $ca !~ /(?:\)|!|~|\*|-|\&|\||\+\+|\-\-|\{)$/) {
+					if ($ctx !~ /[WEBC]x./ && $ca !~ /(?:\)|!|~|\*|-|\+|\&|\||\+\+|\-\-|\{)$/) {
 						if (ERROR("SPACING",
 							  "space required before that '$op' $at\n" . $hereptr)) {
 							if ($n != $last_after + 2) {
@@ -4198,16 +4198,17 @@ sub process {
 					 $op eq '*' or $op eq '/' or
 					 $op eq '%')
 				{
-					if ($check) {
+					my $force_check = 1;
+					if ($force_check) {
 						if (defined $fix_elements[$n + 2] && $ctx !~ /[EW]x[EW]/) {
-							if (CHK("SPACING",
+							if (ERROR("SPACING",
 								"spaces preferred around that '$op' $at\n" . $hereptr)) {
 								$good = rtrim($fix_elements[$n]) . " " . trim($fix_elements[$n + 1]) . " ";
 								$fix_elements[$n + 2] =~ s/^\s+//;
 								$line_fixed = 1;
 							}
 						} elsif (!defined $fix_elements[$n + 2] && $ctx !~ /Wx[OE]/) {
-							if (CHK("SPACING",
+							if (ERROR("SPACING",
 								"space preferred before that '$op' $at\n" . $hereptr)) {
 								$good = rtrim($fix_elements[$n]) . " " . trim($fix_elements[$n + 1]);
 								$line_fixed = 1;
@@ -4259,7 +4260,7 @@ sub process {
 					# messages are ERROR, but ?: are CHK
 					if ($ok == 0) {
 						my $msg_type = \&ERROR;
-						$msg_type = \&CHK if (($op eq '?:' || $op eq '?' || $op eq ':') && $ctx =~ /VxV/);
+						$msg_type = \&ERROR if (($op eq '?:' || $op eq '?' || $op eq ':') && $ctx =~ /VxV/);
 
 						if (&{$msg_type}("SPACING",
 								 "spaces required around that '$op' $at\n" . $hereptr)) {
