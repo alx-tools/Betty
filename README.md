@@ -1,21 +1,21 @@
 # Betty
 
+[![Build Status](https://travis-ci.org/holbertonschool/Betty.svg?branch=master)](https://travis-ci.org/holbertonschool/Betty)
+
 ### Run
-Run the following command to check if your code/doc fits the Holberton Style (mostly inspired from the Linux Kernel style):
+Run the following command to check if your code/doc fits the Betty Style (mostly inspired from the Linux Kernel style):
 ```
-./checkpatch.pl --no-tree --terse -f <your_file(s)>
+./betty-style.pl --no-tree --terse -f <your_file(s)>
 ```
 ```
-./kernel-doc.pl -list <file>
+./betty-doc.pl -list <single_file>
 ```
 
 ### Atom editor
-Here's [a package](https://atom.io/packages/kernel-docstring) for Atom to generate Kernel-style documentation for your C functions
+Here's [a package](https://atom.io/packages/linter-betty) for Atom to check Betty-style code and documentation
 
-#### [checkpatch.pl](https://github.com/holbertonschool/Betty/blob/master/checkpatch.pl)
- * From [Linux Kernel repository](http://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/tree/scripts/checkpatch.pl)
- * Under the [GNU GPL License version 2](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html)
+Here's [a package](https://atom.io/packages/kernel-docstring) for Atom to generate Betty-style documentation for your C functions
 
-#### [kernel-doc.pl](https://github.com/holbertonschool/Betty/blob/master/kernel-doc.pl)
- * From [Linux Kernel repository](http://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/tree/scripts/kernel-doc)
+### Reference
+ * From [Linux Kernel repository](http://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/tree)
  * Under the [GNU General Public License](https://www.gnu.org/licenses/gpl.html)

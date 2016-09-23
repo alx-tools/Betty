@@ -42,7 +42,7 @@ do
 			continue
 		fi
 
-		output=$(./checkpatch.pl --no-tree --terse -f $src)
+		output=$(./betty-style.pl --no-tree --terse -f $src)
 		exp=$(cat $expected)
 
 		# output_lines=$(echo -n $output | wc -l)
