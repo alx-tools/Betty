@@ -5,10 +5,10 @@
 ### Run
 Run the following command to check if your code/doc fits the Betty Style (mostly inspired from the Linux Kernel style):
 ```
-./betty-style.pl --no-tree --terse -f <your_file(s)>
+./betty-style.pl <your_file(s)>
 ```
 ```
-./betty-doc.pl -list <single_file>
+./betty-doc.pl <single_file>
 ```
 
 ### Atom editor

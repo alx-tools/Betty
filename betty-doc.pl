@@ -63,8 +63,8 @@ Output format selection (mutually exclusive):
   -docbook		Output DocBook format.
   -html			Output HTML format.
   -html5		Output HTML5 format.
-  -list			Output symbol list format. This is for use by docproc.
-  -man			Output troff manual page format. This is the default.
+  -list			Output symbol list format. This is for use by docproc. This is the default.
+  -man			Output troff manual page format.
   -rst			Output reStructuredText format.
   -text			Output plain text format.
 
@@ -310,11 +310,11 @@ my $kernelversion;
 my $dohighlight = "";
 
 my $verbose = 0;
-my $output_mode = "man";
+my $output_mode = "list";
 my $output_preformatted = 0;
 my $no_doc_sections = 0;
-my @highlights = @highlights_man;
-my $blankline = $blankline_man;
+my @highlights = @highlights_list;
+my $blankline = $blankline_list;
 my $modulename = "Kernel API";
 my $function_only = 0;
 my $show_not_found = 0;

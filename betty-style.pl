@@ -225,6 +225,13 @@ GetOptions(
 	'version'	=> \$printVersion
 ) or help(1);
 
+#Force --no-tree
+$tree = 0;
+#Force --terse
+$terse = 1;
+#Force -f
+$file = 1;
+
 help(0) if ($help);
 
 printVersion(0) if ($printVersion);
