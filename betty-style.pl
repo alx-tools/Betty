@@ -77,11 +77,11 @@ Version: $V
 
 Options:
   -q, --quiet                quiet
-  --no-tree                  run without a kernel tree
+  --no-tree                  run without a kernel tree. Active by default
   --no-signoff               do not check for 'Signed-off-by' line
   --patch                    treat FILE as patchfile (default)
   --emacs                    emacs compile window format
-  --terse                    one line per report
+  --terse                    one line per report. Active by default
   --showfile                 emit diffed file position, not input file position
   -g, --git                  treat FILE as a single commit or git revision range
                              single git commit with:
@@ -93,7 +93,7 @@ Options:
                                <rev1>...<rev2>
                                <rev>-<count>
                              git merges are ignored
-  -f, --file                 treat FILE as regular source file
+  -f, --file                 treat FILE as regular source file. Active by default
   --subjective, --strict     enable more subjective tests
   --list-types               list the possible message types
   --types TYPE(,TYPE2...)    show only these comma separated message types
