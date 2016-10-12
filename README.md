@@ -19,9 +19,3 @@ Run the following command to check if your code/doc fits the Betty Style (mostly
 ```ShellSession
 ./betty-doc.pl file1 [file2 [file3 [...]]]
 ```
-
-### Atom editor
-
-Here's [a package](https://atom.io/packages/linter-betty) for Atom to check Betty-style code and documentation
-
-Here's [a package](https://atom.io/packages/kernel-docstring) for Atom to generate Betty-style documentation for your C functions
