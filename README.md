@@ -13,11 +13,11 @@ You'll also find some references and some tools for common text editors such as 
 Run the following command to check if your code/doc fits the Betty Style (mostly inspired from the Linux Kernel style):
 
 ```ShellSession
-./betty-style.pl <your_file(s)>
+./betty-style.pl file1 [file2 [file3 [...]]]
 ```
 
 ```ShellSession
-./betty-doc.pl <your_file(s)>
+./betty-doc.pl file1 [file2 [file3 [...]]]
 ```
 
 ### Atom editor
