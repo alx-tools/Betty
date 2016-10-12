@@ -12,11 +12,11 @@ You'll also find some references and some tools for common text editors such as 
 
 Run the following command to check if your code/doc fits the Betty Style (mostly inspired from the Linux Kernel style):
 
-```
+```ShellSession
 ./betty-style.pl <your_file(s)>
 ```
 
-```
+```ShellSession
 ./betty-doc.pl <your_file(s)>
 ```
 
