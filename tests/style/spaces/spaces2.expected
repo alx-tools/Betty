@@ -1,0 +1,8 @@
+tests/style/spaces/spaces2.c:11: ERROR: "foo* bar" should be "foo *bar"
+tests/style/spaces/spaces2.c:11: ERROR: "foo* bar" should be "foo *bar"
+tests/style/spaces/spaces2.c:13: ERROR: "foo* bar" should be "foo *bar"
+tests/style/spaces/spaces2.c:14: ERROR: "foo* bar" should be "foo *bar"
+tests/style/spaces/spaces2.c:17: ERROR: spaces prohibited around that '->' (ctx:VxW)
+tests/style/spaces/spaces2.c:18: ERROR: spaces prohibited around that '->' (ctx:WxV)
+tests/style/spaces/spaces2.c:19: ERROR: spaces prohibited around that '->' (ctx:WxW)
+total: 7 errors, 0 warnings, 21 lines checked

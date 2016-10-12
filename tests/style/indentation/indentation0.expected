@@ -1,0 +1,2 @@
+tests/style/indentation/indentation0.c:3: WARNING: please, no spaces at the start of a line
+total: 0 errors, 1 warnings, 9 lines checked

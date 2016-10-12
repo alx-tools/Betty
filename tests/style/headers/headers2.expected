@@ -1,0 +1,6 @@
+tests/style/headers/headers2.c:1: WARNING: externs should be avoided in .c files
+tests/style/headers/headers2.c:3: WARNING: typedefs should be avoided in .c files
+tests/style/headers/headers2.c:5: WARNING: struct definition should be avoided in .c files
+tests/style/headers/headers2.c:10: WARNING: enum definition should be avoided in .c files
+tests/style/headers/headers2.c:16: WARNING: union definition should be avoided in .c files
+total: 0 errors, 5 warnings, 20 lines checked

@@ -1,0 +1,2 @@
+tests/style/functions/functions4.c:87: WARNING: More than 40 lines in a function
+total: 0 errors, 1 warnings, 88 lines checked

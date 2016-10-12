@@ -7,10 +7,21 @@ CYAN='\033[0;36m'
 NC='\033[0m'
 
 tests_folder="tests"
+tests_style_folder="$tests_folder/style"
+tests_doc_folder="$tests_folder/doc"
+
+style_exec="betty-style.pl"
+doc_exec="betty-doc.pl"
 
 errors=0
 
-for dir in $tests_folder/*/
+# # # # # # # # # # # # #
+# Testing coding style  #
+# # # # # # # # # # # # #
+
+echo -e "Testing coding style specs..."
+
+for dir in $tests_style_folder/*/
 do
 	dir=${dir%*/}
 	echo -e "Found ${CYAN}${dir##*/}${NC} folder..."
@@ -42,17 +53,8 @@ do
 			continue
 		fi
 
-		output=$(./betty-style.pl --no-tree --terse -f $src)
+		output=$(./$style_exec $src)
 		exp=$(cat $expected)
-
-		# output_lines=$(echo -n $output | wc -l)
-		# expected_lines=$(echo -n $exp | wc -l)
-		#
-		# echo -e "\tOUTPUT (${output_lines} lines):"
-		# echo -e "\t$output"
-		#
-		# echo -e "\tEXPECTED ($expected_lines lines):"
-		# echo -e "\t$exp"
 
 		if [ "$output" != "$exp" ]
 		then
@@ -65,6 +67,60 @@ do
 		echo
 	done
 done
+
+# # # # # # # # # # # # #
+# Testing documentation #
+# # # # # # # # # # # # #
+
+echo -e "Testing documentation style specs..."
+
+dir=${tests_doc_folder%*/}
+echo -e "Found ${CYAN}${dir##*/}${NC} folder..."
+
+for file in ${dir}/*.{c,h}
+do
+
+	if [ "${file}" == "${dir}/*.c" ] || [ "${file}" == "${dir}/*.h" ]
+	then
+		continue
+	fi
+
+	if [[ "${file}" == *.c ]]
+	then
+		current_test=${file%*.c}
+	else
+		current_test=${file%*.h}
+	fi
+
+	echo -e "\tTesting ${PURPLE}${current_test}${NC}..."
+
+	src="${file}"
+	expected="$current_test.expected"
+
+	if [ ! -f $expected ]
+	then
+		echo -e "\t${RED}Missing expected output, ignored${NC}"
+		echo
+		continue
+	fi
+
+	output=$(./$doc_exec $src)
+	exp=$(cat $expected)
+
+	if [ "$output" != "$exp" ]
+	then
+		echo -e "\t${RED}Error. The output is not the one expected:${NC}"
+		echo $output
+		let errors++
+	else
+		echo -e "\t${GREEN}Test passed successfully!${NC}"
+	fi
+	echo
+done
+
+# # # # # # # # # # # #
+# Count total errors  #
+# # # # # # # # # # # #
 
 if [ $errors -gt 0 ]
 then

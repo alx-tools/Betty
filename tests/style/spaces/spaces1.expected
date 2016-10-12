@@ -1,0 +1,60 @@
+tests/style/spaces/spaces1.c:1: WARNING: space prohibited between function name and open parenthesis '('
+tests/style/spaces/spaces1.c:1: ERROR: space prohibited after that open parenthesis '('
+tests/style/spaces/spaces1.c:1: ERROR: space prohibited before that close parenthesis ')'
+tests/style/spaces/spaces1.c:3: ERROR: space prohibited after that open parenthesis '('
+tests/style/spaces/spaces1.c:3: ERROR: space prohibited before that close parenthesis ')'
+tests/style/spaces/spaces1.c:3: ERROR: space required before the open parenthesis '('
+tests/style/spaces/spaces1.c:4: WARNING: space prohibited before semicolon
+tests/style/spaces/spaces1.c:4: ERROR: space prohibited after that open parenthesis '('
+tests/style/spaces/spaces1.c:4: ERROR: space prohibited before that close parenthesis ')'
+tests/style/spaces/spaces1.c:4: ERROR: space required before the open parenthesis '('
+tests/style/spaces/spaces1.c:5: ERROR: space prohibited after that open parenthesis '('
+tests/style/spaces/spaces1.c:5: ERROR: space prohibited before that close parenthesis ')'
+tests/style/spaces/spaces1.c:5: ERROR: space required before the open parenthesis '('
+tests/style/spaces/spaces1.c:6: WARNING: space prohibited before semicolon
+tests/style/spaces/spaces1.c:6: ERROR: space prohibited after that open parenthesis '('
+tests/style/spaces/spaces1.c:6: ERROR: space prohibited before that close parenthesis ')'
+tests/style/spaces/spaces1.c:6: ERROR: space required before the open parenthesis '('
+tests/style/spaces/spaces1.c:7: ERROR: space required before the open parenthesis '('
+tests/style/spaces/spaces1.c:9: ERROR: space prohibited before that ':' (ctx:WxE)
+tests/style/spaces/spaces1.c:10: ERROR: space prohibited before that ':' (ctx:WxE)
+tests/style/spaces/spaces1.c:11: WARNING: space prohibited before semicolon
+tests/style/spaces/spaces1.c:13: ERROR: space required after that ';' (ctx:WxV)
+tests/style/spaces/spaces1.c:13: ERROR: space required before the open parenthesis '('
+tests/style/spaces/spaces1.c:14: WARNING: space prohibited before semicolon
+tests/style/spaces/spaces1.c:14: ERROR: space prohibited after that open parenthesis '('
+tests/style/spaces/spaces1.c:14: ERROR: space prohibited before that close parenthesis ')'
+tests/style/spaces/spaces1.c:14: ERROR: space required before the open parenthesis '('
+tests/style/spaces/spaces1.c:15: ERROR: space prohibited after that open parenthesis '('
+tests/style/spaces/spaces1.c:15: ERROR: space prohibited before that close parenthesis ')'
+tests/style/spaces/spaces1.c:15: ERROR: space required before the open parenthesis '('
+tests/style/spaces/spaces1.c:16: WARNING: space prohibited before semicolon
+tests/style/spaces/spaces1.c:16: ERROR: space prohibited after that open parenthesis '('
+tests/style/spaces/spaces1.c:16: ERROR: space prohibited before that close parenthesis ')'
+tests/style/spaces/spaces1.c:16: ERROR: space required before the open parenthesis '('
+tests/style/spaces/spaces1.c:17: ERROR: space required before the open brace '{'
+tests/style/spaces/spaces1.c:18: WARNING: space prohibited before semicolon
+tests/style/spaces/spaces1.c:18: ERROR: space prohibited after that open parenthesis '('
+tests/style/spaces/spaces1.c:18: ERROR: space prohibited before that close parenthesis ')'
+tests/style/spaces/spaces1.c:18: ERROR: space required before the open parenthesis '('
+tests/style/spaces/spaces1.c:19: WARNING: space prohibited before semicolon
+tests/style/spaces/spaces1.c:19: ERROR: space required after that close brace '}'
+tests/style/spaces/spaces1.c:19: ERROR: space prohibited after that open parenthesis '('
+tests/style/spaces/spaces1.c:19: ERROR: space prohibited before that close parenthesis ')'
+tests/style/spaces/spaces1.c:19: ERROR: space required before the open parenthesis '('
+tests/style/spaces/spaces1.c:22: WARNING: space prohibited between function name and open parenthesis '('
+tests/style/spaces/spaces1.c:22: ERROR: space prohibited before that ',' (ctx:WxV)
+tests/style/spaces/spaces1.c:22: ERROR: space required after that ',' (ctx:WxV)
+tests/style/spaces/spaces1.c:22: ERROR: space prohibited after that open parenthesis '('
+tests/style/spaces/spaces1.c:22: ERROR: space prohibited before that close parenthesis ')'
+tests/style/spaces/spaces1.c:24: WARNING: space prohibited before semicolon
+tests/style/spaces/spaces1.c:26: WARNING: space prohibited between function name and open parenthesis '('
+tests/style/spaces/spaces1.c:26: ERROR: spaces required around that '=' (ctx:VxV)
+tests/style/spaces/spaces1.c:26: WARNING: space prohibited before semicolon
+tests/style/spaces/spaces1.c:26: ERROR: space prohibited after that open parenthesis '('
+tests/style/spaces/spaces1.c:26: ERROR: space prohibited before that close parenthesis ')'
+tests/style/spaces/spaces1.c:27: WARNING: space prohibited before semicolon
+tests/style/spaces/spaces1.c:27: ERROR: space prohibited after that open parenthesis '('
+tests/style/spaces/spaces1.c:27: ERROR: space prohibited before that close parenthesis ')'
+tests/style/spaces/spaces1.c:27: ERROR: space required before the open parenthesis '('
+total: 46 errors, 13 warnings, 28 lines checked

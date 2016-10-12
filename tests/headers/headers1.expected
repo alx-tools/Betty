@@ -1,8 +1,0 @@
-tests/headers/headers1.h:2: ERROR: Macros with complex values should be enclosed in parentheses
-tests/headers/headers1.h:4: ERROR: open brace '{' following struct go on the next line
-tests/headers/headers1.h:9: ERROR: open brace '{' following union go on the next line
-tests/headers/headers1.h:14: ERROR: open brace '{' following enum go on the next line
-tests/headers/headers1.h:28: ERROR: open brace '{' following struct go on the next line
-tests/headers/headers1.h:33: ERROR: open brace '{' following union go on the next line
-tests/headers/headers1.h:38: ERROR: open brace '{' following enum go on the next line
-total: 7 errors, 0 warnings, 42 lines checked

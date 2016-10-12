@@ -1,0 +1,2 @@
+tests/style/functions/functions1.c:26: ERROR: More than 5 functions in the file
+total: 1 errors, 0 warnings, 29 lines checked

@@ -1,0 +1,8 @@
+tests/style/braces/braces0.c:1: ERROR: open brace '{' following function declarations go on the next line
+tests/style/braces/braces0.c:2: ERROR: that open brace { should be on the next line
+tests/style/braces/braces0.c:6: ERROR: that open brace { should be on the next line
+tests/style/braces/braces0.c:10: ERROR: that open brace { should be on the next line
+tests/style/braces/braces0.c:14: ERROR: that open brace { should be on the next line
+tests/style/braces/braces0.c:18: ERROR: that open brace { should be on the next line
+tests/style/braces/braces0.c:23: ERROR: that open brace { should be on the previous line
+total: 7 errors, 0 warnings, 27 lines checked

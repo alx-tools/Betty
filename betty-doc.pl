@@ -2364,6 +2364,7 @@ sub check_return_section {
         my $file = shift;
         my $declaration_name = shift;
         my $return_type = shift;
+	my $real_line = $. - 1;
 
         # Ignore an empty return type (It's a macro)
         # Ignore functions with a "void" return type. (But don't ignore "void *")
@@ -2373,7 +2374,7 @@ sub check_return_section {
 
         if (!defined($sections{$section_return}) ||
             $sections{$section_return} eq "") {
-                print STDOUT "${file}:$.: warning: " .
+                print STDOUT "${file}:$real_line: warning: " .
                         "No description found for return value of " .
                         "'$declaration_name'\n";
                 ++$warnings;
@@ -2464,7 +2465,7 @@ sub dump_function($$) {
         # of warnings goes sufficiently down, the check is only performed in
         # verbose mode.
         # TODO: always perform the check.
-        if ($verbose && !$noret) {
+        if (!$noret) {
                 check_return_section($file, $declaration_name, $return_type);
         }
 
@@ -2662,6 +2663,133 @@ sub local_unescape($) {
 	return $text;
 }
 
+#Regular expressions
+our $Storage	= qr{extern|static|asmlinkage};
+our $Inline	= qr{inline|__always_inline|noinline|__inline|__inline__};
+our $InitAttributePrefix = qr{__(?:mem|cpu|dev|net_|)};
+our $InitAttributeData = qr{$InitAttributePrefix(?:initdata\b)};
+our $InitAttributeConst = qr{$InitAttributePrefix(?:initconst\b)};
+our $InitAttributeInit = qr{$InitAttributePrefix(?:init\b)};
+our $InitAttribute = qr{$InitAttributeData|$InitAttributeConst|$InitAttributeInit};
+our $Attribute	= qr{
+			const|
+			__percpu|
+			__nocast|
+			__safe|
+			__bitwise__|
+			__packed__|
+			__packed2__|
+			__naked|
+			__maybe_unused|
+			__always_unused|
+			__noreturn|
+			__used|
+			__cold|
+			__pure|
+			__noclone|
+			__deprecated|
+			__read_mostly|
+			__kprobes|
+			$InitAttribute|
+			____cacheline_aligned|
+			____cacheline_aligned_in_smp|
+			____cacheline_internodealigned_in_smp|
+			__weak
+		  }x;
+our $Sparse	= qr{
+			__user|
+			__kernel|
+			__force|
+			__iomem|
+			__pmem|
+			__must_check|
+			__init_refok|
+			__kprobes|
+			__ref|
+			__rcu|
+			__private
+		}x;
+our @modifierList = (
+	qr{fastcall},
+);
+our @modifierListFile = ();
+my $mods = "(?x:  \n" . join("|\n  ", (@modifierList, @modifierListFile)) . "\n)";
+our $Ident	= qr{
+			[A-Za-z_][A-Za-z\d_]*
+			(?:\s*\#\#\s*[A-Za-z_][A-Za-z\d_]*)*
+		}x;
+our @typeListMisordered = (
+	qr{char\s+(?:un)?signed},
+	qr{int\s+(?:(?:un)?signed\s+)?short\s},
+	qr{int\s+short(?:\s+(?:un)?signed)},
+	qr{short\s+int(?:\s+(?:un)?signed)},
+	qr{(?:un)?signed\s+int\s+short},
+	qr{short\s+(?:un)?signed},
+	qr{long\s+int\s+(?:un)?signed},
+	qr{int\s+long\s+(?:un)?signed},
+	qr{long\s+(?:un)?signed\s+int},
+	qr{int\s+(?:un)?signed\s+long},
+	qr{int\s+(?:un)?signed},
+	qr{int\s+long\s+long\s+(?:un)?signed},
+	qr{long\s+long\s+int\s+(?:un)?signed},
+	qr{long\s+long\s+(?:un)?signed\s+int},
+	qr{long\s+long\s+(?:un)?signed},
+	qr{long\s+(?:un)?signed},
+);
+our @typeList = (
+	qr{void},
+	qr{(?:(?:un)?signed\s+)?char},
+	qr{(?:(?:un)?signed\s+)?short\s+int},
+	qr{(?:(?:un)?signed\s+)?short},
+	qr{(?:(?:un)?signed\s+)?int},
+	qr{(?:(?:un)?signed\s+)?long\s+int},
+	qr{(?:(?:un)?signed\s+)?long\s+long\s+int},
+	qr{(?:(?:un)?signed\s+)?long\s+long},
+	qr{(?:(?:un)?signed\s+)?long},
+	qr{(?:un)?signed},
+	qr{float},
+	qr{double},
+	qr{bool},
+	qr{struct\s+$Ident},
+	qr{union\s+$Ident},
+	qr{enum\s+$Ident},
+	qr{${Ident}_t},
+	qr{${Ident}_handler},
+	qr{${Ident}_handler_fn},
+	@typeListMisordered,
+);
+our @typeListFile = ();
+my $all = "(?x:  \n" . join("|\n  ", (@typeList, @typeListFile)) . "\n)";
+our $Modifier	= qr{(?:$Attribute|$Sparse|$mods)};
+our $typeC99Typedefs = qr{(?:__)?(?:[us]_?)?int_?(?:8|16|32|64)_t};
+our $typeOtherOSTypedefs = qr{(?x:
+	u_(?:char|short|int|long) |          # bsd
+	u(?:nchar|short|int|long)            # sysv
+)};
+our $typeKernelTypedefs = qr{(?x:
+	(?:__)?(?:u|s|be|le)(?:8|16|32|64)|
+	atomic_t
+)};
+our $typeTypedefs = qr{(?x:
+	$typeC99Typedefs\b|
+	$typeOtherOSTypedefs\b|
+	$typeKernelTypedefs\b
+)};
+our $NonptrType	= qr{
+		(?:$Modifier\s+|const\s+)*
+		(?:
+			(?:typeof|__typeof__)\s*\([^\)]*\)|
+			(?:$typeTypedefs\b)|
+			(?:${all}\b)
+		)
+		(?:\s+$Modifier|\s+const)*
+	  }x;
+our $Type	= qr{
+		$NonptrType
+		(?:(?:\s|\*|\[\])+\s*const|(?:\s|\*\s*(?:const\s*)?|\[\])+|(?:\s*\[\s*\])+)?
+		(?:\s+$Inline|\s+$Modifier)*
+	  }x;
+
 sub process_file($) {
     my $file;
     my $identifier;
@@ -2694,6 +2822,16 @@ sub process_file($) {
 	while (s/\\\s*$//) {
 	    $_ .= <IN>;
 	}
+
+	if ($_ =~ /^(?:typedef\s+)?(?:(?:$Storage|$Inline)\s*)*\s*$Type\s*\(?\**($Ident)\s*\(/s &&
+	    $_ !~ /.*;\s*$/)
+	{
+		#print "Function found: $1\n";
+		if (!length $identifier || $identifier ne $1) {
+			print STDOUT "${file}:$.: warning: no description found for function $1\n";
+		}
+	}
+
 	if ($state == 0) {
 	    if (/$doc_start/o) {
 		$state = 1;		# next line is always the function name
@@ -2728,9 +2866,9 @@ sub process_file($) {
 		    $declaration_purpose = "";
 		}
 
-		if (($declaration_purpose eq "") && $verbose) {
-			print STDOUT "${file}:$.: warning: missing initial short description on line:\n";
-			print STDOUT $_;
+		if (($declaration_purpose eq "")) {
+			print STDOUT "${file}:$.: warning: missing initial short description\n";
+			#print STDOUT $_;
 			++$warnings;
 		}
 
@@ -2910,7 +3048,7 @@ sub process_file($) {
 	}
     }
     if ($initial_section_counter == $section_counter) {
-	print STDOUT "${file}:1: warning: no structured comments found\n";
+	#print STDOUT "${file}:1: warning: no structured comments found\n";
 	if (($function_only == 1) && ($show_not_found == 1)) {
 	    print STDOUT "    Was looking for '$_'.\n" for keys %function_table;
 	}

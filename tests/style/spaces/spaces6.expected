@@ -1,0 +1,11 @@
+tests/style/spaces/spaces6.c:5: ERROR: space prohibited after that '&' (ctx:WxW)
+tests/style/spaces/spaces6.c:6: ERROR: space prohibited after that '*' (ctx:WxW)
+tests/style/spaces/spaces6.c:7: ERROR: space prohibited after that '+' (ctx:WxW)
+tests/style/spaces/spaces6.c:8: ERROR: space prohibited after that '-' (ctx:WxW)
+tests/style/spaces/spaces6.c:9: ERROR: space prohibited after that '~' (ctx:WxW)
+tests/style/spaces/spaces6.c:10: ERROR: space prohibited after that '!' (ctx:WxW)
+tests/style/spaces/spaces6.c:15: ERROR: space prohibited before that '++' (ctx:WxO)
+tests/style/spaces/spaces6.c:16: ERROR: space prohibited before that '--' (ctx:WxO)
+tests/style/spaces/spaces6.c:17: ERROR: space prohibited after that '++' (ctx:ExW)
+tests/style/spaces/spaces6.c:18: ERROR: space prohibited after that '--' (ctx:ExW)
+total: 10 errors, 0 warnings, 19 lines checked

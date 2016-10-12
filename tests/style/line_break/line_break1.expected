@@ -1,0 +1,2 @@
+tests/style/line_break/line_break1.c:3: ERROR: trailing whitespace
+total: 1 errors, 0 warnings, 4 lines checked

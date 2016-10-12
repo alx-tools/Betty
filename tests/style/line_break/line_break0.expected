@@ -1,0 +1,2 @@
+tests/style/line_break/line_break0.c:3: WARNING: line over 80 characters (81)
+total: 0 errors, 1 warnings, 4 lines checked
