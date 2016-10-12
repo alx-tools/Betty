@@ -43,7 +43,7 @@ my $V = '1.0';
 
 sub printVersion {
 
-	print << "EOM";
+	print STDOUT << "EOM";
 Version: $V
 EOM
 	exit(0);
@@ -54,7 +54,7 @@ sub usage {
 Usage: $0 [OPTION ...] FILE ...
 
 Read C language source or header FILEs, extract embedded documentation comments,
-and print formatted documentation to standard output.
+and print STDOUT formatted documentation to standard output.
 
 The documentation comments are identified by "/**" opening comment mark. See
 Documentation/kernel-doc-nano-HOWTO.txt for the documentation comment syntax.
@@ -81,10 +81,10 @@ Output selection modifiers:
 
 Other parameters:
   -v			Verbose output, more warnings and other information.
-  -h			Print this help.
+  -h			print STDOUT this help.
 
 EOF
-    print $message;
+    print STDOUT $message;
     exit 1;
 }
 
@@ -489,22 +489,22 @@ sub dump_section {
 
     if ($name =~ m/$type_constant/) {
 	$name = $1;
-#	print STDOUT "constant section '$1' = '$contents'\n";
+#	print STDERR "constant section '$1' = '$contents'\n";
 	$constants{$name} = $contents;
     } elsif ($name =~ m/$type_param/) {
-#	print STDOUT "parameter def '$1' = '$contents'\n";
+#	print STDERR "parameter def '$1' = '$contents'\n";
 	$name = $1;
 	$parameterdescs{$name} = $contents;
 	$sectcheck = $sectcheck . $name . " ";
     } elsif ($name eq "@\.\.\.") {
-#	print STDOUT "parameter def '...' = '$contents'\n";
+#	print STDERR "parameter def '...' = '$contents'\n";
 	$name = "...";
 	$parameterdescs{$name} = $contents;
 	$sectcheck = $sectcheck . $name . " ";
     } else {
-#	print STDOUT "other section '$name' = '$contents'\n";
+#	print STDERR "other section '$name' = '$contents'\n";
 	if (defined($sections{$name}) && ($sections{$name} ne "")) {
-		print STDOUT "${file}:$.: error: duplicate section name '$name'\n";
+		print STDERR "${file}:$.: error: duplicate section name '$name'\n";
 		++$errors;
 	}
 	$sections{$name} = $contents;
@@ -563,10 +563,10 @@ sub output_highlight {
 	# convert data read & converted thru xml_escape() into &xyz; format:
 	$contents =~ s/\\\\\\/\&/g;
     }
-#   print STDOUT "contents b4:$contents\n";
+#   print STDERR "contents b4:$contents\n";
     eval $dohighlight;
     die $@ if $@;
-#   print STDOUT "contents af:$contents\n";
+#   print STDERR "contents af:$contents\n";
 
 #   strip whitespaces when generating html5
     if ($output_mode eq "html5") {
@@ -579,17 +579,17 @@ sub output_highlight {
 	}
 	if ($line eq ""){
 	    if (! $output_preformatted) {
-		print $lineprefix, local_unescape($blankline);
+		print STDOUT $lineprefix, local_unescape($blankline);
 	    }
 	} else {
 	    $line =~ s/\\\\\\/\&/g;
 	    if ($output_mode eq "man" && substr($line, 0, 1) eq ".") {
-		print "\\&$line";
+		print STDOUT "\\&$line";
 	    } else {
-		print $lineprefix, $line;
+		print STDOUT $lineprefix, $line;
 	    }
 	}
-	print "\n";
+	print STDOUT "\n";
     }
 }
 
@@ -599,10 +599,10 @@ sub output_section_html(%) {
     my $section;
 
     foreach $section (@{$args{'sectionlist'}}) {
-	print "<h3>$section</h3>\n";
-	print "<blockquote>\n";
+	print STDOUT "<h3>$section</h3>\n";
+	print STDOUT "<blockquote>\n";
 	output_highlight($args{'sections'}{$section});
-	print "</blockquote>\n";
+	print STDOUT "</blockquote>\n";
     }
 }
 
@@ -611,30 +611,30 @@ sub output_enum_html(%) {
     my %args = %{$_[0]};
     my ($parameter);
     my $count;
-    print "<h2>enum " . $args{'enum'} . "</h2>\n";
+    print STDOUT "<h2>enum " . $args{'enum'} . "</h2>\n";
 
-    print "<b>enum " . $args{'enum'} . "</b> {<br>\n";
+    print STDOUT "<b>enum " . $args{'enum'} . "</b> {<br>\n";
     $count = 0;
     foreach $parameter (@{$args{'parameterlist'}}) {
-	print " <b>" . $parameter . "</b>";
+	print STDOUT " <b>" . $parameter . "</b>";
 	if ($count != $#{$args{'parameterlist'}}) {
 	    $count++;
-	    print ",\n";
+	    print STDOUT ",\n";
 	}
-	print "<br>";
+	print STDOUT "<br>";
     }
-    print "};<br>\n";
+    print STDOUT "};<br>\n";
 
-    print "<h3>Constants</h3>\n";
-    print "<dl>\n";
+    print STDOUT "<h3>Constants</h3>\n";
+    print STDOUT "<dl>\n";
     foreach $parameter (@{$args{'parameterlist'}}) {
-	print "<dt><b>" . $parameter . "</b>\n";
-	print "<dd>";
+	print STDOUT "<dt><b>" . $parameter . "</b>\n";
+	print STDOUT "<dd>";
 	output_highlight($args{'parameterdescs'}{$parameter});
     }
-    print "</dl>\n";
+    print STDOUT "</dl>\n";
     output_section_html(@_);
-    print "<hr>\n";
+    print STDOUT "<hr>\n";
 }
 
 # output typedef in html
@@ -642,11 +642,11 @@ sub output_typedef_html(%) {
     my %args = %{$_[0]};
     my ($parameter);
     my $count;
-    print "<h2>typedef " . $args{'typedef'} . "</h2>\n";
+    print STDOUT "<h2>typedef " . $args{'typedef'} . "</h2>\n";
 
-    print "<b>typedef " . $args{'typedef'} . "</b>\n";
+    print STDOUT "<b>typedef " . $args{'typedef'} . "</b>\n";
     output_section_html(@_);
-    print "<hr>\n";
+    print STDOUT "<hr>\n";
 }
 
 # output struct in html
@@ -654,11 +654,11 @@ sub output_struct_html(%) {
     my %args = %{$_[0]};
     my ($parameter);
 
-    print "<h2>" . $args{'type'} . " " . $args{'struct'} . " - " . $args{'purpose'} . "</h2>\n";
-    print "<b>" . $args{'type'} . " " . $args{'struct'} . "</b> {<br>\n";
+    print STDOUT "<h2>" . $args{'type'} . " " . $args{'struct'} . " - " . $args{'purpose'} . "</h2>\n";
+    print STDOUT "<b>" . $args{'type'} . " " . $args{'struct'} . "</b> {<br>\n";
     foreach $parameter (@{$args{'parameterlist'}}) {
 	if ($parameter =~ /^#/) {
-		print "$parameter<br>\n";
+		print STDOUT "$parameter<br>\n";
 		next;
 	}
 	my $parameter_name = $parameter;
@@ -668,18 +668,18 @@ sub output_struct_html(%) {
 	$type = $args{'parametertypes'}{$parameter};
 	if ($type =~ m/([^\(]*\(\*)\s*\)\s*\(([^\)]*)\)/) {
 	    # pointer-to-function
-	    print "&nbsp; &nbsp; <i>$1</i><b>$parameter</b>) <i>($2)</i>;<br>\n";
+	    print STDOUT "&nbsp; &nbsp; <i>$1</i><b>$parameter</b>) <i>($2)</i>;<br>\n";
 	} elsif ($type =~ m/^(.*?)\s*(:.*)/) {
 	    # bitfield
-	    print "&nbsp; &nbsp; <i>$1</i> <b>$parameter</b>$2;<br>\n";
+	    print STDOUT "&nbsp; &nbsp; <i>$1</i> <b>$parameter</b>$2;<br>\n";
 	} else {
-	    print "&nbsp; &nbsp; <i>$type</i> <b>$parameter</b>;<br>\n";
+	    print STDOUT "&nbsp; &nbsp; <i>$type</i> <b>$parameter</b>;<br>\n";
 	}
     }
-    print "};<br>\n";
+    print STDOUT "};<br>\n";
 
-    print "<h3>Members</h3>\n";
-    print "<dl>\n";
+    print STDOUT "<h3>Members</h3>\n";
+    print STDOUT "<dl>\n";
     foreach $parameter (@{$args{'parameterlist'}}) {
 	($parameter =~ /^#/) && next;
 
@@ -687,13 +687,13 @@ sub output_struct_html(%) {
 	$parameter_name =~ s/\[.*//;
 
 	($args{'parameterdescs'}{$parameter_name} ne $undescribed) || next;
-	print "<dt><b>" . $parameter . "</b>\n";
-	print "<dd>";
+	print STDOUT "<dt><b>" . $parameter . "</b>\n";
+	print STDOUT "<dd>";
 	output_highlight($args{'parameterdescs'}{$parameter_name});
     }
-    print "</dl>\n";
+    print STDOUT "</dl>\n";
     output_section_html(@_);
-    print "<hr>\n";
+    print STDOUT "<hr>\n";
 }
 
 # output function in html
@@ -702,40 +702,40 @@ sub output_function_html(%) {
     my ($parameter, $section);
     my $count;
 
-    print "<h2>" . $args{'function'} . " - " . $args{'purpose'} . "</h2>\n";
-    print "<i>" . $args{'functiontype'} . "</i>\n";
-    print "<b>" . $args{'function'} . "</b>\n";
-    print "(";
+    print STDOUT "<h2>" . $args{'function'} . " - " . $args{'purpose'} . "</h2>\n";
+    print STDOUT "<i>" . $args{'functiontype'} . "</i>\n";
+    print STDOUT "<b>" . $args{'function'} . "</b>\n";
+    print STDOUT "(";
     $count = 0;
     foreach $parameter (@{$args{'parameterlist'}}) {
 	$type = $args{'parametertypes'}{$parameter};
 	if ($type =~ m/([^\(]*\(\*)\s*\)\s*\(([^\)]*)\)/) {
 	    # pointer-to-function
-	    print "<i>$1</i><b>$parameter</b>) <i>($2)</i>";
+	    print STDOUT "<i>$1</i><b>$parameter</b>) <i>($2)</i>";
 	} else {
-	    print "<i>" . $type . "</i> <b>" . $parameter . "</b>";
+	    print STDOUT "<i>" . $type . "</i> <b>" . $parameter . "</b>";
 	}
 	if ($count != $#{$args{'parameterlist'}}) {
 	    $count++;
-	    print ",\n";
+	    print STDOUT ",\n";
 	}
     }
-    print ")\n";
+    print STDOUT ")\n";
 
-    print "<h3>Arguments</h3>\n";
-    print "<dl>\n";
+    print STDOUT "<h3>Arguments</h3>\n";
+    print STDOUT "<dl>\n";
     foreach $parameter (@{$args{'parameterlist'}}) {
 	my $parameter_name = $parameter;
 	$parameter_name =~ s/\[.*//;
 
 	($args{'parameterdescs'}{$parameter_name} ne $undescribed) || next;
-	print "<dt><b>" . $parameter . "</b>\n";
-	print "<dd>";
+	print STDOUT "<dt><b>" . $parameter . "</b>\n";
+	print STDOUT "<dd>";
 	output_highlight($args{'parameterdescs'}{$parameter_name});
     }
-    print "</dl>\n";
+    print STDOUT "</dl>\n";
     output_section_html(@_);
-    print "<hr>\n";
+    print STDOUT "<hr>\n";
 }
 
 # output DOC: block header in html
@@ -745,12 +745,12 @@ sub output_blockhead_html(%) {
     my $count;
 
     foreach $section (@{$args{'sectionlist'}}) {
-	print "<h3>$section</h3>\n";
-	print "<ul>\n";
+	print STDOUT "<h3>$section</h3>\n";
+	print STDOUT "<ul>\n";
 	output_highlight($args{'sections'}{$section});
-	print "</ul>\n";
+	print STDOUT "</ul>\n";
     }
-    print "<hr>\n";
+    print STDOUT "<hr>\n";
 }
 
 # output sections in html5
@@ -759,12 +759,12 @@ sub output_section_html5(%) {
     my $section;
 
     foreach $section (@{$args{'sectionlist'}}) {
-	print "<section>\n";
-	print "<h1>$section</h1>\n";
-	print "<p>\n";
+	print STDOUT "<section>\n";
+	print STDOUT "<h1>$section</h1>\n";
+	print STDOUT "<p>\n";
 	output_highlight($args{'sections'}{$section});
-	print "</p>\n";
-	print "</section>\n";
+	print STDOUT "</p>\n";
+	print STDOUT "</section>\n";
     }
 }
 
@@ -777,39 +777,39 @@ sub output_enum_html5(%) {
 
     $html5id = $args{'enum'};
     $html5id =~ s/[^a-zA-Z0-9\-]+/_/g;
-    print "<article class=\"enum\" id=\"enum:". $html5id . "\">";
-    print "<h1>enum " . $args{'enum'} . "</h1>\n";
-    print "<ol class=\"code\">\n";
-    print "<li>";
-    print "<span class=\"keyword\">enum</span> ";
-    print "<span class=\"identifier\">" . $args{'enum'} . "</span> {";
-    print "</li>\n";
+    print STDOUT "<article class=\"enum\" id=\"enum:". $html5id . "\">";
+    print STDOUT "<h1>enum " . $args{'enum'} . "</h1>\n";
+    print STDOUT "<ol class=\"code\">\n";
+    print STDOUT "<li>";
+    print STDOUT "<span class=\"keyword\">enum</span> ";
+    print STDOUT "<span class=\"identifier\">" . $args{'enum'} . "</span> {";
+    print STDOUT "</li>\n";
     $count = 0;
     foreach $parameter (@{$args{'parameterlist'}}) {
-	print "<li class=\"indent\">";
-	print "<span class=\"param\">" . $parameter . "</span>";
+	print STDOUT "<li class=\"indent\">";
+	print STDOUT "<span class=\"param\">" . $parameter . "</span>";
 	if ($count != $#{$args{'parameterlist'}}) {
 	    $count++;
-	    print ",";
+	    print STDOUT ",";
 	}
-	print "</li>\n";
+	print STDOUT "</li>\n";
     }
-    print "<li>};</li>\n";
-    print "</ol>\n";
+    print STDOUT "<li>};</li>\n";
+    print STDOUT "</ol>\n";
 
-    print "<section>\n";
-    print "<h1>Constants</h1>\n";
-    print "<dl>\n";
+    print STDOUT "<section>\n";
+    print STDOUT "<h1>Constants</h1>\n";
+    print STDOUT "<dl>\n";
     foreach $parameter (@{$args{'parameterlist'}}) {
-	print "<dt>" . $parameter . "</dt>\n";
-	print "<dd>";
+	print STDOUT "<dt>" . $parameter . "</dt>\n";
+	print STDOUT "<dd>";
 	output_highlight($args{'parameterdescs'}{$parameter});
-	print "</dd>\n";
+	print STDOUT "</dd>\n";
     }
-    print "</dl>\n";
-    print "</section>\n";
+    print STDOUT "</dl>\n";
+    print STDOUT "</section>\n";
     output_section_html5(@_);
-    print "</article>\n";
+    print STDOUT "</article>\n";
 }
 
 # output typedef in html5
@@ -821,17 +821,17 @@ sub output_typedef_html5(%) {
 
     $html5id = $args{'typedef'};
     $html5id =~ s/[^a-zA-Z0-9\-]+/_/g;
-    print "<article class=\"typedef\" id=\"typedef:" . $html5id . "\">\n";
-    print "<h1>typedef " . $args{'typedef'} . "</h1>\n";
+    print STDOUT "<article class=\"typedef\" id=\"typedef:" . $html5id . "\">\n";
+    print STDOUT "<h1>typedef " . $args{'typedef'} . "</h1>\n";
 
-    print "<ol class=\"code\">\n";
-    print "<li>";
-    print "<span class=\"keyword\">typedef</span> ";
-    print "<span class=\"identifier\">" . $args{'typedef'} . "</span>";
-    print "</li>\n";
-    print "</ol>\n";
+    print STDOUT "<ol class=\"code\">\n";
+    print STDOUT "<li>";
+    print STDOUT "<span class=\"keyword\">typedef</span> ";
+    print STDOUT "<span class=\"identifier\">" . $args{'typedef'} . "</span>";
+    print STDOUT "</li>\n";
+    print STDOUT "</ol>\n";
     output_section_html5(@_);
-    print "</article>\n";
+    print STDOUT "</article>\n";
 }
 
 # output struct in html5
@@ -842,21 +842,21 @@ sub output_struct_html5(%) {
 
     $html5id = $args{'struct'};
     $html5id =~ s/[^a-zA-Z0-9\-]+/_/g;
-    print "<article class=\"struct\" id=\"struct:" . $html5id . "\">\n";
-    print "<hgroup>\n";
-    print "<h1>" . $args{'type'} . " " . $args{'struct'} . "</h1>";
-    print "<h2>". $args{'purpose'} . "</h2>\n";
-    print "</hgroup>\n";
-    print "<ol class=\"code\">\n";
-    print "<li>";
-    print "<span class=\"type\">" . $args{'type'} . "</span> ";
-    print "<span class=\"identifier\">" . $args{'struct'} . "</span> {";
-    print "</li>\n";
+    print STDOUT "<article class=\"struct\" id=\"struct:" . $html5id . "\">\n";
+    print STDOUT "<hgroup>\n";
+    print STDOUT "<h1>" . $args{'type'} . " " . $args{'struct'} . "</h1>";
+    print STDOUT "<h2>". $args{'purpose'} . "</h2>\n";
+    print STDOUT "</hgroup>\n";
+    print STDOUT "<ol class=\"code\">\n";
+    print STDOUT "<li>";
+    print STDOUT "<span class=\"type\">" . $args{'type'} . "</span> ";
+    print STDOUT "<span class=\"identifier\">" . $args{'struct'} . "</span> {";
+    print STDOUT "</li>\n";
     foreach $parameter (@{$args{'parameterlist'}}) {
-	print "<li class=\"indent\">";
+	print STDOUT "<li class=\"indent\">";
 	if ($parameter =~ /^#/) {
-		print "<span class=\"param\">" . $parameter ."</span>\n";
-		print "</li>\n";
+		print STDOUT "<span class=\"param\">" . $parameter ."</span>\n";
+		print STDOUT "</li>\n";
 		next;
 	}
 	my $parameter_name = $parameter;
@@ -866,27 +866,27 @@ sub output_struct_html5(%) {
 	$type = $args{'parametertypes'}{$parameter};
 	if ($type =~ m/([^\(]*\(\*)\s*\)\s*\(([^\)]*)\)/) {
 	    # pointer-to-function
-	    print "<span class=\"type\">$1</span> ";
-	    print "<span class=\"param\">$parameter</span>";
-	    print "<span class=\"type\">)</span> ";
-	    print "(<span class=\"args\">$2</span>);";
+	    print STDOUT "<span class=\"type\">$1</span> ";
+	    print STDOUT "<span class=\"param\">$parameter</span>";
+	    print STDOUT "<span class=\"type\">)</span> ";
+	    print STDOUT "(<span class=\"args\">$2</span>);";
 	} elsif ($type =~ m/^(.*?)\s*(:.*)/) {
 	    # bitfield
-	    print "<span class=\"type\">$1</span> ";
-	    print "<span class=\"param\">$parameter</span>";
-	    print "<span class=\"bits\">$2</span>;";
+	    print STDOUT "<span class=\"type\">$1</span> ";
+	    print STDOUT "<span class=\"param\">$parameter</span>";
+	    print STDOUT "<span class=\"bits\">$2</span>;";
 	} else {
-	    print "<span class=\"type\">$type</span> ";
-	    print "<span class=\"param\">$parameter</span>;";
+	    print STDOUT "<span class=\"type\">$type</span> ";
+	    print STDOUT "<span class=\"param\">$parameter</span>;";
 	}
-	print "</li>\n";
+	print STDOUT "</li>\n";
     }
-    print "<li>};</li>\n";
-    print "</ol>\n";
+    print STDOUT "<li>};</li>\n";
+    print STDOUT "</ol>\n";
 
-    print "<section>\n";
-    print "<h1>Members</h1>\n";
-    print "<dl>\n";
+    print STDOUT "<section>\n";
+    print STDOUT "<h1>Members</h1>\n";
+    print STDOUT "<dl>\n";
     foreach $parameter (@{$args{'parameterlist'}}) {
 	($parameter =~ /^#/) && next;
 
@@ -894,15 +894,15 @@ sub output_struct_html5(%) {
 	$parameter_name =~ s/\[.*//;
 
 	($args{'parameterdescs'}{$parameter_name} ne $undescribed) || next;
-	print "<dt>" . $parameter . "</dt>\n";
-	print "<dd>";
+	print STDOUT "<dt>" . $parameter . "</dt>\n";
+	print STDOUT "<dd>";
 	output_highlight($args{'parameterdescs'}{$parameter_name});
-	print "</dd>\n";
+	print STDOUT "</dd>\n";
     }
-    print "</dl>\n";
-    print "</section>\n";
+    print STDOUT "</dl>\n";
+    print STDOUT "</section>\n";
     output_section_html5(@_);
-    print "</article>\n";
+    print STDOUT "</article>\n";
 }
 
 # output function in html5
@@ -914,57 +914,57 @@ sub output_function_html5(%) {
 
     $html5id = $args{'function'};
     $html5id =~ s/[^a-zA-Z0-9\-]+/_/g;
-    print "<article class=\"function\" id=\"func:". $html5id . "\">\n";
-    print "<hgroup>\n";
-    print "<h1>" . $args{'function'} . "</h1>";
-    print "<h2>" . $args{'purpose'} . "</h2>\n";
-    print "</hgroup>\n";
-    print "<ol class=\"code\">\n";
-    print "<li>";
-    print "<span class=\"type\">" . $args{'functiontype'} . "</span> ";
-    print "<span class=\"identifier\">" . $args{'function'} . "</span> (";
-    print "</li>";
+    print STDOUT "<article class=\"function\" id=\"func:". $html5id . "\">\n";
+    print STDOUT "<hgroup>\n";
+    print STDOUT "<h1>" . $args{'function'} . "</h1>";
+    print STDOUT "<h2>" . $args{'purpose'} . "</h2>\n";
+    print STDOUT "</hgroup>\n";
+    print STDOUT "<ol class=\"code\">\n";
+    print STDOUT "<li>";
+    print STDOUT "<span class=\"type\">" . $args{'functiontype'} . "</span> ";
+    print STDOUT "<span class=\"identifier\">" . $args{'function'} . "</span> (";
+    print STDOUT "</li>";
     $count = 0;
     foreach $parameter (@{$args{'parameterlist'}}) {
-	print "<li class=\"indent\">";
+	print STDOUT "<li class=\"indent\">";
 	$type = $args{'parametertypes'}{$parameter};
 	if ($type =~ m/([^\(]*\(\*)\s*\)\s*\(([^\)]*)\)/) {
 	    # pointer-to-function
-	    print "<span class=\"type\">$1</span> ";
-	    print "<span class=\"param\">$parameter</span>";
-	    print "<span class=\"type\">)</span> ";
-	    print "(<span class=\"args\">$2</span>)";
+	    print STDOUT "<span class=\"type\">$1</span> ";
+	    print STDOUT "<span class=\"param\">$parameter</span>";
+	    print STDOUT "<span class=\"type\">)</span> ";
+	    print STDOUT "(<span class=\"args\">$2</span>)";
 	} else {
-	    print "<span class=\"type\">$type</span> ";
-	    print "<span class=\"param\">$parameter</span>";
+	    print STDOUT "<span class=\"type\">$type</span> ";
+	    print STDOUT "<span class=\"param\">$parameter</span>";
 	}
 	if ($count != $#{$args{'parameterlist'}}) {
 	    $count++;
-	    print ",";
+	    print STDOUT ",";
 	}
-	print "</li>\n";
+	print STDOUT "</li>\n";
     }
-    print "<li>)</li>\n";
-    print "</ol>\n";
+    print STDOUT "<li>)</li>\n";
+    print STDOUT "</ol>\n";
 
-    print "<section>\n";
-    print "<h1>Arguments</h1>\n";
-    print "<p>\n";
-    print "<dl>\n";
+    print STDOUT "<section>\n";
+    print STDOUT "<h1>Arguments</h1>\n";
+    print STDOUT "<p>\n";
+    print STDOUT "<dl>\n";
     foreach $parameter (@{$args{'parameterlist'}}) {
 	my $parameter_name = $parameter;
 	$parameter_name =~ s/\[.*//;
 
 	($args{'parameterdescs'}{$parameter_name} ne $undescribed) || next;
-	print "<dt>" . $parameter . "</dt>\n";
-	print "<dd>";
+	print STDOUT "<dt>" . $parameter . "</dt>\n";
+	print STDOUT "<dd>";
 	output_highlight($args{'parameterdescs'}{$parameter_name});
-	print "</dd>\n";
+	print STDOUT "</dd>\n";
     }
-    print "</dl>\n";
-    print "</section>\n";
+    print STDOUT "</dl>\n";
+    print STDOUT "</section>\n";
     output_section_html5(@_);
-    print "</article>\n";
+    print STDOUT "</article>\n";
 }
 
 # output DOC: block header in html5
@@ -977,37 +977,37 @@ sub output_blockhead_html5(%) {
     foreach $section (@{$args{'sectionlist'}}) {
 	$html5id = $section;
 	$html5id =~ s/[^a-zA-Z0-9\-]+/_/g;
-	print "<article class=\"doc\" id=\"doc:". $html5id . "\">\n";
-	print "<h1>$section</h1>\n";
-	print "<p>\n";
+	print STDOUT "<article class=\"doc\" id=\"doc:". $html5id . "\">\n";
+	print STDOUT "<h1>$section</h1>\n";
+	print STDOUT "<p>\n";
 	output_highlight($args{'sections'}{$section});
-	print "</p>\n";
+	print STDOUT "</p>\n";
     }
-    print "</article>\n";
+    print STDOUT "</article>\n";
 }
 
 sub output_section_xml(%) {
     my %args = %{$_[0]};
     my $section;
-    # print out each section
+    # print STDOUT out each section
     $lineprefix="   ";
     foreach $section (@{$args{'sectionlist'}}) {
-	print "<refsect1>\n";
-	print "<title>$section</title>\n";
+	print STDOUT "<refsect1>\n";
+	print STDOUT "<title>$section</title>\n";
 	if ($section =~ m/EXAMPLE/i) {
-	    print "<informalexample><programlisting>\n";
+	    print STDOUT "<informalexample><programlisting>\n";
 	    $output_preformatted = 1;
 	} else {
-	    print "<para>\n";
+	    print STDOUT "<para>\n";
 	}
 	output_highlight($args{'sections'}{$section});
 	$output_preformatted = 0;
 	if ($section =~ m/EXAMPLE/i) {
-	    print "</programlisting></informalexample>\n";
+	    print STDOUT "</programlisting></informalexample>\n";
 	} else {
-	    print "</para>\n";
+	    print STDOUT "</para>\n";
 	}
-	print "</refsect1>\n";
+	print STDOUT "</refsect1>\n";
     }
 }
 
@@ -1021,30 +1021,30 @@ sub output_function_xml(%) {
     $id = "API-" . $args{'function'};
     $id =~ s/[^A-Za-z0-9]/-/g;
 
-    print "<refentry id=\"$id\">\n";
-    print "<refentryinfo>\n";
-    print " <title>LINUX</title>\n";
-    print " <productname>Kernel Hackers Manual</productname>\n";
-    print " <date>$man_date</date>\n";
-    print "</refentryinfo>\n";
-    print "<refmeta>\n";
-    print " <refentrytitle><phrase>" . $args{'function'} . "</phrase></refentrytitle>\n";
-    print " <manvolnum>9</manvolnum>\n";
-    print " <refmiscinfo class=\"version\">" . $kernelversion . "</refmiscinfo>\n";
-    print "</refmeta>\n";
-    print "<refnamediv>\n";
-    print " <refname>" . $args{'function'} . "</refname>\n";
-    print " <refpurpose>\n";
-    print "  ";
+    print STDOUT "<refentry id=\"$id\">\n";
+    print STDOUT "<refentryinfo>\n";
+    print STDOUT " <title>LINUX</title>\n";
+    print STDOUT " <productname>Kernel Hackers Manual</productname>\n";
+    print STDOUT " <date>$man_date</date>\n";
+    print STDOUT "</refentryinfo>\n";
+    print STDOUT "<refmeta>\n";
+    print STDOUT " <refentrytitle><phrase>" . $args{'function'} . "</phrase></refentrytitle>\n";
+    print STDOUT " <manvolnum>9</manvolnum>\n";
+    print STDOUT " <refmiscinfo class=\"version\">" . $kernelversion . "</refmiscinfo>\n";
+    print STDOUT "</refmeta>\n";
+    print STDOUT "<refnamediv>\n";
+    print STDOUT " <refname>" . $args{'function'} . "</refname>\n";
+    print STDOUT " <refpurpose>\n";
+    print STDOUT "  ";
     output_highlight ($args{'purpose'});
-    print " </refpurpose>\n";
-    print "</refnamediv>\n";
+    print STDOUT " </refpurpose>\n";
+    print STDOUT "</refnamediv>\n";
 
-    print "<refsynopsisdiv>\n";
-    print " <title>Synopsis</title>\n";
-    print "  <funcsynopsis><funcprototype>\n";
-    print "   <funcdef>" . $args{'functiontype'} . " ";
-    print "<function>" . $args{'function'} . " </function></funcdef>\n";
+    print STDOUT "<refsynopsisdiv>\n";
+    print STDOUT " <title>Synopsis</title>\n";
+    print STDOUT "  <funcsynopsis><funcprototype>\n";
+    print STDOUT "   <funcdef>" . $args{'functiontype'} . " ";
+    print STDOUT "<function>" . $args{'function'} . " </function></funcdef>\n";
 
     $count = 0;
     if ($#{$args{'parameterlist'}} >= 0) {
@@ -1052,41 +1052,41 @@ sub output_function_xml(%) {
 	    $type = $args{'parametertypes'}{$parameter};
 	    if ($type =~ m/([^\(]*\(\*)\s*\)\s*\(([^\)]*)\)/) {
 		# pointer-to-function
-		print "   <paramdef>$1<parameter>$parameter</parameter>)\n";
-		print "     <funcparams>$2</funcparams></paramdef>\n";
+		print STDOUT "   <paramdef>$1<parameter>$parameter</parameter>)\n";
+		print STDOUT "     <funcparams>$2</funcparams></paramdef>\n";
 	    } else {
-		print "   <paramdef>" . $type;
-		print " <parameter>$parameter</parameter></paramdef>\n";
+		print STDOUT "   <paramdef>" . $type;
+		print STDOUT " <parameter>$parameter</parameter></paramdef>\n";
 	    }
 	}
     } else {
-	print "  <void/>\n";
+	print STDOUT "  <void/>\n";
     }
-    print "  </funcprototype></funcsynopsis>\n";
-    print "</refsynopsisdiv>\n";
+    print STDOUT "  </funcprototype></funcsynopsis>\n";
+    print STDOUT "</refsynopsisdiv>\n";
 
-    # print parameters
-    print "<refsect1>\n <title>Arguments</title>\n";
+    # print STDOUT parameters
+    print STDOUT "<refsect1>\n <title>Arguments</title>\n";
     if ($#{$args{'parameterlist'}} >= 0) {
-	print " <variablelist>\n";
+	print STDOUT " <variablelist>\n";
 	foreach $parameter (@{$args{'parameterlist'}}) {
 	    my $parameter_name = $parameter;
 	    $parameter_name =~ s/\[.*//;
 
-	    print "  <varlistentry>\n   <term><parameter>$parameter</parameter></term>\n";
-	    print "   <listitem>\n    <para>\n";
+	    print STDOUT "  <varlistentry>\n   <term><parameter>$parameter</parameter></term>\n";
+	    print STDOUT "   <listitem>\n    <para>\n";
 	    $lineprefix="     ";
 	    output_highlight($args{'parameterdescs'}{$parameter_name});
-	    print "    </para>\n   </listitem>\n  </varlistentry>\n";
+	    print STDOUT "    </para>\n   </listitem>\n  </varlistentry>\n";
 	}
-	print " </variablelist>\n";
+	print STDOUT " </variablelist>\n";
     } else {
-	print " <para>\n  None\n </para>\n";
+	print STDOUT " <para>\n  None\n </para>\n";
     }
-    print "</refsect1>\n";
+    print STDOUT "</refsect1>\n";
 
     output_section_xml(@_);
-    print "</refentry>\n\n";
+    print STDOUT "</refentry>\n\n";
 }
 
 # output struct in XML DocBook
@@ -1098,36 +1098,36 @@ sub output_struct_xml(%) {
     $id = "API-struct-" . $args{'struct'};
     $id =~ s/[^A-Za-z0-9]/-/g;
 
-    print "<refentry id=\"$id\">\n";
-    print "<refentryinfo>\n";
-    print " <title>LINUX</title>\n";
-    print " <productname>Kernel Hackers Manual</productname>\n";
-    print " <date>$man_date</date>\n";
-    print "</refentryinfo>\n";
-    print "<refmeta>\n";
-    print " <refentrytitle><phrase>" . $args{'type'} . " " . $args{'struct'} . "</phrase></refentrytitle>\n";
-    print " <manvolnum>9</manvolnum>\n";
-    print " <refmiscinfo class=\"version\">" . $kernelversion . "</refmiscinfo>\n";
-    print "</refmeta>\n";
-    print "<refnamediv>\n";
-    print " <refname>" . $args{'type'} . " " . $args{'struct'} . "</refname>\n";
-    print " <refpurpose>\n";
-    print "  ";
+    print STDOUT "<refentry id=\"$id\">\n";
+    print STDOUT "<refentryinfo>\n";
+    print STDOUT " <title>LINUX</title>\n";
+    print STDOUT " <productname>Kernel Hackers Manual</productname>\n";
+    print STDOUT " <date>$man_date</date>\n";
+    print STDOUT "</refentryinfo>\n";
+    print STDOUT "<refmeta>\n";
+    print STDOUT " <refentrytitle><phrase>" . $args{'type'} . " " . $args{'struct'} . "</phrase></refentrytitle>\n";
+    print STDOUT " <manvolnum>9</manvolnum>\n";
+    print STDOUT " <refmiscinfo class=\"version\">" . $kernelversion . "</refmiscinfo>\n";
+    print STDOUT "</refmeta>\n";
+    print STDOUT "<refnamediv>\n";
+    print STDOUT " <refname>" . $args{'type'} . " " . $args{'struct'} . "</refname>\n";
+    print STDOUT " <refpurpose>\n";
+    print STDOUT "  ";
     output_highlight ($args{'purpose'});
-    print " </refpurpose>\n";
-    print "</refnamediv>\n";
+    print STDOUT " </refpurpose>\n";
+    print STDOUT "</refnamediv>\n";
 
-    print "<refsynopsisdiv>\n";
-    print " <title>Synopsis</title>\n";
-    print "  <programlisting>\n";
-    print $args{'type'} . " " . $args{'struct'} . " {\n";
+    print STDOUT "<refsynopsisdiv>\n";
+    print STDOUT " <title>Synopsis</title>\n";
+    print STDOUT "  <programlisting>\n";
+    print STDOUT $args{'type'} . " " . $args{'struct'} . " {\n";
     foreach $parameter (@{$args{'parameterlist'}}) {
 	if ($parameter =~ /^#/) {
 	    my $prm = $parameter;
 	    # convert data read & converted thru xml_escape() into &xyz; format:
 	    # This allows us to have #define macros interspersed in a struct.
 	    $prm =~ s/\\\\\\/\&/g;
-	    print "$prm\n";
+	    print STDOUT "$prm\n";
 	    next;
 	}
 
@@ -1139,23 +1139,23 @@ sub output_struct_xml(%) {
 	$type = $args{'parametertypes'}{$parameter};
 	if ($type =~ m/([^\(]*\(\*)\s*\)\s*\(([^\)]*)\)/) {
 	    # pointer-to-function
-	    print "  $1 $parameter) ($2);\n";
+	    print STDOUT "  $1 $parameter) ($2);\n";
 	} elsif ($type =~ m/^(.*?)\s*(:.*)/) {
 	    # bitfield
-	    print "  $1 $parameter$2;\n";
+	    print STDOUT "  $1 $parameter$2;\n";
 	} else {
-	    print "  " . $type . " " . $parameter . ";\n";
+	    print STDOUT "  " . $type . " " . $parameter . ";\n";
 	}
     }
-    print "};";
-    print "  </programlisting>\n";
-    print "</refsynopsisdiv>\n";
+    print STDOUT "};";
+    print STDOUT "  </programlisting>\n";
+    print STDOUT "</refsynopsisdiv>\n";
 
-    print " <refsect1>\n";
-    print "  <title>Members</title>\n";
+    print STDOUT " <refsect1>\n";
+    print STDOUT "  <title>Members</title>\n";
 
     if ($#{$args{'parameterlist'}} >= 0) {
-    print "  <variablelist>\n";
+    print STDOUT "  <variablelist>\n";
     foreach $parameter (@{$args{'parameterlist'}}) {
       ($parameter =~ /^#/) && next;
 
@@ -1164,22 +1164,22 @@ sub output_struct_xml(%) {
 
       defined($args{'parameterdescs'}{$parameter_name}) || next;
       ($args{'parameterdescs'}{$parameter_name} ne $undescribed) || next;
-      print "    <varlistentry>";
-      print "      <term>$parameter</term>\n";
-      print "      <listitem><para>\n";
+      print STDOUT "    <varlistentry>";
+      print STDOUT "      <term>$parameter</term>\n";
+      print STDOUT "      <listitem><para>\n";
       output_highlight($args{'parameterdescs'}{$parameter_name});
-      print "      </para></listitem>\n";
-      print "    </varlistentry>\n";
+      print STDOUT "      </para></listitem>\n";
+      print STDOUT "    </varlistentry>\n";
     }
-    print "  </variablelist>\n";
+    print STDOUT "  </variablelist>\n";
     } else {
-	print " <para>\n  None\n </para>\n";
+	print STDOUT " <para>\n  None\n </para>\n";
     }
-    print " </refsect1>\n";
+    print STDOUT " </refsect1>\n";
 
     output_section_xml(@_);
 
-    print "</refentry>\n\n";
+    print STDOUT "</refentry>\n\n";
 }
 
 # output enum in XML DocBook
@@ -1192,62 +1192,62 @@ sub output_enum_xml(%) {
     $id = "API-enum-" . $args{'enum'};
     $id =~ s/[^A-Za-z0-9]/-/g;
 
-    print "<refentry id=\"$id\">\n";
-    print "<refentryinfo>\n";
-    print " <title>LINUX</title>\n";
-    print " <productname>Kernel Hackers Manual</productname>\n";
-    print " <date>$man_date</date>\n";
-    print "</refentryinfo>\n";
-    print "<refmeta>\n";
-    print " <refentrytitle><phrase>enum " . $args{'enum'} . "</phrase></refentrytitle>\n";
-    print " <manvolnum>9</manvolnum>\n";
-    print " <refmiscinfo class=\"version\">" . $kernelversion . "</refmiscinfo>\n";
-    print "</refmeta>\n";
-    print "<refnamediv>\n";
-    print " <refname>enum " . $args{'enum'} . "</refname>\n";
-    print " <refpurpose>\n";
-    print "  ";
+    print STDOUT "<refentry id=\"$id\">\n";
+    print STDOUT "<refentryinfo>\n";
+    print STDOUT " <title>LINUX</title>\n";
+    print STDOUT " <productname>Kernel Hackers Manual</productname>\n";
+    print STDOUT " <date>$man_date</date>\n";
+    print STDOUT "</refentryinfo>\n";
+    print STDOUT "<refmeta>\n";
+    print STDOUT " <refentrytitle><phrase>enum " . $args{'enum'} . "</phrase></refentrytitle>\n";
+    print STDOUT " <manvolnum>9</manvolnum>\n";
+    print STDOUT " <refmiscinfo class=\"version\">" . $kernelversion . "</refmiscinfo>\n";
+    print STDOUT "</refmeta>\n";
+    print STDOUT "<refnamediv>\n";
+    print STDOUT " <refname>enum " . $args{'enum'} . "</refname>\n";
+    print STDOUT " <refpurpose>\n";
+    print STDOUT "  ";
     output_highlight ($args{'purpose'});
-    print " </refpurpose>\n";
-    print "</refnamediv>\n";
+    print STDOUT " </refpurpose>\n";
+    print STDOUT "</refnamediv>\n";
 
-    print "<refsynopsisdiv>\n";
-    print " <title>Synopsis</title>\n";
-    print "  <programlisting>\n";
-    print "enum " . $args{'enum'} . " {\n";
+    print STDOUT "<refsynopsisdiv>\n";
+    print STDOUT " <title>Synopsis</title>\n";
+    print STDOUT "  <programlisting>\n";
+    print STDOUT "enum " . $args{'enum'} . " {\n";
     $count = 0;
     foreach $parameter (@{$args{'parameterlist'}}) {
-	print "  $parameter";
+	print STDOUT "  $parameter";
 	if ($count != $#{$args{'parameterlist'}}) {
 	    $count++;
-	    print ",";
+	    print STDOUT ",";
 	}
-	print "\n";
+	print STDOUT "\n";
     }
-    print "};";
-    print "  </programlisting>\n";
-    print "</refsynopsisdiv>\n";
+    print STDOUT "};";
+    print STDOUT "  </programlisting>\n";
+    print STDOUT "</refsynopsisdiv>\n";
 
-    print "<refsect1>\n";
-    print " <title>Constants</title>\n";
-    print "  <variablelist>\n";
+    print STDOUT "<refsect1>\n";
+    print STDOUT " <title>Constants</title>\n";
+    print STDOUT "  <variablelist>\n";
     foreach $parameter (@{$args{'parameterlist'}}) {
       my $parameter_name = $parameter;
       $parameter_name =~ s/\[.*//;
 
-      print "    <varlistentry>";
-      print "      <term>$parameter</term>\n";
-      print "      <listitem><para>\n";
+      print STDOUT "    <varlistentry>";
+      print STDOUT "      <term>$parameter</term>\n";
+      print STDOUT "      <listitem><para>\n";
       output_highlight($args{'parameterdescs'}{$parameter_name});
-      print "      </para></listitem>\n";
-      print "    </varlistentry>\n";
+      print STDOUT "      </para></listitem>\n";
+      print STDOUT "    </varlistentry>\n";
     }
-    print "  </variablelist>\n";
-    print "</refsect1>\n";
+    print STDOUT "  </variablelist>\n";
+    print STDOUT "</refsect1>\n";
 
     output_section_xml(@_);
 
-    print "</refentry>\n\n";
+    print STDOUT "</refentry>\n\n";
 }
 
 # output typedef in XML DocBook
@@ -1259,32 +1259,32 @@ sub output_typedef_xml(%) {
     $id = "API-typedef-" . $args{'typedef'};
     $id =~ s/[^A-Za-z0-9]/-/g;
 
-    print "<refentry id=\"$id\">\n";
-    print "<refentryinfo>\n";
-    print " <title>LINUX</title>\n";
-    print " <productname>Kernel Hackers Manual</productname>\n";
-    print " <date>$man_date</date>\n";
-    print "</refentryinfo>\n";
-    print "<refmeta>\n";
-    print " <refentrytitle><phrase>typedef " . $args{'typedef'} . "</phrase></refentrytitle>\n";
-    print " <manvolnum>9</manvolnum>\n";
-    print "</refmeta>\n";
-    print "<refnamediv>\n";
-    print " <refname>typedef " . $args{'typedef'} . "</refname>\n";
-    print " <refpurpose>\n";
-    print "  ";
+    print STDOUT "<refentry id=\"$id\">\n";
+    print STDOUT "<refentryinfo>\n";
+    print STDOUT " <title>LINUX</title>\n";
+    print STDOUT " <productname>Kernel Hackers Manual</productname>\n";
+    print STDOUT " <date>$man_date</date>\n";
+    print STDOUT "</refentryinfo>\n";
+    print STDOUT "<refmeta>\n";
+    print STDOUT " <refentrytitle><phrase>typedef " . $args{'typedef'} . "</phrase></refentrytitle>\n";
+    print STDOUT " <manvolnum>9</manvolnum>\n";
+    print STDOUT "</refmeta>\n";
+    print STDOUT "<refnamediv>\n";
+    print STDOUT " <refname>typedef " . $args{'typedef'} . "</refname>\n";
+    print STDOUT " <refpurpose>\n";
+    print STDOUT "  ";
     output_highlight ($args{'purpose'});
-    print " </refpurpose>\n";
-    print "</refnamediv>\n";
+    print STDOUT " </refpurpose>\n";
+    print STDOUT "</refnamediv>\n";
 
-    print "<refsynopsisdiv>\n";
-    print " <title>Synopsis</title>\n";
-    print "  <synopsis>typedef " . $args{'typedef'} . ";</synopsis>\n";
-    print "</refsynopsisdiv>\n";
+    print STDOUT "<refsynopsisdiv>\n";
+    print STDOUT " <title>Synopsis</title>\n";
+    print STDOUT "  <synopsis>typedef " . $args{'typedef'} . ";</synopsis>\n";
+    print STDOUT "</refsynopsisdiv>\n";
 
     output_section_xml(@_);
 
-    print "</refentry>\n\n";
+    print STDOUT "</refentry>\n\n";
 }
 
 # output in XML DocBook
@@ -1296,31 +1296,31 @@ sub output_blockhead_xml(%) {
     my $id = $args{'module'};
     $id =~ s/[^A-Za-z0-9]/-/g;
 
-    # print out each section
+    # print STDOUT out each section
     $lineprefix="   ";
     foreach $section (@{$args{'sectionlist'}}) {
 	if (!$args{'content-only'}) {
-		print "<refsect1>\n <title>$section</title>\n";
+		print STDOUT "<refsect1>\n <title>$section</title>\n";
 	}
 	if ($section =~ m/EXAMPLE/i) {
-	    print "<example><para>\n";
+	    print STDOUT "<example><para>\n";
 	    $output_preformatted = 1;
 	} else {
-	    print "<para>\n";
+	    print STDOUT "<para>\n";
 	}
 	output_highlight($args{'sections'}{$section});
 	$output_preformatted = 0;
 	if ($section =~ m/EXAMPLE/i) {
-	    print "</para></example>\n";
+	    print STDOUT "</para></example>\n";
 	} else {
-	    print "</para>";
+	    print STDOUT "</para>";
 	}
 	if (!$args{'content-only'}) {
-		print "\n</refsect1>\n";
+		print STDOUT "\n</refsect1>\n";
 	}
     }
 
-    print "\n\n";
+    print STDOUT "\n\n";
 }
 
 # output in XML DocBook
@@ -1333,13 +1333,13 @@ sub output_function_gnome {
     $id = $args{'module'} . "-" . $args{'function'};
     $id =~ s/[^A-Za-z0-9]/-/g;
 
-    print "<sect2>\n";
-    print " <title id=\"$id\">" . $args{'function'} . "</title>\n";
+    print STDOUT "<sect2>\n";
+    print STDOUT " <title id=\"$id\">" . $args{'function'} . "</title>\n";
 
-    print "  <funcsynopsis>\n";
-    print "   <funcdef>" . $args{'functiontype'} . " ";
-    print "<function>" . $args{'function'} . " ";
-    print "</function></funcdef>\n";
+    print STDOUT "  <funcsynopsis>\n";
+    print STDOUT "   <funcdef>" . $args{'functiontype'} . " ";
+    print STDOUT "<function>" . $args{'function'} . " ";
+    print STDOUT "</function></funcdef>\n";
 
     $count = 0;
     if ($#{$args{'parameterlist'}} >= 0) {
@@ -1347,59 +1347,59 @@ sub output_function_gnome {
 	    $type = $args{'parametertypes'}{$parameter};
 	    if ($type =~ m/([^\(]*\(\*)\s*\)\s*\(([^\)]*)\)/) {
 		# pointer-to-function
-		print "   <paramdef>$1 <parameter>$parameter</parameter>)\n";
-		print "     <funcparams>$2</funcparams></paramdef>\n";
+		print STDOUT "   <paramdef>$1 <parameter>$parameter</parameter>)\n";
+		print STDOUT "     <funcparams>$2</funcparams></paramdef>\n";
 	    } else {
-		print "   <paramdef>" . $type;
-		print " <parameter>$parameter</parameter></paramdef>\n";
+		print STDOUT "   <paramdef>" . $type;
+		print STDOUT " <parameter>$parameter</parameter></paramdef>\n";
 	    }
 	}
     } else {
-	print "  <void>\n";
+	print STDOUT "  <void>\n";
     }
-    print "  </funcsynopsis>\n";
+    print STDOUT "  </funcsynopsis>\n";
     if ($#{$args{'parameterlist'}} >= 0) {
-	print " <informaltable pgwide=\"1\" frame=\"none\" role=\"params\">\n";
-	print "<tgroup cols=\"2\">\n";
-	print "<colspec colwidth=\"2*\">\n";
-	print "<colspec colwidth=\"8*\">\n";
-	print "<tbody>\n";
+	print STDOUT " <informaltable pgwide=\"1\" frame=\"none\" role=\"params\">\n";
+	print STDOUT "<tgroup cols=\"2\">\n";
+	print STDOUT "<colspec colwidth=\"2*\">\n";
+	print STDOUT "<colspec colwidth=\"8*\">\n";
+	print STDOUT "<tbody>\n";
 	foreach $parameter (@{$args{'parameterlist'}}) {
 	    my $parameter_name = $parameter;
 	    $parameter_name =~ s/\[.*//;
 
-	    print "  <row><entry align=\"right\"><parameter>$parameter</parameter></entry>\n";
-	    print "   <entry>\n";
+	    print STDOUT "  <row><entry align=\"right\"><parameter>$parameter</parameter></entry>\n";
+	    print STDOUT "   <entry>\n";
 	    $lineprefix="     ";
 	    output_highlight($args{'parameterdescs'}{$parameter_name});
-	    print "    </entry></row>\n";
+	    print STDOUT "    </entry></row>\n";
 	}
-	print " </tbody></tgroup></informaltable>\n";
+	print STDOUT " </tbody></tgroup></informaltable>\n";
     } else {
-	print " <para>\n  None\n </para>\n";
+	print STDOUT " <para>\n  None\n </para>\n";
     }
 
-    # print out each section
+    # print STDOUT out each section
     $lineprefix="   ";
     foreach $section (@{$args{'sectionlist'}}) {
-	print "<simplesect>\n <title>$section</title>\n";
+	print STDOUT "<simplesect>\n <title>$section</title>\n";
 	if ($section =~ m/EXAMPLE/i) {
-	    print "<example><programlisting>\n";
+	    print STDOUT "<example><programlisting>\n";
 	    $output_preformatted = 1;
 	} else {
 	}
-	print "<para>\n";
+	print STDOUT "<para>\n";
 	output_highlight($args{'sections'}{$section});
 	$output_preformatted = 0;
-	print "</para>\n";
+	print STDOUT "</para>\n";
 	if ($section =~ m/EXAMPLE/i) {
-	    print "</programlisting></example>\n";
+	    print STDOUT "</programlisting></example>\n";
 	} else {
 	}
-	print " </simplesect>\n";
+	print STDOUT " </simplesect>\n";
     }
 
-    print "</sect2>\n\n";
+    print STDOUT "</sect2>\n\n";
 }
 
 ##
@@ -1409,16 +1409,16 @@ sub output_function_man(%) {
     my ($parameter, $section);
     my $count;
 
-    print ".TH \"$args{'function'}\" 9 \"$args{'function'}\" \"$man_date\" \"Kernel Hacker's Manual\" LINUX\n";
+    print STDOUT ".TH \"$args{'function'}\" 9 \"$args{'function'}\" \"$man_date\" \"Kernel Hacker's Manual\" LINUX\n";
 
-    print ".SH NAME\n";
-    print $args{'function'} . " \\- " . $args{'purpose'} . "\n";
+    print STDOUT ".SH NAME\n";
+    print STDOUT $args{'function'} . " \\- " . $args{'purpose'} . "\n";
 
-    print ".SH SYNOPSIS\n";
+    print STDOUT ".SH SYNOPSIS\n";
     if ($args{'functiontype'} ne "") {
-	print ".B \"" . $args{'functiontype'} . "\" " . $args{'function'} . "\n";
+	print STDOUT ".B \"" . $args{'functiontype'} . "\" " . $args{'function'} . "\n";
     } else {
-	print ".B \"" . $args{'function'} . "\n";
+	print STDOUT ".B \"" . $args{'function'} . "\n";
     }
     $count = 0;
     my $parenth = "(";
@@ -1430,25 +1430,25 @@ sub output_function_man(%) {
 	$type = $args{'parametertypes'}{$parameter};
 	if ($type =~ m/([^\(]*\(\*)\s*\)\s*\(([^\)]*)\)/) {
 	    # pointer-to-function
-	    print ".BI \"" . $parenth . $1 . "\" " . $parameter . " \") (" . $2 . ")" . $post . "\"\n";
+	    print STDOUT ".BI \"" . $parenth . $1 . "\" " . $parameter . " \") (" . $2 . ")" . $post . "\"\n";
 	} else {
 	    $type =~ s/([^\*])$/$1 /;
-	    print ".BI \"" . $parenth . $type . "\" " . $parameter . " \"" . $post . "\"\n";
+	    print STDOUT ".BI \"" . $parenth . $type . "\" " . $parameter . " \"" . $post . "\"\n";
 	}
 	$count++;
 	$parenth = "";
     }
 
-    print ".SH ARGUMENTS\n";
+    print STDOUT ".SH ARGUMENTS\n";
     foreach $parameter (@{$args{'parameterlist'}}) {
 	my $parameter_name = $parameter;
 	$parameter_name =~ s/\[.*//;
 
-	print ".IP \"" . $parameter . "\" 12\n";
+	print STDOUT ".IP \"" . $parameter . "\" 12\n";
 	output_highlight($args{'parameterdescs'}{$parameter_name});
     }
     foreach $section (@{$args{'sectionlist'}}) {
-	print ".SH \"", uc $section, "\"\n";
+	print STDOUT ".SH \"", uc $section, "\"\n";
 	output_highlight($args{'sections'}{$section});
     }
 }
@@ -1460,36 +1460,36 @@ sub output_enum_man(%) {
     my ($parameter, $section);
     my $count;
 
-    print ".TH \"$args{'module'}\" 9 \"enum $args{'enum'}\" \"$man_date\" \"API Manual\" LINUX\n";
+    print STDOUT ".TH \"$args{'module'}\" 9 \"enum $args{'enum'}\" \"$man_date\" \"API Manual\" LINUX\n";
 
-    print ".SH NAME\n";
-    print "enum " . $args{'enum'} . " \\- " . $args{'purpose'} . "\n";
+    print STDOUT ".SH NAME\n";
+    print STDOUT "enum " . $args{'enum'} . " \\- " . $args{'purpose'} . "\n";
 
-    print ".SH SYNOPSIS\n";
-    print "enum " . $args{'enum'} . " {\n";
+    print STDOUT ".SH SYNOPSIS\n";
+    print STDOUT "enum " . $args{'enum'} . " {\n";
     $count = 0;
     foreach my $parameter (@{$args{'parameterlist'}}) {
-	print ".br\n.BI \"    $parameter\"\n";
+	print STDOUT ".br\n.BI \"    $parameter\"\n";
 	if ($count == $#{$args{'parameterlist'}}) {
-	    print "\n};\n";
+	    print STDOUT "\n};\n";
 	    last;
 	}
 	else {
-	    print ", \n.br\n";
+	    print STDOUT ", \n.br\n";
 	}
 	$count++;
     }
 
-    print ".SH Constants\n";
+    print STDOUT ".SH Constants\n";
     foreach $parameter (@{$args{'parameterlist'}}) {
 	my $parameter_name = $parameter;
 	$parameter_name =~ s/\[.*//;
 
-	print ".IP \"" . $parameter . "\" 12\n";
+	print STDOUT ".IP \"" . $parameter . "\" 12\n";
 	output_highlight($args{'parameterdescs'}{$parameter_name});
     }
     foreach $section (@{$args{'sectionlist'}}) {
-	print ".SH \"$section\"\n";
+	print STDOUT ".SH \"$section\"\n";
 	output_highlight($args{'sections'}{$section});
     }
 }
@@ -1500,17 +1500,17 @@ sub output_struct_man(%) {
     my %args = %{$_[0]};
     my ($parameter, $section);
 
-    print ".TH \"$args{'module'}\" 9 \"" . $args{'type'} . " " . $args{'struct'} . "\" \"$man_date\" \"API Manual\" LINUX\n";
+    print STDOUT ".TH \"$args{'module'}\" 9 \"" . $args{'type'} . " " . $args{'struct'} . "\" \"$man_date\" \"API Manual\" LINUX\n";
 
-    print ".SH NAME\n";
-    print $args{'type'} . " " . $args{'struct'} . " \\- " . $args{'purpose'} . "\n";
+    print STDOUT ".SH NAME\n";
+    print STDOUT $args{'type'} . " " . $args{'struct'} . " \\- " . $args{'purpose'} . "\n";
 
-    print ".SH SYNOPSIS\n";
-    print $args{'type'} . " " . $args{'struct'} . " {\n.br\n";
+    print STDOUT ".SH SYNOPSIS\n";
+    print STDOUT $args{'type'} . " " . $args{'struct'} . " {\n.br\n";
 
     foreach my $parameter (@{$args{'parameterlist'}}) {
 	if ($parameter =~ /^#/) {
-	    print ".BI \"$parameter\"\n.br\n";
+	    print STDOUT ".BI \"$parameter\"\n.br\n";
 	    next;
 	}
 	my $parameter_name = $parameter;
@@ -1520,19 +1520,19 @@ sub output_struct_man(%) {
 	$type = $args{'parametertypes'}{$parameter};
 	if ($type =~ m/([^\(]*\(\*)\s*\)\s*\(([^\)]*)\)/) {
 	    # pointer-to-function
-	    print ".BI \"    " . $1 . "\" " . $parameter . " \") (" . $2 . ")" . "\"\n;\n";
+	    print STDOUT ".BI \"    " . $1 . "\" " . $parameter . " \") (" . $2 . ")" . "\"\n;\n";
 	} elsif ($type =~ m/^(.*?)\s*(:.*)/) {
 	    # bitfield
-	    print ".BI \"    " . $1 . "\ \" " . $parameter . $2 . " \"" . "\"\n;\n";
+	    print STDOUT ".BI \"    " . $1 . "\ \" " . $parameter . $2 . " \"" . "\"\n;\n";
 	} else {
 	    $type =~ s/([^\*])$/$1 /;
-	    print ".BI \"    " . $type . "\" " . $parameter . " \"" . "\"\n;\n";
+	    print STDOUT ".BI \"    " . $type . "\" " . $parameter . " \"" . "\"\n;\n";
 	}
-	print "\n.br\n";
+	print STDOUT "\n.br\n";
     }
-    print "};\n.br\n";
+    print STDOUT "};\n.br\n";
 
-    print ".SH Members\n";
+    print STDOUT ".SH Members\n";
     foreach $parameter (@{$args{'parameterlist'}}) {
 	($parameter =~ /^#/) && next;
 
@@ -1540,11 +1540,11 @@ sub output_struct_man(%) {
 	$parameter_name =~ s/\[.*//;
 
 	($args{'parameterdescs'}{$parameter_name} ne $undescribed) || next;
-	print ".IP \"" . $parameter . "\" 12\n";
+	print STDOUT ".IP \"" . $parameter . "\" 12\n";
 	output_highlight($args{'parameterdescs'}{$parameter_name});
     }
     foreach $section (@{$args{'sectionlist'}}) {
-	print ".SH \"$section\"\n";
+	print STDOUT ".SH \"$section\"\n";
 	output_highlight($args{'sections'}{$section});
     }
 }
@@ -1555,13 +1555,13 @@ sub output_typedef_man(%) {
     my %args = %{$_[0]};
     my ($parameter, $section);
 
-    print ".TH \"$args{'module'}\" 9 \"$args{'typedef'}\" \"$man_date\" \"API Manual\" LINUX\n";
+    print STDOUT ".TH \"$args{'module'}\" 9 \"$args{'typedef'}\" \"$man_date\" \"API Manual\" LINUX\n";
 
-    print ".SH NAME\n";
-    print "typedef " . $args{'typedef'} . " \\- " . $args{'purpose'} . "\n";
+    print STDOUT ".SH NAME\n";
+    print STDOUT "typedef " . $args{'typedef'} . " \\- " . $args{'purpose'} . "\n";
 
     foreach $section (@{$args{'sectionlist'}}) {
-	print ".SH \"$section\"\n";
+	print STDOUT ".SH \"$section\"\n";
 	output_highlight($args{'sections'}{$section});
     }
 }
@@ -1571,10 +1571,10 @@ sub output_blockhead_man(%) {
     my ($parameter, $section);
     my $count;
 
-    print ".TH \"$args{'module'}\" 9 \"$args{'module'}\" \"$man_date\" \"API Manual\" LINUX\n";
+    print STDOUT ".TH \"$args{'module'}\" 9 \"$args{'module'}\" \"$man_date\" \"API Manual\" LINUX\n";
 
     foreach $section (@{$args{'sectionlist'}}) {
-	print ".SH \"$section\"\n";
+	print STDOUT ".SH \"$section\"\n";
 	output_highlight($args{'sections'}{$section});
     }
 }
@@ -1586,41 +1586,41 @@ sub output_function_text(%) {
     my ($parameter, $section);
     my $start;
 
-    print "Name:\n\n";
-    print $args{'function'} . " - " . $args{'purpose'} . "\n";
+    print STDOUT "Name:\n\n";
+    print STDOUT $args{'function'} . " - " . $args{'purpose'} . "\n";
 
-    print "\nSynopsis:\n\n";
+    print STDOUT "\nSynopsis:\n\n";
     if ($args{'functiontype'} ne "") {
 	$start = $args{'functiontype'} . " " . $args{'function'} . " (";
     } else {
 	$start = $args{'function'} . " (";
     }
-    print $start;
+    print STDOUT $start;
 
     my $count = 0;
     foreach my $parameter (@{$args{'parameterlist'}}) {
 	$type = $args{'parametertypes'}{$parameter};
 	if ($type =~ m/([^\(]*\(\*)\s*\)\s*\(([^\)]*)\)/) {
 	    # pointer-to-function
-	    print $1 . $parameter . ") (" . $2;
+	    print STDOUT $1 . $parameter . ") (" . $2;
 	} else {
-	    print $type . " " . $parameter;
+	    print STDOUT $type . " " . $parameter;
 	}
 	if ($count != $#{$args{'parameterlist'}}) {
 	    $count++;
-	    print ",\n";
-	    print " " x length($start);
+	    print STDOUT ",\n";
+	    print STDOUT " " x length($start);
 	} else {
-	    print ");\n\n";
+	    print STDOUT ");\n\n";
 	}
     }
 
-    print "Arguments:\n\n";
+    print STDOUT "Arguments:\n\n";
     foreach $parameter (@{$args{'parameterlist'}}) {
 	my $parameter_name = $parameter;
 	$parameter_name =~ s/\[.*//;
 
-	print $parameter . "\n\t" . $args{'parameterdescs'}{$parameter_name} . "\n";
+	print STDOUT $parameter . "\n\t" . $args{'parameterdescs'}{$parameter_name} . "\n";
     }
     output_section_text(@_);
 }
@@ -1630,12 +1630,12 @@ sub output_section_text(%) {
     my %args = %{$_[0]};
     my $section;
 
-    print "\n";
+    print STDOUT "\n";
     foreach $section (@{$args{'sectionlist'}}) {
-	print "$section:\n\n";
+	print STDOUT "$section:\n\n";
 	output_highlight($args{'sections'}{$section});
     }
-    print "\n\n";
+    print STDOUT "\n\n";
 }
 
 # output enum in text
@@ -1643,25 +1643,25 @@ sub output_enum_text(%) {
     my %args = %{$_[0]};
     my ($parameter);
     my $count;
-    print "Enum:\n\n";
+    print STDOUT "Enum:\n\n";
 
-    print "enum " . $args{'enum'} . " - " . $args{'purpose'} . "\n\n";
-    print "enum " . $args{'enum'} . " {\n";
+    print STDOUT "enum " . $args{'enum'} . " - " . $args{'purpose'} . "\n\n";
+    print STDOUT "enum " . $args{'enum'} . " {\n";
     $count = 0;
     foreach $parameter (@{$args{'parameterlist'}}) {
-	print "\t$parameter";
+	print STDOUT "\t$parameter";
 	if ($count != $#{$args{'parameterlist'}}) {
 	    $count++;
-	    print ",";
+	    print STDOUT ",";
 	}
-	print "\n";
+	print STDOUT "\n";
     }
-    print "};\n\n";
+    print STDOUT "};\n\n";
 
-    print "Constants:\n\n";
+    print STDOUT "Constants:\n\n";
     foreach $parameter (@{$args{'parameterlist'}}) {
-	print "$parameter\n\t";
-	print $args{'parameterdescs'}{$parameter} . "\n";
+	print STDOUT "$parameter\n\t";
+	print STDOUT $args{'parameterdescs'}{$parameter} . "\n";
     }
 
     output_section_text(@_);
@@ -1672,9 +1672,9 @@ sub output_typedef_text(%) {
     my %args = %{$_[0]};
     my ($parameter);
     my $count;
-    print "Typedef:\n\n";
+    print STDOUT "Typedef:\n\n";
 
-    print "typedef " . $args{'typedef'} . " - " . $args{'purpose'} . "\n";
+    print STDOUT "typedef " . $args{'typedef'} . " - " . $args{'purpose'} . "\n";
     output_section_text(@_);
 }
 
@@ -1683,11 +1683,11 @@ sub output_struct_text(%) {
     my %args = %{$_[0]};
     my ($parameter);
 
-    print $args{'type'} . " " . $args{'struct'} . " - " . $args{'purpose'} . "\n\n";
-    print $args{'type'} . " " . $args{'struct'} . " {\n";
+    print STDOUT $args{'type'} . " " . $args{'struct'} . " - " . $args{'purpose'} . "\n\n";
+    print STDOUT $args{'type'} . " " . $args{'struct'} . " {\n";
     foreach $parameter (@{$args{'parameterlist'}}) {
 	if ($parameter =~ /^#/) {
-	    print "$parameter\n";
+	    print STDOUT "$parameter\n";
 	    next;
 	}
 
@@ -1698,17 +1698,17 @@ sub output_struct_text(%) {
 	$type = $args{'parametertypes'}{$parameter};
 	if ($type =~ m/([^\(]*\(\*)\s*\)\s*\(([^\)]*)\)/) {
 	    # pointer-to-function
-	    print "\t$1 $parameter) ($2);\n";
+	    print STDOUT "\t$1 $parameter) ($2);\n";
 	} elsif ($type =~ m/^(.*?)\s*(:.*)/) {
 	    # bitfield
-	    print "\t$1 $parameter$2;\n";
+	    print STDOUT "\t$1 $parameter$2;\n";
 	} else {
-	    print "\t" . $type . " " . $parameter . ";\n";
+	    print STDOUT "\t" . $type . " " . $parameter . ";\n";
 	}
     }
-    print "};\n\n";
+    print STDOUT "};\n\n";
 
-    print "Members:\n\n";
+    print STDOUT "Members:\n\n";
     foreach $parameter (@{$args{'parameterlist'}}) {
 	($parameter =~ /^#/) && next;
 
@@ -1716,10 +1716,10 @@ sub output_struct_text(%) {
 	$parameter_name =~ s/\[.*//;
 
 	($args{'parameterdescs'}{$parameter_name} ne $undescribed) || next;
-	print "$parameter\n\t";
-	print $args{'parameterdescs'}{$parameter_name} . "\n";
+	print STDOUT "$parameter\n\t";
+	print STDOUT $args{'parameterdescs'}{$parameter_name} . "\n";
     }
-    print "\n";
+    print STDOUT "\n";
     output_section_text(@_);
 }
 
@@ -1728,8 +1728,8 @@ sub output_blockhead_text(%) {
     my ($parameter, $section);
 
     foreach $section (@{$args{'sectionlist'}}) {
-	print " $section:\n";
-	print "    -> ";
+	print STDOUT " $section:\n";
+	print STDOUT "    -> ";
 	output_highlight($args{'sections'}{$section});
     }
 }
@@ -1748,9 +1748,9 @@ sub output_blockhead_rst(%) {
     my ($parameter, $section);
 
     foreach $section (@{$args{'sectionlist'}}) {
-	print "**$section**\n\n";
+	print STDOUT "**$section**\n\n";
 	output_highlight_rst($args{'sections'}{$section});
-	print "\n";
+	print STDOUT "\n";
     }
 }
 
@@ -1766,12 +1766,12 @@ sub output_highlight_rst {
 
     foreach $line (split "\n", $contents) {
 	if ($line eq "") {
-	    print $lineprefix, $blankline;
+	    print STDOUT $lineprefix, $blankline;
 	} else {
 	    $line =~ s/\\\\\\/\&/g;
-	    print $lineprefix, $line;
+	    print STDOUT $lineprefix, $line;
 	}
-	print "\n";
+	print STDOUT "\n";
     }
 }
 
@@ -1780,40 +1780,40 @@ sub output_function_rst(%) {
     my ($parameter, $section);
     my $start;
 
-    print ".. c:function:: ";
+    print STDOUT ".. c:function:: ";
     if ($args{'functiontype'} ne "") {
 	$start = $args{'functiontype'} . " " . $args{'function'} . " (";
     } else {
 	$start = $args{'function'} . " (";
     }
-    print $start;
+    print STDOUT $start;
 
     my $count = 0;
     foreach my $parameter (@{$args{'parameterlist'}}) {
 	if ($count ne 0) {
-	    print ", ";
+	    print STDOUT ", ";
 	}
 	$count++;
 	$type = $args{'parametertypes'}{$parameter};
 	if ($type =~ m/([^\(]*\(\*)\s*\)\s*\(([^\)]*)\)/) {
 	    # pointer-to-function
-	    print $1 . $parameter . ") (" . $2;
+	    print STDOUT $1 . $parameter . ") (" . $2;
 	} else {
-	    print $type . " " . $parameter;
+	    print STDOUT $type . " " . $parameter;
 	}
     }
-    print ")\n\n    " . $args{'purpose'} . "\n\n";
+    print STDOUT ")\n\n    " . $args{'purpose'} . "\n\n";
 
-    print ":Parameters:\n\n";
+    print STDOUT ":Parameters:\n\n";
     foreach $parameter (@{$args{'parameterlist'}}) {
 	my $parameter_name = $parameter;
 	#$parameter_name =~ s/\[.*//;
 	$type = $args{'parametertypes'}{$parameter};
 
 	if ($type ne "") {
-	    print "      ``$type $parameter``\n";
+	    print STDOUT "      ``$type $parameter``\n";
 	} else {
-	    print "      ``$parameter``\n";
+	    print STDOUT "      ``$parameter``\n";
 	}
 	if ($args{'parameterdescs'}{$parameter_name} ne $undescribed) {
 	    my $oldprefix = $lineprefix;
@@ -1821,9 +1821,9 @@ sub output_function_rst(%) {
 	    output_highlight_rst($args{'parameterdescs'}{$parameter_name});
 	    $lineprefix = $oldprefix;
 	} else {
-	    print "\n        _undescribed_\n";
+	    print STDOUT "\n        _undescribed_\n";
 	}
-	print "\n";
+	print STDOUT "\n";
     }
     output_section_rst(@_);
 }
@@ -1835,11 +1835,11 @@ sub output_section_rst(%) {
     $lineprefix = "        ";
 
     foreach $section (@{$args{'sectionlist'}}) {
-	print ":$section:\n\n";
+	print STDOUT ":$section:\n\n";
 	output_highlight_rst($args{'sections'}{$section});
-	print "\n";
+	print STDOUT "\n";
     }
-    print "\n";
+    print STDOUT "\n";
     $lineprefix = $oldprefix;
 }
 
@@ -1849,20 +1849,20 @@ sub output_enum_rst(%) {
     my $count;
     my $name = "enum " . $args{'enum'};
 
-    print "\n\n.. c:type:: " . $name . "\n\n";
-    print "    " . $args{'purpose'} . "\n\n";
+    print STDOUT "\n\n.. c:type:: " . $name . "\n\n";
+    print STDOUT "    " . $args{'purpose'} . "\n\n";
 
-    print "..\n\n:Constants:\n\n";
+    print STDOUT "..\n\n:Constants:\n\n";
     my $oldprefix = $lineprefix;
     $lineprefix = "    ";
     foreach $parameter (@{$args{'parameterlist'}}) {
-	print "  `$parameter`\n";
+	print STDOUT "  `$parameter`\n";
 	if ($args{'parameterdescs'}{$parameter} ne $undescribed) {
 	    output_highlight_rst($args{'parameterdescs'}{$parameter});
 	} else {
-	    print "    undescribed\n";
+	    print STDOUT "    undescribed\n";
 	}
-	print "\n";
+	print STDOUT "\n";
     }
     $lineprefix = $oldprefix;
     output_section_rst(@_);
@@ -1875,8 +1875,8 @@ sub output_typedef_rst(%) {
     my $name = "typedef " . $args{'typedef'};
 
     ### FIXME: should the name below contain "typedef" or not?
-    print "\n\n.. c:type:: " . $name . "\n\n";
-    print "    " . $args{'purpose'} . "\n\n";
+    print STDOUT "\n\n.. c:type:: " . $name . "\n\n";
+    print STDOUT "    " . $args{'purpose'} . "\n\n";
 
     output_section_rst(@_);
 }
@@ -1886,15 +1886,15 @@ sub output_struct_rst(%) {
     my ($parameter);
     my $name = $args{'type'} . " " . $args{'struct'};
 
-    print "\n\n.. c:type:: " . $name . "\n\n";
-    print "    " . $args{'purpose'} . "\n\n";
+    print STDOUT "\n\n.. c:type:: " . $name . "\n\n";
+    print STDOUT "    " . $args{'purpose'} . "\n\n";
 
-    print ":Definition:\n\n";
-    print " ::\n\n";
-    print "  " . $args{'type'} . " " . $args{'struct'} . " {\n";
+    print STDOUT ":Definition:\n\n";
+    print STDOUT " ::\n\n";
+    print STDOUT "  " . $args{'type'} . " " . $args{'struct'} . " {\n";
     foreach $parameter (@{$args{'parameterlist'}}) {
 	if ($parameter =~ /^#/) {
-	    print "    " . "$parameter\n";
+	    print STDOUT "    " . "$parameter\n";
 	    next;
 	}
 
@@ -1905,17 +1905,17 @@ sub output_struct_rst(%) {
 	$type = $args{'parametertypes'}{$parameter};
 	if ($type =~ m/([^\(]*\(\*)\s*\)\s*\(([^\)]*)\)/) {
 	    # pointer-to-function
-	    print "    $1 $parameter) ($2);\n";
+	    print STDOUT "    $1 $parameter) ($2);\n";
 	} elsif ($type =~ m/^(.*?)\s*(:.*)/) {
 	    # bitfield
-	    print "    $1 $parameter$2;\n";
+	    print STDOUT "    $1 $parameter$2;\n";
 	} else {
-	    print "    " . $type . " " . $parameter . ";\n";
+	    print STDOUT "    " . $type . " " . $parameter . ";\n";
 	}
     }
-    print "  };\n\n";
+    print STDOUT "  };\n\n";
 
-    print ":Members:\n\n";
+    print STDOUT ":Members:\n\n";
     foreach $parameter (@{$args{'parameterlist'}}) {
 	($parameter =~ /^#/) && next;
 
@@ -1924,14 +1924,14 @@ sub output_struct_rst(%) {
 
 	($args{'parameterdescs'}{$parameter_name} ne $undescribed) || next;
 	$type = $args{'parametertypes'}{$parameter};
-	print "      `$type $parameter`" . "\n";
+	print STDOUT "      `$type $parameter`" . "\n";
 	my $oldprefix = $lineprefix;
 	$lineprefix = "        ";
 	output_highlight_rst($args{'parameterdescs'}{$parameter_name});
 	$lineprefix = $oldprefix;
-	print "\n";
+	print STDOUT "\n";
     }
-    print "\n";
+    print STDOUT "\n";
     output_section_rst(@_);
 }
 
@@ -1941,26 +1941,26 @@ sub output_struct_rst(%) {
 sub output_function_list(%) {
     my %args = %{$_[0]};
 
-    print $args{'function'} . "\n";
+    print STDOUT $args{'function'} . "\n";
 }
 
 # output enum in list
 sub output_enum_list(%) {
     my %args = %{$_[0]};
-    print $args{'enum'} . "\n";
+    print STDOUT $args{'enum'} . "\n";
 }
 
 # output typedef in list
 sub output_typedef_list(%) {
     my %args = %{$_[0]};
-    print $args{'typedef'} . "\n";
+    print STDOUT $args{'typedef'} . "\n";
 }
 
 # output struct as list
 sub output_struct_list(%) {
     my %args = %{$_[0]};
 
-    print $args{'struct'} . "\n";
+    print STDOUT $args{'struct'} . "\n";
 }
 
 sub output_blockhead_list(%) {
@@ -1968,7 +1968,7 @@ sub output_blockhead_list(%) {
     my ($parameter, $section);
 
     foreach $section (@{$args{'sectionlist'}}) {
-	print "DOC: $section\n";
+	print STDOUT "DOC: $section\n";
     }
 }
 
@@ -2059,7 +2059,7 @@ sub dump_struct($$) {
 			   });
     }
     else {
-	print STDOUT "${file}:$.: error: Cannot parse struct or union!\n";
+	print STDERR "${file}:$.: error: Cannot parse struct or union!\n";
 	++$errors;
     }
 }
@@ -2081,10 +2081,10 @@ sub dump_enum($$) {
 	    push @parameterlist, $arg;
 	    if (!$parameterdescs{$arg}) {
 		$parameterdescs{$arg} = $undescribed;
-		print STDOUT "${file}:$.: warning: Enum value '$arg' ".
+		print STDERR "${file}:$.: warning: Enum value '$arg' ".
 		    "not described in enum '$declaration_name'\n";
 	    }
-
+		++$warnings;
 	}
 
 	output_declaration($declaration_name,
@@ -2099,7 +2099,7 @@ sub dump_enum($$) {
 			   });
     }
     else {
-	print STDOUT "${file}:$.: error: Cannot parse enum!\n";
+	print STDERR "${file}:$.: error: Cannot parse enum!\n";
 	++$errors;
     }
 }
@@ -2152,7 +2152,7 @@ sub dump_typedef($$) {
 			   });
     }
     else {
-	print STDOUT "${file}:$.: error: Cannot parse typedef!\n";
+	print STDERR "${file}:$.: error: Cannot parse typedef!\n";
 	++$errors;
     }
 }
@@ -2284,12 +2284,12 @@ sub push_parameter($$$) {
 	    $parameterdescs{$param_name} = $undescribed;
 
 	    if (($type eq 'function') || ($type eq 'enum')) {
-		print STDOUT "${file}:$.: warning: Function parameter ".
+		print STDERR "${file}:$.: warning: Function parameter ".
 		    "or member '$param' not " .
 		    "described in '$declaration_name'\n";
 	    }
 			my $tmpLine = $. - 1;
-	    print STDOUT "${file}:$tmpLine: warning:" .
+	    print STDERR "${file}:$tmpLine: warning:" .
 			 " No description found for parameter '$param'\n";
 	    ++$warnings;
 	}
@@ -2340,14 +2340,14 @@ sub check_sections($$$$$$) {
 		}
 		if ($err) {
 			if ($decl_type eq "function") {
-				print STDOUT "${file}:$.: warning: " .
+				print STDERR "${file}:$.: warning: " .
 					"Excess function parameter " .
 					"'$sects[$sx]' " .
 					"description in '$decl_name'\n";
 				++$warnings;
 			} else {
 				if ($nested !~ m/\Q$sects[$sx]\E/) {
-				    print STDOUT "${file}:$.: warning: " .
+				    print STDERR "${file}:$.: warning: " .
 					"Excess struct/union/enum/typedef member " .
 					"'$sects[$sx]' " .
 					"description in '$decl_name'\n";
@@ -2374,7 +2374,7 @@ sub check_return_section {
 
         if (!defined($sections{$section_return}) ||
             $sections{$section_return} eq "") {
-                print STDOUT "${file}:$real_line: warning: " .
+                print STDERR "${file}:$real_line: warning: " .
                         "No description found for return value of " .
                         "'$declaration_name'\n";
                 ++$warnings;
@@ -2453,7 +2453,8 @@ sub dump_function($$) {
 
 	create_parameterlist($args, ',', $file);
     } else {
-	print STDOUT "${file}:$.: fatal: cannot understand function prototype: '$prototype'\n";
+	print STDERR "${file}:$.: fatal: cannot understand function prototype: '$prototype'\n";
+	++$errors;
 	return;
     }
 
@@ -2518,8 +2519,9 @@ sub tracepoint_munge($) {
 		$tracepointargs = $1;
 	}
 	if (($tracepointname eq 0) || ($tracepointargs eq 0)) {
-		print STDOUT "${file}:$.: warning: Unrecognized tracepoint format: \n".
+		print STDERR "${file}:$.: warning: Unrecognized tracepoint format: \n".
 			     "$prototype\n";
+		++$warnings;
 	} else {
 		$prototype = "static inline void trace_$tracepointname($tracepointargs)";
 	}
@@ -2810,7 +2812,7 @@ sub process_file($) {
     }
 
     if (!open(IN,"<$file")) {
-	print STDOUT "Error: Cannot open file $file\n";
+	print STDERR "Error: Cannot open file $file\n";
 	++$errors;
 	return;
     }
@@ -2826,9 +2828,10 @@ sub process_file($) {
 	if ($_ =~ /^(?:typedef\s+)?(?:(?:$Storage|$Inline)\s*)*\s*$Type\s*\(?\**($Ident)\s*\(/s &&
 	    $_ !~ /.*;\s*$/)
 	{
-		#print "Function found: $1\n";
+		#print STDOUT "Function found: $1\n";
 		if (!length $identifier || $identifier ne $1) {
-			print STDOUT "${file}:$.: warning: no description found for function $1\n";
+			print STDERR "${file}:$.: warning: no description found for function $1\n";
+			++$warnings;
 		}
 	}
 
@@ -2867,8 +2870,8 @@ sub process_file($) {
 		}
 
 		if (($declaration_purpose eq "")) {
-			print STDOUT "${file}:$.: warning: missing initial short description\n";
-			#print STDOUT $_;
+			print STDERR "${file}:$.: warning: missing initial short description\n";
+			#print STDERR $_;
 			++$warnings;
 		}
 
@@ -2885,10 +2888,10 @@ sub process_file($) {
 		}
 
 		if ($verbose) {
-		    print STDOUT "${file}:$.: info: Scanning doc for $identifier\n";
+		    print STDERR "${file}:$.: info: Scanning doc for $identifier\n";
 		}
 	    } else {
-		print STDOUT "${file}:$.: warning: Cannot understand $_ on line $.",
+		print STDERR "${file}:$.: warning: Cannot understand $_ on line $.",
 		" - I thought it was a doc line\n";
 		++$warnings;
 		$state = 0;
@@ -2900,7 +2903,7 @@ sub process_file($) {
 
 		if (($contents ne "") && ($contents ne "\n")) {
 		    if (!$in_doc_sect && $verbose) {
-			print STDOUT "${file}:$.: warning: contents before sections\n";
+			print STDERR "${file}:$.: warning: contents before sections\n";
 			++$warnings;
 		    }
 		    dump_section($file, $section, xml_escape($contents));
@@ -2926,14 +2929,14 @@ sub process_file($) {
 		}
 		# look for doc_com + <text> + doc_end:
 		if ($_ =~ m'\s*\*\s*[a-zA-Z_0-9:\.]+\*/') {
-		    print STDOUT "${file}:$.: warning: suspicious ending line: $_";
+		    print STDERR "${file}:$.: warning: suspicious ending line: $_";
 		    ++$warnings;
 		}
 
 		$prototype = "";
 		$state = 3;
 		$brcount = 0;
-#		print STDOUT "end of doc comment, looking for prototype\n";
+#		print STDERR "end of doc comment, looking for prototype\n";
 	    } elsif (/$doc_content/) {
 		# miguel-style comment kludge, look for blank lines after
 		# @parameter line to signify start of description
@@ -2956,7 +2959,7 @@ sub process_file($) {
 		}
 	    } else {
 		# i dont know - bad line?  ignore.
-		print STDOUT "${file}:$.: warning: bad line: $_";
+		print STDERR "${file}:$.: warning: bad line: $_";
 		++$warnings;
 	    }
 	} elsif ($state == 5) { # scanning for split parameters
@@ -2987,8 +2990,8 @@ sub process_file($) {
 		    $contents .= $1 . "\n";
 		} elsif ($split_doc_state == 1) {
 		    $split_doc_state = 4;
-		    print STDOUT "Warning(${file}:$.): ";
-		    print STDOUT "Incorrect use of kernel-doc format: $_";
+		    print STDERR "Warning(${file}:$.): ";
+		    print STDERR "Incorrect use of kernel-doc format: $_";
 		    ++$warnings;
 		}
 	    }
@@ -3048,37 +3051,37 @@ sub process_file($) {
 	}
     }
     if ($initial_section_counter == $section_counter) {
-	#print STDOUT "${file}:1: warning: no structured comments found\n";
+	#print STDERR "${file}:1: warning: no structured comments found\n";
 	if (($function_only == 1) && ($show_not_found == 1)) {
-	    print STDOUT "    Was looking for '$_'.\n" for keys %function_table;
+	    print STDERR "    Was looking for '$_'.\n" for keys %function_table;
 	}
 	if ($output_mode eq "xml") {
 	    # The template wants at least one RefEntry here; make one.
-	    print "<refentry>\n";
-	    print " <refnamediv>\n";
-	    print "  <refname>\n";
-	    print "   ${orig_file}\n";
-	    print "  </refname>\n";
-	    print "  <refpurpose>\n";
-	    print "   Document generation inconsistency\n";
-	    print "  </refpurpose>\n";
-	    print " </refnamediv>\n";
-	    print " <refsect1>\n";
-	    print "  <title>\n";
-	    print "   Oops\n";
-	    print "  </title>\n";
-	    print "  <warning>\n";
-	    print "   <para>\n";
-	    print "    The template for this document tried to insert\n";
-	    print "    the structured comment from the file\n";
-	    print "    <filename>${orig_file}</filename> at this point,\n";
-	    print "    but none was found.\n";
-	    print "    This dummy section is inserted to allow\n";
-	    print "    generation to continue.\n";
-	    print "   </para>\n";
-	    print "  </warning>\n";
-	    print " </refsect1>\n";
-	    print "</refentry>\n";
+	    print STDOUT "<refentry>\n";
+	    print STDOUT " <refnamediv>\n";
+	    print STDOUT "  <refname>\n";
+	    print STDOUT "   ${orig_file}\n";
+	    print STDOUT "  </refname>\n";
+	    print STDOUT "  <refpurpose>\n";
+	    print STDOUT "   Document generation inconsistency\n";
+	    print STDOUT "  </refpurpose>\n";
+	    print STDOUT " </refnamediv>\n";
+	    print STDOUT " <refsect1>\n";
+	    print STDOUT "  <title>\n";
+	    print STDOUT "   Oops\n";
+	    print STDOUT "  </title>\n";
+	    print STDOUT "  <warning>\n";
+	    print STDOUT "   <para>\n";
+	    print STDOUT "    The template for this document tried to insert\n";
+	    print STDOUT "    the structured comment from the file\n";
+	    print STDOUT "    <filename>${orig_file}</filename> at this point,\n";
+	    print STDOUT "    but none was found.\n";
+	    print STDOUT "    This dummy section is inserted to allow\n";
+	    print STDOUT "    generation to continue.\n";
+	    print STDOUT "   </para>\n";
+	    print STDOUT "  </warning>\n";
+	    print STDOUT " </refsect1>\n";
+	    print STDOUT "</refentry>\n";
 	}
     }
 }
@@ -3091,7 +3094,7 @@ $kernelversion = get_kernel_version();
 for (my $k = 0; $k < @highlights; $k++) {
     my $pattern = $highlights[$k][0];
     my $result = $highlights[$k][1];
-#   print STDOUT "scanning pattern:$pattern, highlight:($result)\n";
+#   print STDERR "scanning pattern:$pattern, highlight:($result)\n";
     $dohighlight .=  "\$contents =~ s:$pattern:$result:gs;\n";
 }
 
@@ -3113,10 +3116,10 @@ foreach (@ARGV) {
     process_file($_);
 }
 if ($verbose && $errors) {
-  print STDOUT "$errors errors\n";
+  print STDERR "$errors errors\n";
 }
 if ($verbose && $warnings) {
-  print STDOUT "$warnings warnings\n";
+  print STDERR "$warnings warnings\n";
 }
 
-exit($errors);
+exit(($errors > 0 || $warnings > 0));
