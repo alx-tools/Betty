@@ -30,6 +30,7 @@ echo -e "Installing man pages.."
 
 mkdir -p "${MAN_PATH}"
 
+cp "man/betty.1" "${MAN_PATH}"
 cp "man/${BETTY_STYLE}.1" "${MAN_PATH}"
 cp "man/${BETTY_DOC}.1" "${MAN_PATH}"
 

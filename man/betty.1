@@ -1,0 +1,837 @@
+.TH BETTY 2 "October 2016" "1.0" "Betty man page"
+.SH NAME
+Betty \- Holberton School coding style for C code
+.SH SYNOPSIS
+.B betty-style
+[OPTIONS]
+.IR file
+[file2\ [file3\ ...]]
+.LP
+.B betty-doc
+[OPTIONS]
+.IR file
+[file2\ [file3\ ...]]
+.SH DESCRIPTION
+.\" Macros definition
+.de SAMPLE
+.br
+.nr saveIN \\n(.i   \" double the backslash when defining a macro
+.RS
+.nf
+.nh
+..
+.de ESAMPLE
+.hy
+.fi
+.RE
+.in \\n[saveIN]u    \" 'u' means 'units': do not scale this number
+..
+.\" End of macros definition
+.B Betty
+is the Holberton School coding style for C code. It's mainly inspired by the Kernel Linux coding style.
+.\"
+.\" STRATING SECTIONS
+.\"
+.\" SECTION 1 - CODING STYLE
+.SH 1 \- CODING STYLE
+.\" SECTION 1.1
+.TP
+.SH 1.1 \- Indentation
+.LP
+.RS
+.BR Purpose
+.br
+The whole idea behind indentation is to clearly define where a block of control starts and ends.
+.br
+Especially when you've been looking at your screen for 20 straight hours, you'll find it a lot easier to see how the indentation works if you have large indentations.
+.LP
+.BR Tabs
+.br
+Use \fBtabs\fR to indent your code. Tabs characters will be counted as \fB1\fR character by \fBBetty\fR.
+.LP
+The preferred way to ease multiple indentation levels in a \fBswitch\fR statement is to align the \fBswitch\fR and its subordinate \fBcase\fR labels in the same column instead of double-indenting the \fBcase\fR labels.
+.LP
+.BR Example
+.br
+.SAMPLE
+int sample_func(char suffix)
+{
+    int var;
+
+    var = 0;
+    switch (suffix)
+    {
+    case 'G':
+    case 'g':
+        var = 30;
+        break;
+    case 'M':
+    case 'm':
+        var = 20;
+        break;
+    case 'K':
+    case 'k':
+        var = 10;
+    default:
+        break;
+    }
+    return (var);
+}
+.ESAMPLE
+.LP
+Don't put multiple statements on a single line:
+.LP
+.SAMPLE
+if (condition) do_this;
+do_something_everytime;
+.ESAMPLE
+.LP
+Don't put multiple assignments on a single line either.
+.br
+Betty coding style is super simple.
+.LP
+Outside of comments and documentation, \fBspaces are never used for indentation\fR, and the above example is deliberately broken.
+.br
+Get a decent editor and don't leave whitespace at the end of lines.
+.\" SECTION 1.2
+.TP
+.SH 1.2 \- Breaking long lines and strings
+.LP
+.RS
+.BR Purpose
+.br
+Coding style is all about readability and maintainability using commonly available tools.
+.LP
+The limit on the length of lines is \fB80 columns\fR and this is a strongly preferred limit.
+.LP
+Statements longer than 80 columns will be broken into sensible chunks, unless exceeding 80 columns significantly increases readability and does not hide information.
+.br
+Descendants are always substantially shorter than the parent and are placed substantially to the right. The same applies to function headers with a long argument list.
+.\" SECTION 1.3
+.TP
+.SH 1.3 \- Placing Braces
+.LP
+.RS
+The other issue that always comes up in C styling is the placement of braces.
+.br
+Unlike the indent size, there are few technical reasons to choose one placement strategy over the other, but the preferred way, is to put both the opening and the closing braces first, thusly:
+.LP
+.SAMPLE
+if (x == 1)
+{
+	some_code = here;
+}
+.ESAMPLE
+.LP
+This applies to almost all non-function statement blocks: \fBif\fR, \fBswitch\fR, \fBfor\fR, \fBwhile\fR.
+.LP
+.BR Example
+.br
+.SAMPLE
+switch (action)
+{
+case CASE_ADD:
+	return ("add");
+case CASE_REMOVE:
+	return ("remove");
+case CASE_CHANGE:
+	return ("change");
+default:
+	return (NULL);
+}
+.ESAMPLE
+.LP
+.BR and
+.LP
+.SAMPLE
+if (x == y)
+{
+	...
+}
+else if (x > y)
+{
+	...
+}
+else
+{
+	...
+}
+.ESAMPLE
+.LP
+.BR Exceptions
+.LP
+Note that the closing brace is empty on a line of its own, \fBexcept\fR in the cases where it is followed by a continuation of the same statement, i.e a \fBwhile\fR in a \fBdo-statement\fR, like this:
+.LP
+.SAMPLE
+do {
+	body of do-loop
+} while (condition);
+.ESAMPLE
+.LP
+Do not unnecessarily use braces where a single statement will do.
+.LP
+.SAMPLE
+if (condition)
+	action();
+.ESAMPLE
+.LP
+and
+.LP
+.SAMPLE
+if (condition)
+	do_this();
+else
+	do_that();
+.ESAMPLE
+.LP
+This does not apply if only one branch of a conditional statement is a single statement; in the latter case use braces in both branches:
+.LP
+.SAMPLE
+if (condition)
+{
+	do_this();
+	do_that();
+}
+else
+{
+	otherwise();
+}
+.ESAMPLE
+.\" SECTION 1.4
+.TP
+.SH 1.4 \- Placing Spaces
+.LP
+.RS
+Betty coding style for use of spaces depends (mostly) on function-versus-keyword usage.
+.br
+Use a space after (most) keywords.
+.br
+The notable exceptions are \fBsizeof\fR, \fBtypeof\fR, \fBalignof\fR, and \fB__attribute__\fR, which look somewhat like functions.
+.LP
+So use a space after these keywords:
+.LP
+.SAMPLE
+.BR if ", " else\ if ", " switch ", " case ", " for ", " while ", "return
+.ESAMPLE
+.LP
+But not with:
+.LP
+.SAMPLE
+.BR sizeof ", " typeof ", " alignof ", " __attribute__
+.ESAMPLE
+.LP
+.SAMPLE
+.BR Keyword\	\	Space\ After\	Example
+--------------------------------------------
+\fBif\fR			Yes			if (condition)
+\fBelse if\fR		Yes			else if (condition)
+\fBswitch\fR		Yes			switch (variable)
+\fBcase\fR			Yes			case value:
+\fBfor\fR			Yes			for (i = 0; i < 10; ++i)
+\fBwhile\fR		Yes			while (condition)
+\fBreturn\fR		Yes			return (1);
+\fBsizeof\fR		No			sizeof(struct file)
+\fBtypeof\fR		No			typeof(variable)
+\fBalignof\fR		No			alignof(variable)
+\fB__attribute__\fR	No			__attribute__((unused))
+.ESAMPLE
+.LP
+Do not add spaces around (inside) parenthesized expressions.
+.br
+This example is \fBbad\fR:
+.LP
+.SAMPLE
+s = sizeof( struct file );
+.ESAMPLE
+.LP
+When declaring pointer data or a function that returns a pointer type, the preferred use of \fB*\fR is adjacent to the data name or function name and not adjacent to the type name.
+.LP
+.BR Example:
+.br
+.SAMPLE
+char *str;
+unsigned int sample(char *ptr, char **retptr);
+char *match_strdup(substring_t *s);
+.ESAMPLE
+.LP
+Use one space around (on each side of) most binary and ternary operators, such as any of these:
+.LP
+.SAMPLE
+.BR =\ +\ -\ <\ >\ *\ /\ %\ |\ &\ ^\ <=\ >=\ ==\ !=\ ?\ :
+.ESAMPLE
+.LP
+But no space after unary operators:
+.LP
+.SAMPLE
+.BR &\ *\ +\ -\ ~\ !\ sizeof\ typeof\ alignof\ __attribute__\ defined
+.ESAMPLE
+.LP
+No space before the \fBpostfix\fR increment & decrement unary operators:
+.LP
+.SAMPLE
+.BR ++\ --
+.ESAMPLE
+.LP
+.BR Example:
+.br
+.SAMPLE
+int i;
+
+i = 0;
+i++;
+i--;
+.ESAMPLE
+.LP
+No space after the \fBprefix\fR increment & decrement unary operators:
+.LP
+.SAMPLE
+.BR ++\ --
+.ESAMPLE
+.LP
+.BR Example:
+.br
+.SAMPLE
+int i;
+
+i = 0;
+++i;
+--i;
+.ESAMPLE
+.LP
+And no space around the \fB.\fR and \fB->\fR structure member operators.
+.LP
+Do not leave trailing whitespace at the ends of lines.
+.br
+Some editors with \fBsmart\fR indentation will insert whitespace at the beginning of new lines as appropriate, so you can start typing the next line of code right away. However, some such editors do not remove the whitespace if you end up not putting a line of code there, such as if you leave a blank line.
+.br
+As a result, you end up with lines containing trailing whitespace.
+.LP
+Git will warn you about patches that introduce trailing whitespace, and can optionally strip the trailing whitespace for you; however, if applying a series of patches, this may make later patches in the series fail by changing their context lines.
+.\" SECTION 1.5
+.TP
+.SH 1.5 \- Naming
+.LP
+.RS
+C is a Spartan language, and so should your naming be.
+Unlike Modula-2 and Pascal programmers, C programmers do not use cute names like
+.LP
+.SAMPLE
+.BR ThisVariableIsATemporaryCounter
+.ESAMPLE
+.LP
+A C programmer would call that variable
+.LP
+.SAMPLE
+.BR tmp
+.ESAMPLE
+.LP
+which is easier to write, and easy to understand.
+.LP
+\fBHOWEVER\fR, while mixed-case names are frowned upon, descriptive names for global variables are a must.
+.br
+To call a global function \fBfoo\fR is a shooting offense.
+.LP
+\fBGLOBAL\fR variables (to be used only if you \fBreally\fR need them) need to have descriptive names, as do global functions.
+If you have a function that counts the number of active users, you should call that
+.LP
+.SAMPLE
+.BR count_active_users()
+.ESAMPLE
+.LP
+or similar, you should not call it
+.LP
+.SAMPLE
+.BR cntusr()
+.ESAMPLE
+.LP
+Encoding the type of a function into the name (so-called Hungarian notation) is brain damaged - the compiler knows the types anyway and can check those, and it only confuses the programmer.
+.LP
+\fBLOCAL\fR variable names should be short, and to the point.
+.br
+If you have some random integer loop counter, it should probably be called \fBi\fR. Calling it \fBloop_counter\fR is non-productive, if there is no chance of it being mis-understood.
+.br
+Similarly, \fBtmp\fR can be just about any type of variable that is used to hold a temporary value.
+.LP
+If you are afraid to mix up your local variable names, you have another problem, which is called the function-growth-hormone-imbalance syndrome. See chapter \fI1.6\ -\ Functions\fR.
+.\" SECTION 1.6
+.TP
+.SH 1.6 \- Functions
+.LP
+.RS
+Functions should be short and sweet, and do just one thing.
+.br
+They must fit on \fB40 lines\fR, and do one thing and do that well.
+.LP
+The maximum length of a function is inversely proportional to the complexity and indentation level of that function.
+.br
+So, if you have a conceptually simple function that is just one long (but simple) case-statement, where you have to do lots of small things for a lot of different cases, it's OK to have a longer function.
+.LP
+However, if you have a complex function, and you suspect that a less-than-gifted first-year high-school student might not even understand what the function is all about, you should adhere to the maximum limits all the more closely.
+.br
+Use helper functions with descriptive names (you can ask the compiler to in-line them if you think it's performance-critical, and it will probably do a better job of it than you would have done).
+.LP
+Another measure of the function is the number of local variables.
+.br
+They shouldn't exceed \fB5-10\fR, or you're doing something wrong.
+.br
+Re-think the function, and split it into smaller pieces.
+.br
+A human brain can generally easily keep track of about 7 different things, anything more and it gets confused.
+.br
+You know you're brilliant, but maybe you'd like to understand what you did 2 weeks from now.
+.LP
+In source files, separate functions with one blank line.
+.\" SECTION 1.7
+.TP
+.SH 1.7 \- Commenting
+.LP
+.RS
+Comments are good, but there is also a danger of over-commenting.
+.br
+\fBNEVER try to explain HOW your code works\fR in a comment: it's much better to write the code so that the working is obvious, and it's a waste of time to explain badly written code.
+.LP
+Generally, you want your comments \fBto tell WHAT your code does\fR, \fBnot HOW\fR. Also, try to avoid putting comments inside a function body: if the function is so complex that you need to separately comment parts of it, you should probably go back to chapter 6 for a while.
+.br
+You can make small comments to note or warn about something particularly clever (or ugly), but try to avoid excess.
+.br
+Instead, put the comments at the head of the function, telling people what it does, and possibly WHY it does it.
+.LP
+When commenting your functions, please use the \fIbetty-doc(1)\fR format. See the Chapter about \fIDocumentation\fR and the script \fIbetty-doc(1)\fR from \fBBetty\fR for details.
+.LP
+\fBBetty\fR style for comments is the \fBC89 style\fR.
+.LP
+.SAMPLE
+/* Use this */
+.ESAMPLE
+.LP
+.BR Don't\ use\ C99-style\ comments
+.LP
+.SAMPLE
+// Don't use this
+.ESAMPLE
+.LP
+The preferred style for long (multi-line) comments is:
+.LP
+.SAMPLE
+/*
+ * This is the preferred style for multi-line
+ * comments in C source code.
+ * Please use it consistently.
+ *
+ * Description:  A column of asterisks on the left side,
+ * with beginning and ending almost-blank lines.
+ */
+.ESAMPLE
+.\" SECTION 1.8
+.TP
+.SH 1.8 \- Macros and Enums
+.LP
+.RS
+Names of \fBmacros\fR defining constants and labels in \fBenums\fR are capitalized.
+.LP
+.SAMPLE
+#define CONSTANT 0x12345
+.ESAMPLE
+.LP
+and
+.LP
+.SAMPLE
+enum sample
+{
+	FIRST = 1,
+	SECOND,
+	THIRD
+};
+.ESAMPLE
+.LP
+Enums are preferred when defining several related constants.
+.LP
+CAPITALIZED macro names are appreciated but macros resembling functions may be named in lower case.
+.br
+Generally, inline functions are preferable to macros resembling functions.
+.LP
+Macros with multiple statements should be enclosed in a do - while block:
+.LP
+.SAMPLE
+#define macrofun(a, b, c) \\
+    do \\
+    { \\
+        if (a == 5) \\
+            do_this(b, c); \\
+    } while (condition)
+.ESAMPLE
+.LP
+.BR Things\ to\ avoid\ when\ using\ macros
+.RS
+.BR 1)\ Macros\ that\ affect\ control\ flow:
+.RS
+.LP
+.SAMPLE
+#define FOO(x) \\
+    do \\
+    { \\
+        if (bar(x) < 0) \\
+            return (-1); \\
+    } while (condition)
+.ESAMPLE
+.LP
+This is a very bad idea.
+.br
+It looks like a function call but exits the \fBcalling\fR function; don't break the internal parsers of those who will read the code.
+.LP
+.RE
+.BR 2)\ Macros\ that\ depend\ on\ having\ a\ local\ variable\ with\ a\ magic\ name:
+.RS
+.LP
+.SAMPLE
+#define FOO(val) bar(index, val)
+.ESAMPLE
+.LP
+might look like a good thing, but it's confusing as hell when one reads the code and it's prone to breakage from seemingly innocent changes.
+.LP
+.RE
+.BR 3)\ Forgetting\ about\ precedence:\ macros\ defining\ constants\ using\ expressions\ must\ enclose\ the\ expression\ in\ parentheses.
+.RS
+.LP
+Beware\ of\ similar\ issues\ with\ macros\ using\ parameters.
+.LP
+.SAMPLE
+#define CONSTANT 0x4000
+#define CONSTEXP (CONSTANT | 3)
+.ESAMPLE
+.LP
+.RE
+.BR 4)\ Namespace\ collisions\ when\ defining\ local\ variables\ in\ macros\ resembling\ functions:
+.RS
+.LP
+.SAMPLE
+#define FOO(x) \\
+({ \\
+    typeof(x) ret; \\
+    ret = calc_ret(x); \\
+    (ret); \\
+})
+.ESAMPLE
+.LP
+\fBret\fR is a common name for a local variable. \fB__foo_ret\fR is less likely to collide with an existing variable.
+.RE
+.\" SECTION 1.9
+.TP
+.SH 1.9 \- Header files
+.LP
+.RS
+.BR Function\ prototypes
+.LP
+All your function prototypes must be declared in header files.
+.LP
+.SAMPLE
+/* this prototype has to be declared in a header file */
+void sample_func(int);
+.ESAMPLE
+.LP
+.BR Structs,\ Enum,\ Unions\ definitions
+.LP
+All your structs, enums and union must be defined in header files.
+.LP
+.SAMPLE
+struct sample_struct
+{
+	int val;
+	char *str;
+};
+.ESAMPLE
+.LP
+.SAMPLE
+enum sample_enum
+{
+	FIRST = 1,
+	SECOND,
+	THIRD
+};
+.ESAMPLE
+.LP
+and
+.LP
+.SAMPLE
+union color
+{
+	unsigned int ui32_value;
+	unsigned char[4] rgba;
+};
+.ESAMPLE
+.LP
+.BR Typedefs
+.LP
+All your typedefs must be defined in header files.
+.LP
+.SAMPLE
+typedef unsigned char uchar;
+
+typedef struct sample_struct
+{
+	int value;
+	char *str;
+} sample_struct;
+.ESAMPLE
+.LP
+.BR Double\ inclusion
+.LP
+To prevent double inclusion, we expect you to protect your header files by defining a macro, only if the header file hasn't been included yet.
+.LP
+Example for a file named \fIsample_header.h\fR:
+.LP
+.SAMPLE
+#ifndef _SAMPLE_HEADER_H_
+#define _SAMPLE_HEADER_H_
+
+/*
+ * Structs, enums and unions definitions
+ * Typedefs
+ * Function prototypes
+ */
+
+#endif /* _SAMPLE_HEADER_H_ */
+.ESAMPLE
+.\"
+.\" SECTION 1 - CODING STYLE
+.\"
+.SH 2 \- DOCUMENTATION
+.\" SECTION 2.1
+.TP
+.SH 2.1 \- Functions
+.LP
+.RS
+In order to keep your code maintainable and readable, you'll be asked to document every single function in every single of your source files.
+.LP
+.BR How\ to\ document\ functions
+.LP
+To document a function, you simply need to insert a comment block above it. Instead of a regular C multiline comment, the comment block must begin with the following line:
+.LP
+.SAMPLE
+/**
+.ESAMPLE
+.LP
+with two stars.
+.br
+Then, each line of the block must start with a star, followed by a space:
+.LP
+.SAMPLE
+ *
+.ESAMPLE
+.LP
+The block must end exactly like a C multiline comment, with a multiline comment closer:
+.LP
+.SAMPLE
+ */
+.ESAMPLE
+.LP
+.BR Format\ of\ the\ documentation\ block
+.LP
+In the following description:
+.LP
+.SAMPLE
+- \fB(...)?\fR signifies optional structure.
+- \fB(...)*\fR signifies 0 or more structure elements
+.ESAMPLE
+.LP
+The format of a documentation block is the following one:
+.LP
+.SAMPLE
+/**
+ * function_name - Short description, single line
+ * @parameterx: Description of parameter x
+(* a blank line
+ * Description: Longer description of the function)?
+(* section header: Section description)*
+ * Return: Description of the returned value
+ */
+.ESAMPLE
+.LP
+So the trivial example would be:
+.LP
+.SAMPLE
+/**
+ * my_function - This is a description
+ */
+void my_function(void)
+{
+	do_something();
+}
+.ESAMPLE
+.LP
+If the function must returns a value (anything but \fBvoid\fR), the \fBReturn:\fR header tag is mandatory:
+.LP
+.SAMPLE
+/**
+ * print_hello - Prints "Hello"
+ */
+void print_hello(void)
+{
+	printf("Hello");
+}
+
+/**
+ * is_positive - Check if a number is greater than 0
+ * @nb: The number to be checked
+ *
+ * Return: 1 if the number is positive. 0 otherwise
+ */
+int is_positive(int nb)
+{
+	return (nb > 0);
+}
+.ESAMPLE
+.LP
+If there is one or more parameter described, then there must be a blank line after their specification (Only if there is something to describe after the parameters):
+.LP
+.SAMPLE
+/**
+ * op_add - Makes the sum of two numbers
+ * @arg1: First operand
+ * @arg2: Second operand
+ *
+ * Return: The sum of the two parameters
+ */
+int op_add(int arg1, int arg2)
+{
+	return (arg1 + arg2);
+}
+
+/**
+ * print_arg - Prints a string using printf
+ * @arg: The string to be printed
+ */
+void print_arg(char *arg)
+{
+	print_string(arg);
+}
+.ESAMPLE
+.LP
+Example for the \fBDescription\fR header (longer description):
+.LP
+.SAMPLE
+/**
+ * op_add - Makes the sum of two numbers
+ * @arg1: First operand
+ * @arg2: Second operand
+ *
+ * Description: This is a longer description.
+ * Don't forget that a line should not exceed 80 characters.
+ * But you're totally free to use several lines to properly
+ * describe your function
+ * Return: The sum of the two parameters
+ */
+int op_add(int arg1, int arg2)
+{
+	return (arg1 + arg2);
+}
+.ESAMPLE
+.LP
+You can also add additional sections. For example, you can add a section \fBExample\fR on which you can give an example of usage when it's relevant.
+.br
+.BR Example:
+.LP
+.SAMPLE
+/**
+ * op_add - Makes the sum of two numbers
+ * @arg1: First operand
+ * @arg2: Second operand
+ *
+ * Example:
+ *    op_add(90, 8); --> 98
+ */
+int op_add(int arg1, int arg2)
+{
+	return (arg1 + arg2);
+}
+.ESAMPLE
+.TP
+.SH 2.2 \- Data Structures
+.LP
+.RS
+Besides functions you can also write documentation for \fBstructs\fR, \fBunions\fR, \fBenums\fR and \fBtypedefs\fR.
+.br
+Instead of the function name you must write the name of the declaration;
+.br
+the \fBstruct\fR/\fBunion\fR/\fBenum\fR/\fBtypedef\fR must always precede the name. Nesting of declarations is not supported.
+.br
+Use the argument mechanism to document members or constants.
+.br
+.BR Example:
+.LP
+.SAMPLE
+/**
+ * struct my_struct - Short description
+ * @a: First member
+ * @b: Second member
+ * @c: Third member
+ *
+ * Description: Longer description
+ */
+struct my_struct
+{
+	int a;
+	int b;
+	int c;
+};
+.ESAMPLE
+.LP
+For really longs structs, you can also describe arguments inside the body of the struct.
+.br
+.BR Example:
+.LP
+.SAMPLE
+/**
+ * struct my_struct - Short description
+ * @a: First member
+ * @b: Second member
+ *
+ * Description: Longer description
+ */
+struct my_struct
+{
+	int a;
+	int b;
+	/**
+	 * @c: This is longer description of C
+	 *
+	 * Description: You can use paragraphs to describe arguments
+	 * using this method.
+	 */
+	int c;
+};
+.ESAMPLE
+.LP
+This should be use only for \fBstruct\fR/\fBenum\fR members.
+.LP
+.BR Example\ for\ a\ typdef:
+.LP
+.SAMPLE
+/**
+ * u_int - Typedef for unsigned int
+ */
+typedef unsigned int u_int;
+.ESAMPLE
+.LP
+Of course, you're free to add the \fBDescription\fR header on any documentation block.
+.\"
+.\" ENDING SECTIONS
+.\"
+.SH SEE ALSO
+.IR betty-style(1) ", " betty-doc(1)
+.SH REFERENCES
+The Holberton School coding style is mainly inspired from the \fBLinux Kernel coding style\fR, but it's slightly modified.
+.br
+See
+.IR http://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/plain/Documentation/CodingStyle
+for more details
+.br
+See the section \fBReferences\fR of the \fBLinux Kernel coding style\fR for more sources and references.
+.LP
+For more informations, please visit
+.IR https://github.com/holbertonschool/Betty
+.SH BUGS
+Please visit
+.IR https://github.com/holbertonschool/Betty/issues
+.SH AUTHOR
+Alexandre GAUTIER, Copyright 2016 Holberton Inc.
