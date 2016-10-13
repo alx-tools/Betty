@@ -9,13 +9,22 @@ fi
 BETTY_STYLE="betty-style"
 BETTY_DOC="betty-doc"
 
+APP_PATH="/opt/betty"
 BIN_PATH="/usr/local/bin"
 MAN_PATH="/usr/local/share/man/man1"
 
 echo -e "Installing binaries.."
 
-cp "${BETTY_STYLE}.pl" "${BIN_PATH}/betty-style"
-cp "${BETTY_DOC}.pl" "${BIN_PATH}/betty-doc"
+mkdir -p "${APP_PATH}"
+
+cp "${BETTY_STYLE}.pl" "${APP_PATH}/${BETTY_STYLE}"
+cp "${BETTY_DOC}.pl" "${APP_PATH}/${BETTY_DOC}"
+
+chmod +x "${APP_PATH}/${BETTY_STYLE}"
+chmod +x "${APP_PATH}/${BETTY_DOC}"
+
+ln -s "${APP_PATH}/${BETTY_STYLE}" "${BIN_PATH}/${BETTY_STYLE}"
+ln -s "${APP_PATH}/${BETTY_DOC}" "${BIN_PATH}/${BETTY_DOC}"
 
 echo -e "Installing man pages.."
 
