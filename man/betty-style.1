@@ -15,6 +15,7 @@ checks the coding style of your C source code against Betty coding style
 Quiet mode
 .TP
 .BR \-\-tree
+.br
 Run with a kernel tree.
 .TP
 .BR \-\-no\-signoff
@@ -43,23 +44,23 @@ as a single commit or git revision range
 Single git commit with:
 .RS
 <rev>
-.RS 0
+.br
 <rev>^
-.RS 0
+.br
 <rev>~n
 .LP
-.RE 2
+.RE
 Multiple git commits with:
 .RS
 <rev1>..<rev2>
-.RS 0
+.br
 <rev1>...<rev2>
-.RS 0
+.br
 <rev>-<count>
 .LP
-.RE 2
+.RE
 Git merges are ignored
-.RE 0
+.RE
 .TP
 .BR \-\-no\-file
 Don't treat
@@ -67,7 +68,7 @@ Don't treat
 as regular source file.
 .TP
 .BR \-\-subjective ", " \-\-strict
-.Enable more subjective tests
+Enable more subjective tests
 .TP
 .BR \-\-list\-types
 List the possible message types.
@@ -111,16 +112,21 @@ is one of \fBvalues\fR, \fBpossible\fR, \fBtype\fR, and \fBattr\fR (default is a
 Report only warnings/errors containing literally.
 .TP
 .BR \-\-fix
+.br
 .BR EXPERIMENTAL
 - may create horrible results.
+.br
 If correctable single-line errors exist, create
-.BR "<inputfile>.EXPERIMENTAL-checkpatch-fixes"
+.IR file.EXPERIMENTAL-checkpatch-fixes
 with potential errors corrected to the preferred checkpatch style.
 .TP
 .BR \-\-fix\-inplace
+.br
 .BR EXPERIMENTAL
 - may create horrible results.
+.br
 Is the same as \fB\-\-fix\fR, but overwrites the input file.
+.br
 It's your fault if there's no backup or git.
 .TP
 .BR \-\-ignore\-perl\-version
@@ -139,7 +145,7 @@ Use colors when output is STDOUT (default: \fBon\fR).
 .BR \-h ", " \-\-help ", " \-\-version
 Display help and exit.
 .SH SEE ALSO
-.IR betty-doc(1)
+.IR betty-doc(1) ", " betty(1)
 .SH BUGS
 Please visit
 .IR https://github.com/holbertonschool/Betty/issues

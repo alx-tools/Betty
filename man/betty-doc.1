@@ -7,54 +7,80 @@ betty-doc \- Betty documentation checker for C source code
 .IR file
 [file2\ [file3\ ...]]
 .SH DESCRIPTION
-.B betty-doc
+.BR betty-doc
 checks the documentation of your C source code against Betty documentation specs
+.SH OPTIONS
+.TP
 .SH Output format selection (mutually exclusive):
+.RS
 .TP
 .BR \-docbook
+.br
 Output \fBDocBook\fR format.
 .TP
 .BR \-html
+.br
 Output \fBHTML\fR format.
 .TP
 .BR \-html5
+.br
 Output \fBHTML5\fR format.
 .TP
 .BR \-list
+.br
 Output \fBsymbol list\fR format. This is the default.
 .TP
 .BR \-man
+.br
 Output \fBtroff manual\fR page format.
 .TP
 .BR \-rst
+.br
 Output \fBreStructuredText\fR format.
 .TP
 .BR \-text
+.br
 Output \fBplain text\fR format.
+.RE
+.TP
 .SH Output selection (mutually exclusive):
+.RS
 .TP
 .BR \-function\ \fINAME\fR
 Only output documentation for the given function(s) or DOC: section title(s).
+.br
 All other functions and DOC: sections are ignored.
+.br
 May be specified multiple times.
 .TP
 .BR \-nofunction\ \fINAME\fR
-Do \fBNOT\fR output documentation for the given function(s);
-only output documentation for the other functions and DOC: sections.
+Do \fBNOT\fR output documentation for the given function(s).
+.br
+Only output documentation for the other functions and DOC: sections.
+.br
 May be specified multiple times.
+.RE
+.TP
 .SH Output selection modifiers:
+.RS
 .TP
 .BR \-no\-doc\-sections
 Do not output DOC: sections.
+.RE
+.TP
 .SH Other parameters:
+.RS
 .TP
 .BR \-v
+.br
 Verbose output, more warnings and other information.
 .TP
 .BR \-h
+.br
 Print \fBhelp\fR and exit.
+.RE
 .SH SEE ALSO
-.IR betty-style(1)
+.IR betty-style(1) ", " betty(1)
 .SH BUGS
 Please visit
 .IR https://github.com/holbertonschool/Betty/issues
