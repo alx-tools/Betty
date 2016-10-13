@@ -2,6 +2,14 @@
 
 [![Build Status](https://travis-ci.org/holbertonschool/Betty.svg?branch=master)](https://travis-ci.org/holbertonschool/Betty)
 
+### Installation
+
+Run the script `install.sh` with **sudo privileges** to install `betty-style` and `betty-code` on your computer, along with the  following manuals:
+
+ * _betty(1)_
+ * _betty-style(1)_
+ * _betty-doc(1)_
+
 ### Documentation
 
 Please visit the [Betty Wiki](https://github.com/holbertonschool/Betty/wiki) for the full specifications of Betty coding and documentation styles.
