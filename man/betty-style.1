@@ -1,0 +1,147 @@
+.TH BETTY\-STYLE 2 "October 2016" "1.0" "Betty style man page"
+.SH NAME
+betty-style \- Betty coding style checker for C source code
+.SH SYNOPSIS
+.B betty-style
+[OPTIONS]
+.IR file
+[file2\ [file3\ ...]]
+.SH DESCRIPTION
+.B betty-style
+checks the coding style of your C source code against Betty coding style
+.SH OPTIONS
+.TP
+.BR \-q ", " \-\-quiet
+Quiet mode
+.TP
+.BR \-\-tree
+Run with a kernel tree.
+.TP
+.BR \-\-no\-signoff
+Do not check for 'Signed-off-by' line
+.TP
+.BR \-\-patch
+Treat
+.IR file
+as a patchfile (default)
+.TP
+.BR \-\-emacs
+Emacs compile window format
+.TP
+.BR \-\-no\-terse
+Disable one line per report.
+.TP
+.BR \-\-showfile
+Emit diffed file position, not input file position.
+.TP
+.BR \-g ", " \-\-git
+Treat
+.IR file
+as a single commit or git revision range
+.LP
+.RS
+Single git commit with:
+.RS
+<rev>
+.RS 0
+<rev>^
+.RS 0
+<rev>~n
+.LP
+.RE 2
+Multiple git commits with:
+.RS
+<rev1>..<rev2>
+.RS 0
+<rev1>...<rev2>
+.RS 0
+<rev>-<count>
+.LP
+.RE 2
+Git merges are ignored
+.RE 0
+.TP
+.BR \-\-no\-file
+Don't treat
+.IR file
+as regular source file.
+.TP
+.BR \-\-subjective ", " \-\-strict
+.Enable more subjective tests
+.TP
+.BR \-\-list\-types
+List the possible message types.
+.TP
+.BR \-\-types\ \fITYPE\fR(,TYPE2...)
+Show only these comma separated message types.
+.TP
+.BR \-\-ignore\ \fITYPE\fR(,TYPE2...)
+Ignore various comma separated message types.
+.TP
+.BR \-\-show\-types
+Show the specific message type in the output.
+.TP
+.BR \-\-max\-line\-length =\fIn\fR
+Set the maximum line length, if exceeded, warn.
+.TP
+.BR \-\-min\-conf\-desc\-length =\fIn\fR
+Set the min description length, if shorter, warn.
+.TP
+.BR \-\-root =\fIPATH\fR
+.IR PATH
+to the kernel tree root.
+.TP
+.BR \-\-no\-summary
+Suppress the per-file summary.
+.TP
+.BR \-\-mailback
+Only produce a report in case of warnings/errors.
+.TP
+.BR \-\-summary\-file
+Include the filename in summary.
+.TP
+.BR \-\-debug\ \fIKEY=[0|1]\fR
+Turn on/off debugging of
+.IR KEY
+, where
+.IR KEY
+is one of \fBvalues\fR, \fBpossible\fR, \fBtype\fR, and \fBattr\fR (default is all off).
+.TP
+.BR \-\-test\-only =\fIWORD\fR
+Report only warnings/errors containing literally.
+.TP
+.BR \-\-fix
+.BR EXPERIMENTAL
+- may create horrible results.
+If correctable single-line errors exist, create
+.BR "<inputfile>.EXPERIMENTAL-checkpatch-fixes"
+with potential errors corrected to the preferred checkpatch style.
+.TP
+.BR \-\-fix\-inplace
+.BR EXPERIMENTAL
+- may create horrible results.
+Is the same as \fB\-\-fix\fR, but overwrites the input file.
+It's your fault if there's no backup or git.
+.TP
+.BR \-\-ignore\-perl\-version
+Override checking of perl version.
+Expect runtime errors.
+.TP
+.BR \-\-codespell
+Use the codespell dictionary for spelling/typos (default:\fI/usr/share/codespell/dictionary.txt\fR).
+.TP
+.BR \-\-codespellfile
+Use this codespell dictionary
+.TP
+.BR \-\-color
+Use colors when output is STDOUT (default: \fBon\fR).
+.TP
+.BR \-h ", " \-\-help ", " \-\-version
+Display help and exit.
+.SH SEE ALSO
+.IR betty-doc(1)
+.SH BUGS
+Please visit
+.IR https://github.com/holbertonschool/Betty/issues
+.SH AUTHOR
+Alexandre GAUTIER, Copyright 2016 Holberton Inc.

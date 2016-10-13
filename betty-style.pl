@@ -19,14 +19,14 @@ my $V = '0.32';
 use Getopt::Long qw(:config no_auto_abbrev);
 
 my $quiet = 0;
-my $tree = 1;
+my $tree = 0;
 my $chk_signoff = 1;
 my $chk_patch = 1;
 my $tst_only;
 my $emacs = 0;
-my $terse = 0;
+my $terse = 1;
 my $showfile = 0;
-my $file = 0;
+my $file = 1;
 my $git = 0;
 my %git_commits = ();
 my $check = 0;
@@ -76,39 +76,39 @@ Usage: $P [OPTION]... [FILE]...
 Version: $V
 
 Options:
-  -q, --quiet                quiet
-  --no-tree                  run without a kernel tree. Active by default
-  --no-signoff               do not check for 'Signed-off-by' line
-  --patch                    treat FILE as patchfile (default)
-  --emacs                    emacs compile window format
-  --terse                    one line per report. Active by default
-  --showfile                 emit diffed file position, not input file position
-  -g, --git                  treat FILE as a single commit or git revision range
-                             single git commit with:
+  -q, --quiet                Quiet mode
+  --tree                     Run with a kernel tree.
+  --no-signoff               Do not check for 'Signed-off-by' line
+  --patch                    Treat FILE as patchfile (default)
+  --emacs                    Emacs compile window format
+  --no-terse                 Disable one line per report.
+  --showfile                 Emit diffed file position, not input file position
+  -g, --git                  Treat FILE as a single commit or git revision range
+                             Single git commit with:
                                <rev>
                                <rev>^
                                <rev>~n
-                             multiple git commits with:
+                             Multiple git commits with:
                                <rev1>..<rev2>
                                <rev1>...<rev2>
                                <rev>-<count>
-                             git merges are ignored
-  -f, --file                 treat FILE as regular source file. Active by default
-  --subjective, --strict     enable more subjective tests
-  --list-types               list the possible message types
-  --types TYPE(,TYPE2...)    show only these comma separated message types
-  --ignore TYPE(,TYPE2...)   ignore various comma separated message types
-  --show-types               show the specific message type in the output
-  --max-line-length=n        set the maximum line length, if exceeded, warn
-  --min-conf-desc-length=n   set the min description length, if shorter, warn
+                             Git merges are ignored
+  --no-file                  Don't treat FILE as regular source file.
+  --subjective, --strict     Enable more subjective tests
+  --list-types               List the possible message types
+  --types TYPE(,TYPE2...)    Show only these comma separated message types
+  --ignore TYPE(,TYPE2...)   Ignore various comma separated message types
+  --show-types               Show the specific message type in the output
+  --max-line-length=n        Set the maximum line length, if exceeded, warn
+  --min-conf-desc-length=n   Set the min description length, if shorter, warn
   --root=PATH                PATH to the kernel tree root
-  --no-summary               suppress the per-file summary
-  --mailback                 only produce a report in case of warnings/errors
-  --summary-file             include the filename in summary
-  --debug KEY=[0|1]          turn on/off debugging of KEY, where KEY is one of
+  --no-summary               Suppress the per-file summary
+  --mailback                 Only produce a report in case of warnings/errors
+  --summary-file             Include the filename in summary
+  --debug KEY=[0|1]          Turn on/off debugging of KEY, where KEY is one of
                              'values', 'possible', 'type', and 'attr' (default
                              is all off)
-  --test-only=WORD           report only warnings/errors containing WORD
+  --test-only=WORD           Report only warnings/errors containing WORD
                              literally
   --fix                      EXPERIMENTAL - may create horrible results
                              If correctable single-line errors exist, create
@@ -118,13 +118,13 @@ Options:
   --fix-inplace              EXPERIMENTAL - may create horrible results
                              Is the same as --fix, but overwrites the input
                              file.  It's your fault if there's no backup or git
-  --ignore-perl-version      override checking of perl version.  expect
+  --ignore-perl-version      Override checking of perl version.  expect
                              runtime errors.
   --codespell                Use the codespell dictionary for spelling/typos
                              (default:/usr/share/codespell/dictionary.txt)
   --codespellfile            Use this codespell dictionary
   --color                    Use colors when output is STDOUT (default: on)
-  -h, --help, --version      display this help and exit
+  -h, --help, --version      Display this help and exit
 
 When FILE is - read standard input.
 EOM
@@ -197,7 +197,7 @@ GetOptions(
 	'emacs!'	=> \$emacs,
 	'terse!'	=> \$terse,
 	'showfile!'	=> \$showfile,
-	'f|file!'	=> \$file,
+	'file!'		=> \$file,
 	'g|git!'	=> \$git,
 	'subjective!'	=> \$check,
 	'strict!'	=> \$check,
@@ -225,13 +225,6 @@ GetOptions(
 	'version'	=> \$printVersion
 ) or help(1);
 
-#Force --no-tree
-$tree = 0;
-#Force --terse
-$terse = 1;
-#Force -f
-$file = 1;
-
 help(0) if ($help);
 
 printVersion(0) if ($printVersion);
@@ -251,7 +244,8 @@ if ($^V && $^V lt $minimum_perl_version) {
 }
 
 if ($#ARGV < 0) {
-	print "$P: no input files\n";
+	my $exec_name = basename($P);
+	print "$exec_name: no input files\n";
 	exit(1);
 }
 

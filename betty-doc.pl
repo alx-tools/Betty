@@ -1,6 +1,7 @@
 #!/usr/bin/perl -w
 
 use strict;
+use File::Basename;
 
 ## Copyright (c) 1998 Michael Zucchi, All Rights Reserved        ##
 ## Copyright (C) 2000, 1  Tim Waugh <twaugh@redhat.com>          ##
@@ -50,8 +51,9 @@ EOM
 }
 
 sub usage {
-    my $message = <<"EOF";
-Usage: $0 [OPTION ...] FILE ...
+	my $exec_name = basename($0);
+	my $message = <<"EOF";
+Usage: $exec_name [OPTION ...] FILE ...
 
 Read C language source or header FILEs, extract embedded documentation comments,
 and print STDOUT formatted documentation to standard output.
@@ -63,7 +65,7 @@ Output format selection (mutually exclusive):
   -docbook		Output DocBook format.
   -html			Output HTML format.
   -html5		Output HTML5 format.
-  -list			Output symbol list format. This is for use by docproc. This is the default.
+  -list			Output symbol list format. This is the default.
   -man			Output troff manual page format.
   -rst			Output reStructuredText format.
   -text			Output plain text format.
