@@ -3514,6 +3514,15 @@ sub process {
 			     "EXPORT_SYMBOL(foo); should immediately follow its function/variable\n" . $herecurr);
 		}
 
+# Check for global variables (not allowed).
+		if ($line =~ /^\+$Type\s*$Ident(?:\s+$Modifier)*(?:\s*=\s*.*)?;/ ||
+			$line =~ /^\+$Declare\s*\(\s*\*\s*$Ident\s*\)\s*[=,;:\[\(]/ ||
+			$line =~ /^\+$Ident(?:\s+|\s*\*\s*)$Ident\s*[=,;\[]/ ||
+			$line =~ /^\+$declaration_macros/) {
+			ERROR("GLOBAL_DECLARATION",
+				  "global variables are not allowed\n" . $herecurr);
+		}
+
 # check for global initialisers.
 		if ($line =~ /^\+$Type\s*$Ident(?:\s+$Modifier)*\s*=\s*($zero_initializer)\s*;/) {
 			if (ERROR("GLOBAL_INITIALISERS",

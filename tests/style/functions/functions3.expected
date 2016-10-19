@@ -1,0 +1,2 @@
+tests/style/functions/functions3.c:1: ERROR: global variables are not allowed
+total: 1 errors, 0 warnings, 28 lines checked
