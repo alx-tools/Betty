@@ -3524,13 +3524,13 @@ sub process {
 		}
 
 # check for global initialisers.
-		if ($line =~ /^\+$Type\s*$Ident(?:\s+$Modifier)*\s*=\s*($zero_initializer)\s*;/) {
-			if (ERROR("GLOBAL_INITIALISERS",
-				  "do not initialise globals to $1\n" . $herecurr) &&
-			    $fix) {
-				$fixed[$fixlinenr] =~ s/(^.$Type\s*$Ident(?:\s+$Modifier)*)\s*=\s*$zero_initializer\s*;/$1;/;
-			}
-		}
+		# if ($line =~ /^\+$Type\s*$Ident(?:\s+$Modifier)*\s*=\s*($zero_initializer)\s*;/) {
+		# 	if (ERROR("GLOBAL_INITIALISERS",
+		# 		  "do not initialise globals to $1\n" . $herecurr) &&
+		# 	    $fix) {
+		# 		$fixed[$fixlinenr] =~ s/(^.$Type\s*$Ident(?:\s+$Modifier)*)\s*=\s*$zero_initializer\s*;/$1;/;
+		# 	}
+		# }
 # check for static initialisers.
 		if ($line =~ /^\+.*\bstatic\s.*=\s*($zero_initializer)\s*;/) {
 			if (ERROR("INITIALISED_STATIC",
