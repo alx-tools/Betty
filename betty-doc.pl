@@ -2253,8 +2253,10 @@ sub push_parameter($$$) {
 	}
 
 	$anon_struct_union = 0;
+	$param =~ s/\[.*//;
+	$param =~ s/\)//;
 	my $param_name = $param;
-	$param_name =~ s/\[.*//;
+
 
 	if ($type eq "" && $param =~ /\.\.\.$/)
 	{
