@@ -166,7 +166,8 @@ sub sanitise_line_reset
 	}
 }
 
-sub sanitise_line {
+sub sanitise_line
+{
 	my ($line) = @_;
 
 	my $res = '';
@@ -271,6 +272,19 @@ sub sanitise_line {
 	return $res;
 }
 
+my $av_preprocessor = 0;
+my $av_pending;
+my @av_paren_type;
+my $av_pend_colon;
+
+sub annotate_reset
+{
+	$av_preprocessor = 0;
+	$av_pending = '_';
+	@av_paren_type = 'E';
+	$av_pend_colon = 'O';
+}
+
 sub process
 {
 	my $filename = shift;
@@ -282,6 +296,8 @@ sub process
 	my $realline = 0;
 	my $realcnt = 0;
 	my $in_comment = 0;
+
+	my $prev_values = 'E';
 
 	sanitise_line_reset();
 	my $line;
@@ -354,5 +370,40 @@ sub process
 
 		# print "==>$rawline\n";
 		# print "-->$line\n";
+	}
+
+	$linenr = 0;
+	$realcnt = 0;
+
+	foreach my $line (@lines)
+	{
+		$linenr++;
+
+		my $rawline = $rawlines[$linenr - 1];
+
+		if ($line =~ /^\@\@ -\d+(?:,\d+)? \+(\d+)(,(\d+))? \@\@/)
+		{
+			$realline = $1 - 1;
+			if (defined $2)
+			{
+				$realcnt = $3 + 1;
+			}
+			else
+			{
+				$realcnt = 1 + 1;
+			}
+			annotate_reset();
+			$prev_values = 'E';
+
+			# %suppress_ifbraces = ();
+			# %suppress_whiletrailers = ();
+			# %suppress_export = ();
+			# $suppress_statement = 0;
+			next;
+
+		# track the line number as we move through the hunk, note that
+		# new versions of GNU diff omit the leading space on completely
+		# blank context lines so we need to count that too.
+		}
 	}
 }
