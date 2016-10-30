@@ -1,4 +1,5 @@
 int func0(void);
+char *_strchr(char *, char);
 
 typedef unsigned int sample;
 
