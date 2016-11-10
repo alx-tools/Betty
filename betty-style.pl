@@ -3845,7 +3845,7 @@ sub process {
 			if ($prevline =~ /^(.(?:typedef\s*)?(?:(?:$Storage|$Inline)\s*)*\s*$Type\s*(?:\b$Ident|\(\*\s*$Ident\))\s*)\(/s && $inscope == 1) {
 				$nbfunc++;
 				$funclines = 0;
-				if ($nbfunc > $max_funcs) {
+				if ($max_funcs > 0 && $nbfunc > $max_funcs) {
 					my $tmpline = $realline - 1;
 					if ($showfile) {
 						$prefix = "$realfile:$tmpline: ";
