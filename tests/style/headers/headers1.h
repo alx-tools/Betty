@@ -1,3 +1,6 @@
+#ifndef _HEADERS1_H_
+#define _HEADERS1_H_
+
 #define sample 98
 #define sample1 98 + 402
 
@@ -40,3 +43,5 @@ typedef enum sample1_e {
 	second,
 	third
 } sample1_e;
+
+#endif /* _HEADERS1_H_ */

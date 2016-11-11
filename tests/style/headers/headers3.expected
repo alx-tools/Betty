@@ -1,0 +1,11 @@
+tests/style/headers/headers3.h:2: WARNING: This line is not protected from double inclusion
+tests/style/headers/headers3.h:4: WARNING: This line is not protected from double inclusion
+tests/style/headers/headers3.h:5: WARNING: This line is not protected from double inclusion
+tests/style/headers/headers3.h:6: WARNING: This line is not protected from double inclusion
+tests/style/headers/headers3.h:7: WARNING: This line is not protected from double inclusion
+tests/style/headers/headers3.h:8: WARNING: This line is not protected from double inclusion
+tests/style/headers/headers3.h:26: WARNING: This line is not protected from double inclusion
+tests/style/headers/headers3.h:28: WARNING: This line is not protected from double inclusion
+tests/style/headers/headers3.h:29: WARNING: This line is not protected from double inclusion
+tests/style/headers/headers3.h:30: WARNING: This line is not protected from double inclusion
+total: 0 errors, 10 warnings, 30 lines checked

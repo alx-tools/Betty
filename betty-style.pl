@@ -2083,6 +2083,11 @@ sub process {
 	my $previndent=0;
 	my $stashindent=0;
 
+	# Header protection
+	my $header_protected = 0;
+	my $protection_name = '';
+	my $header_if_depth = 0;
+
 	our $clean = 1;
 	my $signoff = 0;
 	my $is_patch = 0;
@@ -3046,6 +3051,44 @@ sub process {
 
 # check we are in a valid C source file if not then ignore this hunk
 		next if ($realfile !~ /\.(h|c)$/);
+
+# Check for header protection
+		if ($realfile =~ /\.h$/) {
+			# The header is not protected yet
+			if ($header_protected == 0) {
+				if ($protection_name eq '') {
+					if ($line =~ /^.#\s*ifndef\s*(\S*)\s*$/) {
+						$protection_name = $1;
+					}
+				}
+				if ($protection_name ne '' &&
+				    $line =~ /^.#\s*define\s*(\S*)\s*$/) {
+					if (defined $1 && $1 eq $protection_name) {
+						$header_protected = 1;
+					} else {
+						WARN("HEADER_PROTECTION",
+							"This line is not protected from double inclusion\n" . $hereprev);
+					}
+				}
+				if ($header_protected == 0 &&
+				    $line !~ /^.\s*$/ &&
+				    $line !~ /^.#\s*(?:end)?if/) {
+					WARN("HEADER_PROTECTION",
+						"This line is not protected from double inclusion\n" . $hereprev);
+				}
+			}
+
+			if ($line =~ /^.#\s*if/) {
+				++$header_if_depth;
+			}
+			if ($line =~ /^.#\s*endif/) {
+				--$header_if_depth;
+				if ($header_if_depth == 0) {
+					$header_protected = 0;
+					$protection_name = '';
+				}
+			}
+		}
 
 # check indentation of any line with a bare else
 # (but not if it is a multiple line "if (foo) return bar; else return baz;")
