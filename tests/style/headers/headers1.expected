@@ -1,8 +1,8 @@
-tests/style/headers/headers1.h:2: ERROR: Macros with complex values should be enclosed in parentheses
-tests/style/headers/headers1.h:4: ERROR: open brace '{' following struct go on the next line
-tests/style/headers/headers1.h:9: ERROR: open brace '{' following union go on the next line
-tests/style/headers/headers1.h:14: ERROR: open brace '{' following enum go on the next line
-tests/style/headers/headers1.h:28: ERROR: open brace '{' following struct go on the next line
-tests/style/headers/headers1.h:33: ERROR: open brace '{' following union go on the next line
-tests/style/headers/headers1.h:38: ERROR: open brace '{' following enum go on the next line
-total: 7 errors, 0 warnings, 42 lines checked
+tests/style/headers/headers1.h:5: ERROR: Macros with complex values should be enclosed in parentheses
+tests/style/headers/headers1.h:7: ERROR: open brace '{' following struct go on the next line
+tests/style/headers/headers1.h:12: ERROR: open brace '{' following union go on the next line
+tests/style/headers/headers1.h:17: ERROR: open brace '{' following enum go on the next line
+tests/style/headers/headers1.h:31: ERROR: open brace '{' following struct go on the next line
+tests/style/headers/headers1.h:36: ERROR: open brace '{' following union go on the next line
+tests/style/headers/headers1.h:41: ERROR: open brace '{' following enum go on the next line
+total: 7 errors, 0 warnings, 47 lines checked

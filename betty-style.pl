@@ -2084,7 +2084,7 @@ sub process {
 	my $stashindent=0;
 
 	# Header protection
-	my $header_declared = 0;
+	my $header_protected = 0;
 	my $protection_name = '';
 	my $header_if_depth = 0;
 
@@ -3054,40 +3054,37 @@ sub process {
 
 # Check for header protection
 		if ($realfile =~ /\.h$/) {
-
-			if ($header_declared == 0) {
-
-				if ($line !~ /^.\s*$/ &&
-				    $line !~ /^.#\s*ifndef/ &&
-				    $line !~ /^.#\s*define/) {
-					WARN("HEADER_PROTECTION",
-						"This line is not protected from double inclusion\n" . $hereprev);
+			# The header is not protected yet
+			if ($header_protected == 0) {
+				if ($protection_name eq '') {
+					if ($line =~ /^.#\s*ifndef\s*(\S*)\s*$/) {
+						$protection_name = $1;
+					}
 				}
-
-				if ($protection_name eq '' &&
-				    $line =~ /^.#\s*ifndef\s*(\S*)\s*$/) {
-					$protection_name = $1;
-				}
-
 				if ($protection_name ne '' &&
 				    $line =~ /^.#\s*define\s*(\S*)\s*$/) {
 					if (defined $1 && $1 eq $protection_name) {
-						$header_declared = 1;
+						$header_protected = 1;
 					} else {
 						WARN("HEADER_PROTECTION",
 							"This line is not protected from double inclusion\n" . $hereprev);
 					}
+				}
+				if ($header_protected == 0 &&
+				    $line !~ /^.\s*$/ &&
+				    $line !~ /^.#\s*(?:end)?if/) {
+					WARN("HEADER_PROTECTION",
+						"This line is not protected from double inclusion\n" . $hereprev);
 				}
 			}
 
 			if ($line =~ /^.#\s*if/) {
 				++$header_if_depth;
 			}
-
 			if ($line =~ /^.#\s*endif/) {
 				--$header_if_depth;
-				if ($header_declared == 1 && $header_if_depth == 0) {
-					$header_declared = 0;
+				if ($header_if_depth == 0) {
+					$header_protected = 0;
 					$protection_name = '';
 				}
 			}
