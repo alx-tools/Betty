@@ -1,1 +1,4 @@
 script: bash test
+branches:
+  only:
+    - master
