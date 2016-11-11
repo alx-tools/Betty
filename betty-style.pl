@@ -3881,7 +3881,8 @@ sub process {
 		# }
 		#
 		if ($realfile =~ /\.c$/ &&
-		    $line =~ /^.\s*(?:typedef\s+)?(enum|union|struct)(?:\s+$Ident)?\s*.*/) {
+		    $line =~ /^.\s*(?:typedef\s+)?(enum|union|struct)(?:\s+$Ident)?\s*.*/ &&
+		    $line !~ /;$/) {
 					WARN("STRUCT_DEF",
 						"$1 definition should be avoided in .c files\n");
 		}
