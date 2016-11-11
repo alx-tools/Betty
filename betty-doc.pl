@@ -1962,7 +1962,7 @@ sub output_typedef_list(%) {
 sub output_struct_list(%) {
     my %args = %{$_[0]};
 
-    print STDOUT $args{'struct'} . "\n";
+    print STDOUT "struct " . $args{'struct'} . "\n";
 }
 
 sub output_blockhead_list(%) {
@@ -2085,8 +2085,8 @@ sub dump_enum($$) {
 		$parameterdescs{$arg} = $undescribed;
 		print STDERR "${file}:$.: warning: Enum value '$arg' ".
 		    "not described in enum '$declaration_name'\n";
-	    }
 		++$warnings;
+	    }
 	}
 
 	output_declaration($declaration_name,
@@ -2294,7 +2294,7 @@ sub push_parameter($$$) {
 	    }
 			my $tmpLine = $. - 1;
 	    print STDERR "${file}:$tmpLine: warning:" .
-			 " No description found for parameter '$param'\n";
+			 " No description found for parameter or member '$param'\n";
 	    ++$warnings;
 	}
 	}
@@ -2457,8 +2457,10 @@ sub dump_function($$) {
 
 	create_parameterlist($args, ',', $file);
     } else {
-	print STDERR "${file}:$.: fatal: cannot understand function prototype: '$prototype'\n";
-	++$errors;
+	if ($prototype !~ /^(?:typedef\s*)?(struct|enum|union)/) {
+		print STDERR "${file}:$.: error: cannot understand function prototype: '$prototype'\n";
+		++$errors;
+	}
 	return;
     }
 
@@ -2830,11 +2832,21 @@ sub process_file($) {
 	}
 
 	if ($_ =~ /^(?:typedef\s+)?(?:(?:$Storage|$Inline)\s*)*\s*$Type\s*\(?\**($Ident)\s*\(/s &&
-	    $_ !~ /.*;\s*$/)
+	    $_ !~ /;\s*$/)
 	{
-		#print STDOUT "Function found: $1\n";
+		# print STDOUT "Function found: $1\n";
 		if (!length $identifier || $identifier ne $1) {
 			print STDERR "${file}:$.: warning: no description found for function $1\n";
+			++$warnings;
+		}
+	}
+
+	if ($_ =~ /^\s*(?:typedef\s+)?(enum|union|struct)(?:\s+($Ident))?\s*.*/s &&
+	    $_ !~ /;\s*$/)
+	{
+		# print STDOUT "$1 found: $2\n";
+		if (!length $identifier || $identifier ne "$1 $2") {
+			print STDERR "${file}:$.: warning: no description found for $1 $2\n";
 			++$warnings;
 		}
 	}
@@ -3003,7 +3015,7 @@ sub process_file($) {
 	    if (/$doc_split_start/) {
 		$state = 5;
 		$split_doc_state = 1;
-	    } elsif ($decl_type eq 'function') {
+	    } elsif ($decl_type eq 'function' && $_ !~ /(?:struct|enum|union)+/) {
 		process_state3_function($_, $file);
 	    } else {
 		process_state3_type($_, $file);
