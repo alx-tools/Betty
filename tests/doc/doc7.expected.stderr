@@ -1,0 +1,6 @@
+tests/doc/doc7.h:14: warning: No description found for parameter or member 'owner'
+tests/doc/doc7.h:28: warning: Enum value 'FIRST' not described in enum 'test'
+tests/doc/doc7.h:38: warning: No description found for parameter or member 'rgba'
+tests/doc/doc7.h:51: warning: No description found for parameter or member 'race'
+tests/doc/doc7.h:65: warning: Enum value 'SECOND' not described in enum 'test2'
+tests/doc/doc7.h:75: warning: No description found for parameter or member 'value'
