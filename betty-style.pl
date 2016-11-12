@@ -3071,7 +3071,7 @@ sub process {
 					}
 				}
 				if ($protection_name ne '' &&
-				    $line =~ /^.#\s*define\s*(\S*)\s*$/) {
+				    $line =~ /^.#\s*define\s*(\S*)\s*.*$/) {
 					if (defined $1 && $1 eq $protection_name) {
 						$header_protected = 1;
 					} else {
