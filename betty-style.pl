@@ -3074,9 +3074,6 @@ sub process {
 				    $line =~ /^.#\s*define\s*(\S*)\s*.*$/) {
 					if (defined $1 && $1 eq $protection_name) {
 						$header_protected = 1;
-					} else {
-						WARN("HEADER_PROTECTION",
-							"This line is not protected from double inclusion\n" . $hereprev);
 					}
 				}
 				if ($header_protected == 0 &&
