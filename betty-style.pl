@@ -3471,7 +3471,7 @@ sub process {
 # check for initialisation to aggregates open brace on the next line
 		if ($line =~ /^.\s*{/ &&
 		    ($prevline =~ /(?:^|[^=])=\s*$/ ||
-		    $prevline =~ /^.\s*do\s*/)) {
+		    $prevline =~ /^.\s*\bdo\b\s*/)) {
 			if (ERROR("OPEN_BRACE",
 				  "that open brace { should be on the previous line\n" . $hereprev) &&
 			    $fix && $prevline =~ /^\+/ && $line =~ /^\+/) {
