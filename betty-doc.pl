@@ -2839,6 +2839,15 @@ sub process_file($) {
 			print STDERR "${file}:$.: warning: no description found for function $1\n";
 			++$warnings;
 		}
+		elsif ($_ =~ /^(?:(?:$Storage|$Inline)\s*)*\s*($Type)\s*\(\**($Ident)\s*\((.*)\)\)\(/s)
+		{
+			my $type_ = $1;
+			my $func_ = $2;
+			my $params_ = $3;
+			$_ = "${type_} *${func_} (${params_})\n";
+			# print "LINE:$_\n";
+			# print "FUNCTION -> ${type_} ${func_} (${params_})\n";
+		}
 	}
 
 	if ($_ =~ /^\s*(?:typedef\s+)?(enum|union|struct)(?:\s+($Ident))?\s*.*/s &&
