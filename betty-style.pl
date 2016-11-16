@@ -51,6 +51,7 @@ my $configuration_file = ".checkpatch.conf";
 my $max_line_length = 80;
 my $max_func_length = 40;
 my $max_funcs = 5;
+my $safe_guard = 1;
 my $ignore_perl_version = 0;
 my $minimum_perl_version = 5.10.0;
 my $min_conf_desc_length = 4;
@@ -99,7 +100,6 @@ Options:
   --types TYPE(,TYPE2...)    Show only these comma separated message types
   --ignore TYPE(,TYPE2...)   Ignore various comma separated message types
   --show-types               Show the specific message type in the output
-  --max-line-length=n        Set the maximum line length, if exceeded, warn
   --min-conf-desc-length=n   Set the min description length, if shorter, warn
   --root=PATH                PATH to the kernel tree root
   --no-summary               Suppress the per-file summary
@@ -124,6 +124,14 @@ Options:
                              (default:/usr/share/codespell/dictionary.txt)
   --codespellfile            Use this codespell dictionary
   --color                    Use colors when output is STDOUT (default: on)
+
+  --max-line-length=n        Set the maximum length of a line (default: 80)
+  --max-func-length=n        Set the maximum length of a function (default: 40)
+  --max-funcs=n              Set the maximum declared functions per source file
+                             (default: 5)
+                             Set it to -1 for infinite
+  --no-safe-guard            Don't check for header files protection
+
   -h, --help, --version      Display this help and exit
 
 When FILE is - read standard input.
@@ -205,9 +213,6 @@ GetOptions(
 	'types=s'	=> \@use,
 	'show-types!'	=> \$show_types,
 	'list-types!'	=> \$list_types,
-	'max-line-length=i' => \$max_line_length,
-	'max-func-length=i' => \$max_func_length,
-	'max-funcs=i' => \$max_funcs,
 	'min-conf-desc-length=i' => \$min_conf_desc_length,
 	'root=s'	=> \$root,
 	'summary!'	=> \$summary,
@@ -222,7 +227,11 @@ GetOptions(
 	'codespellfile=s'	=> \$codespellfile,
 	'color!'	=> \$color,
 	'h|help'	=> \$help,
-	'version'	=> \$printVersion
+	'version'	=> \$printVersion,
+	'max-line-length=i' => \$max_line_length,
+	'max-func-length=i' => \$max_func_length,
+	'max-funcs=i'	=> \$max_funcs,
+	'safe-guard!'	=> \$safe_guard
 ) or help(1);
 
 help(0) if ($help);
@@ -2083,6 +2092,11 @@ sub process {
 	my $previndent=0;
 	my $stashindent=0;
 
+	# Header protection
+	my $header_protected = 0;
+	my $protection_name = '';
+	my $header_if_depth = 0;
+
 	our $clean = 1;
 	my $signoff = 0;
 	my $is_patch = 0;
@@ -3047,6 +3061,41 @@ sub process {
 # check we are in a valid C source file if not then ignore this hunk
 		next if ($realfile !~ /\.(h|c)$/);
 
+# Check for header protection
+		if ($realfile =~ /\.h$/ && $safe_guard == 1) {
+			# The header is not protected yet
+			if ($header_protected == 0) {
+				if ($protection_name eq '') {
+					if ($line =~ /^.#\s*ifndef\s*(\S*)\s*$/) {
+						$protection_name = $1;
+					}
+				}
+				if ($protection_name ne '' &&
+				    $line =~ /^.#\s*define\s*(\S*)\s*.*$/) {
+					if (defined $1 && $1 eq $protection_name) {
+						$header_protected = 1;
+					}
+				}
+				if ($header_protected == 0 &&
+				    $line !~ /^.\s*$/ &&
+				    $line !~ /^.#\s*(?:end)?if/) {
+					WARN("HEADER_PROTECTION",
+						"This line is not protected from double inclusion\n" . $hereprev);
+				}
+			}
+
+			if ($line =~ /^.#\s*if/) {
+				++$header_if_depth;
+			}
+			if ($line =~ /^.#\s*endif/) {
+				--$header_if_depth;
+				if ($header_if_depth == 0) {
+					$header_protected = 0;
+					$protection_name = '';
+				}
+			}
+		}
+
 # check indentation of any line with a bare else
 # (but not if it is a multiple line "if (foo) return bar; else return baz;")
 # if the previous line is a break or return and is indented 1 tab more...
@@ -3422,7 +3471,7 @@ sub process {
 # check for initialisation to aggregates open brace on the next line
 		if ($line =~ /^.\s*{/ &&
 		    ($prevline =~ /(?:^|[^=])=\s*$/ ||
-		    $prevline =~ /^.\s*do\s*/)) {
+		    $prevline =~ /^.\s*\bdo\b\s*/)) {
 			if (ERROR("OPEN_BRACE",
 				  "that open brace { should be on the previous line\n" . $hereprev) &&
 			    $fix && $prevline =~ /^\+/ && $line =~ /^\+/) {
@@ -3799,7 +3848,7 @@ sub process {
 			if ($prevline =~ /^(.(?:typedef\s*)?(?:(?:$Storage|$Inline)\s*)*\s*$Type\s*(?:\b$Ident|\(\*\s*$Ident\))\s*)\(/s && $inscope == 1) {
 				$nbfunc++;
 				$funclines = 0;
-				if ($nbfunc > $max_funcs) {
+				if ($max_funcs > 0 && $nbfunc > $max_funcs) {
 					my $tmpline = $realline - 1;
 					if ($showfile) {
 						$prefix = "$realfile:$tmpline: ";
@@ -3835,7 +3884,8 @@ sub process {
 		# }
 		#
 		if ($realfile =~ /\.c$/ &&
-		    $line =~ /^.\s*(?:typedef\s+)?(enum|union|struct)(?:\s+$Ident)?\s*.*/) {
+		    $line =~ /^.\s*(?:typedef\s+)?(enum|union|struct)(?:\s+$Ident)?\s*.*/ &&
+		    $line !~ /;$/) {
 					WARN("STRUCT_DEF",
 						"$1 definition should be avoided in .c files\n");
 		}

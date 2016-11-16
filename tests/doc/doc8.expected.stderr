@@ -1,0 +1,6 @@
+tests/doc/doc8.h:11: warning: no description found for struct dog
+tests/doc/doc8.h:25: warning: no description found for enum test
+tests/doc/doc8.h:38: warning: no description found for union color
+tests/doc/doc8.h:51: warning: no description found for struct animal
+tests/doc/doc8.h:65: warning: no description found for enum test2
+tests/doc/doc8.h:78: warning: no description found for union color2
