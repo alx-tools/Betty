@@ -2841,7 +2841,7 @@ sub process_file($) {
 			print STDERR "${file}:$.: warning: no description found for function $1\n";
 			++$warnings;
 		}
-		elsif ($_ =~ /^(?:(?:$Storage|$Inline)\s*)*\s*($Type)\s*\(\**($Ident)\s*\((.*)\)\)\(/s)
+		elsif ($_ =~ /^(?:(?:$Storage|$Inline)\s*)*\s*($Type)\s*\(\**($Ident)\s*\((.*)\)\)\s*\(/s)
 		{
 			my $type_ = $1;
 			my $func_ = $2;
