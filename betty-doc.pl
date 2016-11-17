@@ -2831,6 +2831,8 @@ sub process_file($) {
 	    $_ .= <IN>;
 	}
 
+	print "($.)STATE:$state($in_doc_sect)\t$_\n";
+
 	if ($_ =~ /^(?:typedef\s+)?(?:(?:$Storage|$Inline)\s*)*\s*$Type\s*\(?\**($Ident)\s*\(/s &&
 	    $_ !~ /;\s*$/)
 	{

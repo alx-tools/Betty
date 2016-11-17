@@ -15,7 +15,7 @@ use Getopt::Long qw(:config no_auto_abbrev);
 
 my $P = $0;
 my $exec_name = basename($P);
-my $V = '0.32';
+my $V = '2.0';
 
 my $show_types = 0;
 my $list_types = 0;
