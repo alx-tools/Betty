@@ -59,3 +59,15 @@ int (*get_op_func(char *s)) (int, int)
 	}
 	return (NULL);
 }
+
+/**
+ * get_valid_type - Test
+ *
+ * @s: Test
+ *
+ * Return: Test
+ */
+char *(*get_valid_type(char s))(void)
+{
+	return (NULL);
+}

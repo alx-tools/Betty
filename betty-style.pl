@@ -3833,6 +3833,9 @@ sub process {
 # and number of lines per function
 		if ($line =~ /.*}.*/) {
 			$inscope--;
+			if ($inscope == 0) {
+				$funclines = 0;
+			}
 		}
 
 		if ($inscope >= 1) {
