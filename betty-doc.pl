@@ -2831,7 +2831,9 @@ sub process_file($) {
 	    $_ .= <IN>;
 	}
 
-	if ($_ =~ /^(?:typedef\s+)?(?:(?:$Storage|$Inline)\s*)*\s*$Type\s*\(?\**($Ident)\s*\(/s &&
+	my $attr = qr{__attribute__\s*\(\(\w+\)\)};
+
+	if ($_ =~ /^(?:typedef\s+)?(?:(?:$Storage|$Inline)\s*)*\s*$Type\s*(?:$attr\s*)?\(?\**($Ident)\s*\(/s &&
 	    $_ !~ /;\s*$/)
 	{
 		# print STDOUT "Function found: $1\n";
@@ -2839,14 +2841,17 @@ sub process_file($) {
 			print STDERR "${file}:$.: warning: no description found for function $1\n";
 			++$warnings;
 		}
-		elsif ($_ =~ /^(?:(?:$Storage|$Inline)\s*)*\s*($Type)\s*\(\**($Ident)\s*\((.*)\)\)\s*\(/s)
-		{
+		elsif ($_ =~ /^(?:(?:$Storage|$Inline)\s*)*\s*($Type)\s*\(\**($Ident)\s*\((.*)\)\)\s*\(/s) {
 			my $type_ = $1;
 			my $func_ = $2;
 			my $params_ = $3;
 			$_ = "${type_} *${func_} (${params_})\n";
 			# print "LINE:$_\n";
 			# print "FUNCTION -> ${type_} ${func_} (${params_})\n";
+		}
+		elsif ($_ =~ $attr) {
+			$_ =~ s/__attribute__\s*\(\(\w+\)\)//;
+			# print "LINE:$_\n";
 		}
 	}
 
