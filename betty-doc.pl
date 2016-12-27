@@ -140,7 +140,6 @@ my $doc_com_body = '\s*\* ?';
 my $doc_decl = $doc_com . '(\w+)';
 my $doc_sect = $doc_com . '([' . $doc_special . ']?[\w\s]+):(.*)';
 my $doc_content = $doc_com_body . '(.*)';
-my $doc_block = $doc_com . 'DOC:\s*(.*)?';
 my $doc_split_start = '^\s*/\*\*\s*$';
 my $doc_split_sect = '\s*\*\s*(@[\w\s]+):(.*)';
 my $doc_split_end = '^\s*\*/\s*$';
@@ -194,49 +193,6 @@ sub dump_section {
 	}
 }
 
-##
-# dump DOC: section after checking that it should go out
-#
-sub dump_doc_section {
-	my $file = shift;
-	my $name = shift;
-	my $contents = join "\n", @_;
-
-
-	dump_section($file, $name, $contents);
-	output_blockhead({'sectionlist' => \@sectionlist,
-	    'sections' => \%sections,
-	    'content-only' => 0, });
-}
-
-##
-# output function
-#
-# parameterdescs, a hash.
-#  function => "function name"
-#  parameterlist => @list of parameters
-#  parameterdescs => %parameter descriptions
-#  sectionlist => @list of sections
-#  sections => %section descriptions
-#
-
-sub output_highlight {
-	my $contents = join "\n", @_;
-	my $line;
-
-	eval $dohighlight;
-	die $@ if $@;
-
-	foreach $line (split "\n", $contents) {
-		$line =~ s/^\s*//;
-		if ($line ne "") {
-			$line =~ s/\\\\\\/\&/g;
-			print STDOUT $line;
-		}
-		print STDOUT "\n";
-	}
-}
-
 ## list mode output functions
 
 sub output_function_list(%) {
@@ -247,7 +203,7 @@ sub output_function_list(%) {
 # output enum in list
 sub output_enum_list(%) {
 	my %args = %{$_[0]};
-	print STDOUT $args{'enum'} . "\n";
+	print STDOUT "enum " . $args{'enum'} . "\n";
 }
 
 # output typedef in list
@@ -262,15 +218,6 @@ sub output_struct_list(%) {
 	print STDOUT "struct " . $args{'struct'} . "\n";
 }
 
-sub output_blockhead_list(%) {
-	my %args = %{$_[0]};
-	my ($parameter, $section);
-
-	foreach $section (@{$args{'sectionlist'}}) {
-		print STDOUT "DOC: $section\n";
-	}
-}
-
 ##
 # generic output function for all types (function, struct/union, typedef, enum);
 # calls the generated, variable output_ function name based on
@@ -281,16 +228,8 @@ sub output_declaration {
 	my $functype = shift;
 	my $func = "output_${functype}_list";
 
-	&$func(@_);
-	$section_counter++;
-}
-
-##
-# generic output function - calls the right one based on current output mode.
-sub output_blockhead {
-	no strict 'refs';
-	my $func = "output_blockhead_list";
-	&$func(@_);
+	# TODO: Optional output
+	# &$func(@_);
 	$section_counter++;
 }
 
@@ -748,7 +687,9 @@ sub dump_function($$) {
 		$return_type = $1;
 		$declaration_name = $2;
 		$noret = 1;
-	} elsif ($prototype =~ m/^()([a-zA-Z0-9_~:]+)\s*\(([^\(]*)\)/ ||
+	}
+	# TODO: Use Better Regex ...
+	elsif ($prototype =~ m/^()([a-zA-Z0-9_~:]+)\s*\(([^\(]*)\)/ ||
 	    $prototype =~ m/^(\w+)\s+([a-zA-Z0-9_~:]+)\s*\(([^\(]*)\)/ ||
 	    $prototype =~ m/^(\w+\s*\*)\s*(?:\**\s*)?([a-zA-Z0-9_~:]+)\s*\(([^\(]*)\)/ ||
 	    $prototype =~ m/^(\w+\s+\w+)\s+([a-zA-Z0-9_~:]+)\s*\(([^\(]*)\)/ ||
@@ -782,11 +723,6 @@ sub dump_function($$) {
 	my $prms = join " ", @parameterlist;
 	check_sections($file, $declaration_name, "function", $sectcheck, $prms, "");
 
-	# This check emits a lot of warnings at the moment, because many
-	# functions don't have a 'Return' doc section. So until the number
-	# of warnings goes sufficiently down, the check is only performed in
-	# verbose mode.
-	# TODO: always perform the check.
 	if (!$noret) {
 		check_return_section($file, $declaration_name, $return_type);
 	}
@@ -819,78 +755,13 @@ sub reset_state {
 	$split_doc_state = 0;
 }
 
-sub tracepoint_munge($) {
-	my $file = shift;
-	my $tracepointname = 0;
-	my $tracepointargs = 0;
-
-	if ($prototype =~ m/TRACE_EVENT\((.*?),/) {
-		$tracepointname = $1;
-	}
-	if ($prototype =~ m/DEFINE_SINGLE_EVENT\((.*?),/) {
-		$tracepointname = $1;
-	}
-	if ($prototype =~ m/DEFINE_EVENT\((.*?),(.*?),/) {
-		$tracepointname = $2;
-	}
-	$tracepointname =~ s/^\s+//; #strip leading whitespace
-	if ($prototype =~ m/TP_PROTO\((.*?)\)/) {
-		$tracepointargs = $1;
-	}
-	if (($tracepointname eq 0) || ($tracepointargs eq 0)) {
-		WARN("Unrecognized tracepoint format: $prototype");
-		# print STDERR "${file}:$.: warning: Unrecognized tracepoint format: \n".
-		#     "$prototype\n";
-		# ++$warnings;
-	} else {
-		$prototype = "static inline void trace_$tracepointname($tracepointargs)";
-	}
-}
-
-sub syscall_munge() {
-	my $void = 0;
-
-	$prototype =~ s@[\r\n\t]+@ @gos; # strip newlines/CR's/tabs
-##	if ($prototype =~ m/SYSCALL_DEFINE0\s*\(\s*(a-zA-Z0-9_)*\s*\)/) {
-	if ($prototype =~ m/SYSCALL_DEFINE0/) {
-		$void = 1;
-##		$prototype = "long sys_$1(void)";
-	}
-
-	$prototype =~ s/SYSCALL_DEFINE.*\(/long sys_/; # fix return type & func name
-	if ($prototype =~ m/long (sys_.*?),/) {
-		$prototype =~ s/,/\(/;
-	} elsif ($void) {
-		$prototype =~ s/\)/\(void\)/;
-	}
-
-	# now delete all of the odd-number commas in $prototype
-	# so that arg types & arg names don't have a comma between them
-	my $count = 0;
-	my $len = length($prototype);
-	if ($void) {
-		$len = 0;	# skip the for-loop
-	}
-	for (my $ix = 0; $ix < $len; $ix++) {
-		if (substr($prototype, $ix, 1) eq ',') {
-			$count++;
-			if ($count % 2 == 1) {
-				substr($prototype, $ix, 1) = ' ';
-			}
-		}
-	}
-}
-
 sub process_state3_function($$) {
 	my $x = shift;
 	my $file = shift;
 
 	$x =~ s@\/\/.*$@@gos; # strip C99-style comments to end of line
 
-	if ($x =~ m#\s*/\*\s+MACDOC\s*#io || ($x =~ /^#/ && $x !~ /^#\s*define/)) {
-		# do nothing
-	}
-	elsif ($x =~ /([^\{]*)/) {
+	if ($x =~ /([^\{]*)/) {
 		$prototype .= $1;
 	}
 
@@ -898,13 +769,6 @@ sub process_state3_function($$) {
 		$prototype =~ s@/\*.*?\*/@@gos;	# strip comments.
 		$prototype =~ s@[\r\n]+@ @gos; # strip newlines/cr's.
 		$prototype =~ s@^\s+@@gos; # strip leading spaces
-		if ($prototype =~ /SYSCALL_DEFINE/) {
-			syscall_munge();
-		}
-		if ($prototype =~ /TRACE_EVENT/ || $prototype =~ /DEFINE_EVENT/ ||
-		    $prototype =~ /DEFINE_SINGLE_EVENT/) {
-			tracepoint_munge($file);
-		}
 		dump_function($prototype, $file);
 		reset_state();
 	}
@@ -952,81 +816,61 @@ sub xml_escape($) {
 	return $text;
 }
 
-# xml_unescape: reverse the effects of xml_escape
-sub xml_unescape($) {
-	my $text = shift;
-
-	$text =~ s/\\\\\\amp;/\&/g;
-	$text =~ s/\\\\\\lt;/</g;
-	$text =~ s/\\\\\\gt;/>/g;
-	return $text;
-}
-
-# convert local escape strings to html
-# local escape strings look like:  '\\\\menmonic:' (that's 4 backslashes)
-sub local_unescape($) {
-	my $text = shift;
-
-	$text =~ s/\\\\\\\\lt:/</g;
-	$text =~ s/\\\\\\\\gt:/>/g;
-	return $text;
-}
-
 #Regular expressions
-our $Storage	= qr{extern|static|asmlinkage};
-our $Inline	= qr{inline|__always_inline|noinline|__inline|__inline__};
+our $Storage = qr{extern|static|asmlinkage};
+our $Inline = qr{inline|__always_inline|noinline|__inline|__inline__};
 our $InitAttributePrefix = qr{__(?:mem|cpu|dev|net_|)};
 our $InitAttributeData = qr{$InitAttributePrefix(?:initdata\b)};
 our $InitAttributeConst = qr{$InitAttributePrefix(?:initconst\b)};
 our $InitAttributeInit = qr{$InitAttributePrefix(?:init\b)};
 our $InitAttribute = qr{$InitAttributeData|$InitAttributeConst|$InitAttributeInit};
-our $Attribute	= qr{
-			const|
-			__percpu|
-			__nocast|
-			__safe|
-			__bitwise__|
-			__packed__|
-			__packed2__|
-			__naked|
-			__maybe_unused|
-			__always_unused|
-			__noreturn|
-			__used|
-			__cold|
-			__pure|
-			__noclone|
-			__deprecated|
-			__read_mostly|
-			__kprobes|
-			$InitAttribute|
-			____cacheline_aligned|
-			____cacheline_aligned_in_smp|
-			____cacheline_internodealigned_in_smp|
-			__weak
-		}x;
-our $Sparse	= qr{
-			__user|
-			__kernel|
-			__force|
-			__iomem|
-			__pmem|
-			__must_check|
-			__init_refok|
-			__kprobes|
-			__ref|
-			__rcu|
-			__private
-		}x;
+our $Attribute = qr{
+	const|
+	__percpu|
+	__nocast|
+	__safe|
+	__bitwise__|
+	__packed__|
+	__packed2__|
+	__naked|
+	__maybe_unused|
+	__always_unused|
+	__noreturn|
+	__used|
+	__cold|
+	__pure|
+	__noclone|
+	__deprecated|
+	__read_mostly|
+	__kprobes|
+	$InitAttribute|
+	____cacheline_aligned|
+	____cacheline_aligned_in_smp|
+	____cacheline_internodealigned_in_smp|
+	__weak
+}x;
+our $Sparse = qr{
+	__user|
+	__kernel|
+	__force|
+	__iomem|
+	__pmem|
+	__must_check|
+	__init_refok|
+	__kprobes|
+	__ref|
+	__rcu|
+	__private
+}x;
 our @modifierList = (
 	qr{fastcall},
 );
 our @modifierListFile = ();
 my $mods = "(?x:  \n" . join("|\n  ", (@modifierList, @modifierListFile)) . "\n)";
-our $Ident	= qr{
-			[A-Za-z_][A-Za-z\d_]*
-			(?:\s*\#\#\s*[A-Za-z_][A-Za-z\d_]*)*
-		}x;
+our $Ident = qr{
+	[A-Za-z_][A-Za-z\d_]*
+	(?:\s*\#\#\s*[A-Za-z_][A-Za-z\d_]*)*
+}x;
 our @typeListMisordered = (
 	qr{char\s+(?:un)?signed},
 	qr{int\s+(?:(?:un)?signed\s+)?short\s},
@@ -1069,7 +913,7 @@ our @typeList = (
 );
 our @typeListFile = ();
 my $all = "(?x:  \n" . join("|\n  ", (@typeList, @typeListFile)) . "\n)";
-our $Modifier	= qr{(?:$Attribute|$Sparse|$mods)};
+our $Modifier = qr{(?:$Attribute|$Sparse|$mods)};
 our $typeC99Typedefs = qr{(?:__)?(?:[us]_?)?int_?(?:8|16|32|64)_t};
 our $typeOtherOSTypedefs = qr{(?x:
 	u_(?:char|short|int|long) |          # bsd
@@ -1084,20 +928,20 @@ our $typeTypedefs = qr{(?x:
 	$typeOtherOSTypedefs\b|
 	$typeKernelTypedefs\b
 )};
-our $NonptrType	= qr{
-		(?:$Modifier\s+|const\s+)*
-		(?:
-			(?:typeof|__typeof__)\s*\([^\)]*\)|
-			(?:$typeTypedefs\b)|
-			(?:${all}\b)
-		)
-		(?:\s+$Modifier|\s+const)*
-	}x;
-our $Type	= qr{
-		$NonptrType
-		(?:(?:\s|\*|\[\])+\s*const|(?:\s|\*\s*(?:const\s*)?|\[\])+|(?:\s*\[\s*\])+)?
-		(?:\s+$Inline|\s+$Modifier)*
-	}x;
+our $NonptrType = qr{
+	(?:$Modifier\s+|const\s+)*
+	(?:
+		(?:typeof|__typeof__)\s*\([^\)]*\)|
+		(?:$typeTypedefs\b)|
+		(?:${all}\b)
+	)
+	(?:\s+$Modifier|\s+const)*
+}x;
+our $Type = qr{
+	$NonptrType
+	(?:(?:\s|\*|\[\])+\s*const|(?:\s|\*\s*(?:const\s*)?|\[\])+|(?:\s*\[\s*\])+)?
+	(?:\s+$Inline|\s+$Modifier)*
+}x;
 
 sub report {
 	my ($level, $msg) = @_;
@@ -1222,16 +1066,7 @@ sub process_file($) {
 				$in_doc_sect = 0;
 			}
 		} elsif ($state == 1) { # this line is the function name (always)
-			if (/$doc_block/o) {
-				$state = 4;
-				$contents = "";
-				if ( $1 eq "" ) {
-					$section = $section_intro;
-				} else {
-					$section = $1;
-				}
-			}
-			elsif (/$doc_decl/o) {
+			if (/$doc_decl/o) {
 				$identifier = $1;
 				if (/\s*([\w\s]+?)\s*-/) {
 					$identifier = $1;
@@ -1349,7 +1184,16 @@ sub process_file($) {
 				# print STDERR "${file}:$.: warning: bad line: $_";
 				# ++$warnings;
 			}
-		} elsif ($state == 5) { # scanning for split parameters
+		} elsif ($state == 3) {	# scanning for function '{' (end of prototype)
+			if (/$doc_split_start/) {
+				$state = 4;
+				$split_doc_state = 1;
+			} elsif ($decl_type eq 'function' && $_ !~ /(?:struct|enum|union)+/) {
+				process_state3_function($_, $file);
+			} else {
+				process_state3_type($_, $file);
+			}
+		} elsif ($state == 4) { # scanning for split parameters
 			# First line (state 1) needs to be a @parameter
 			if ($split_doc_state == 1 && /$doc_split_sect/o) {
 				$section = $1;
@@ -1380,50 +1224,6 @@ sub process_file($) {
 					print STDERR "Warning(${file}:$.): ";
 					print STDERR "Incorrect use of kernel-doc format: $_";
 					# ++$warnings;
-				}
-			}
-		} elsif ($state == 3) {	# scanning for function '{' (end of prototype)
-			if (/$doc_split_start/) {
-				$state = 5;
-				$split_doc_state = 1;
-			} elsif ($decl_type eq 'function' && $_ !~ /(?:struct|enum|union)+/) {
-				process_state3_function($_, $file);
-			} else {
-				process_state3_type($_, $file);
-			}
-		} elsif ($state == 4) {
-			# Documentation block
-			if (/$doc_block/) {
-				dump_doc_section($file, $section, xml_escape($contents));
-				$contents = "";
-				%constants = ();
-				%parameterdescs = ();
-				%parametertypes = ();
-				@parameterlist = ();
-				%sections = ();
-				@sectionlist = ();
-				$prototype = "";
-				if ( $1 eq "" ) {
-					$section = $section_intro;
-				} else {
-					$section = $1;
-				}
-			}
-			elsif (/$doc_end/) {
-				dump_doc_section($file, $section, xml_escape($contents));
-				$contents = "";
-				%constants = ();
-				%parameterdescs = ();
-				%parametertypes = ();
-				@parameterlist = ();
-				%sections = ();
-				@sectionlist = ();
-				$prototype = "";
-				$state = 0;
-			}
-			elsif (/$doc_content/) {
-				if ($1 ne "") {
-					$contents .= $1 . "\n";
 				}
 			}
 		}
