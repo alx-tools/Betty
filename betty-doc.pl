@@ -18,6 +18,7 @@ use diagnostics;
 use File::Basename;
 use Cwd 'abs_path';
 use Term::ANSIColor qw(:constants);
+local $Term::ANSIColor::AUTORESET = 1;
 use Getopt::Long qw(:config no_auto_abbrev);
 
 my $P = $0;
@@ -76,8 +77,6 @@ if ($#ARGV < 0) {
 }
 
 ## init lots of data
-my $errors = 0;
-my $warnings = 0;
 my $anon_struct_union = 0;
 
 # match expressions used to find embedded type information
@@ -95,6 +94,7 @@ my @highlights = (
 );
 
 my $dohighlight = "";
+my $prefix = '';
 
 my (%parametertypes, $declaration_purpose);
 my ($type, $declaration_name, $return_type);
@@ -174,23 +174,20 @@ sub dump_section {
 
 	if ($name =~ m/$type_constant/) {
 		$name = $1;
-		# print STDERR "constant section '$1' = '$contents'\n";
 		$constants{$name} = $contents;
 	} elsif ($name =~ m/$type_param/) {
-		# print STDERR "parameter def '$1' = '$contents'\n";
 		$name = $1;
 		$parameterdescs{$name} = $contents;
 		$sectcheck = $sectcheck . $name . " ";
 	} elsif ($name eq "@\.\.\.") {
-		# print STDERR "parameter def '...' = '$contents'\n";
 		$name = "...";
 		$parameterdescs{$name} = $contents;
 		$sectcheck = $sectcheck . $name . " ";
 	} else {
-		# print STDERR "other section '$name' = '$contents'\n";
 		if (defined($sections{$name}) && ($sections{$name} ne "")) {
-			print STDERR "${file}:$.: error: duplicate section name '$name'\n";
-			++$errors;
+			ERROR("duplicate section name '$name'");
+			# print STDERR "${file}:$.: error: duplicate section name '$name'\n";
+			# ++$errors;
 		}
 		$sections{$name} = $contents;
 		push @sectionlist, $name;
@@ -357,8 +354,9 @@ sub dump_struct($$) {
 		);
 	}
 	else {
-		print STDERR "${file}:$.: error: Cannot parse struct or union!\n";
-		++$errors;
+		ERROR("Cannot parse struct or union!");
+		# print STDERR "${file}:$.: error: Cannot parse struct or union!\n";
+		# ++$errors;
 	}
 }
 
@@ -379,9 +377,11 @@ sub dump_enum($$) {
 			push @parameterlist, $arg;
 			if (!$parameterdescs{$arg}) {
 				$parameterdescs{$arg} = $undescribed;
-				print STDERR "${file}:$.: warning: Enum value '$arg' ".
-				    "not described in enum '$declaration_name'\n";
-				++$warnings;
+				WARN("Enum value '$arg' ".
+				    "not described in enum '$declaration_name'");
+				# print STDERR "${file}:$.: warning: Enum value '$arg' ".
+				#     "not described in enum '$declaration_name'\n";
+				# ++$warnings;
 			}
 		}
 
@@ -397,8 +397,9 @@ sub dump_enum($$) {
 		);
 	}
 	else {
-		print STDERR "${file}:$.: error: Cannot parse enum!\n";
-		++$errors;
+		ERROR("Cannot parse enum!");
+		# print STDERR "${file}:$.: error: Cannot parse enum!\n";
+		# ++$errors;
 	}
 }
 
@@ -450,8 +451,9 @@ sub dump_typedef($$) {
 		);
 	}
 	else {
-		print STDERR "${file}:$.: error: Cannot parse typedef!\n";
-		++$errors;
+		ERROR("Cannot parse typedef!");
+		# print STDERR "${file}:$.: error: Cannot parse typedef!\n";
+		# ++$errors;
 	}
 }
 
@@ -582,14 +584,21 @@ sub push_parameter($$$) {
 			$parameterdescs{$param_name} = $undescribed;
 
 			if (($type eq 'function') || ($type eq 'enum')) {
-				print STDERR "${file}:$.: warning: Function parameter ".
+				WARN("Function parameter ".
 				    "or member '$param' not " .
-				    "described in '$declaration_name'\n";
+				    "described in '$declaration_name'");
+				# print STDERR "${file}:$.: warning: Function parameter ".
+				#     "or member '$param' not " .
+				#     "described in '$declaration_name'\n";
 			}
 			my $tmpLine = $. - 1;
-			print STDERR "${file}:$tmpLine: warning:" .
-			    " No description found for parameter or member '$param'\n";
-			++$warnings;
+			my $oldPrefix = $prefix;
+			$prefix = "$file:$tmpLine: ";
+			WARN("No description found for parameter or member '$param'");
+			$prefix = $oldPrefix;
+			# print STDERR "${file}:$tmpLine: warning:" .
+			#     " No description found for parameter or member '$param'\n";
+			# ++$warnings;
 		}
 	}
 
@@ -638,18 +647,24 @@ sub check_sections($$$$$$) {
 		}
 		if ($err) {
 			if ($decl_type eq "function") {
-				print STDERR "${file}:$.: warning: " .
-					"Excess function parameter " .
-					"'$sects[$sx]' " .
-					"description in '$decl_name'\n";
-				++$warnings;
+				WARN("Excess function parameter " .
+				"'$sects[$sx]' " .
+				"description in '$decl_name'");
+				# print STDERR "${file}:$.: warning: " .
+					# "Excess function parameter " .
+					# "'$sects[$sx]' " .
+					# "description in '$decl_name'\n";
+				# ++$warnings;
 			} else {
 				if ($nested !~ m/\Q$sects[$sx]\E/) {
-					print STDERR "${file}:$.: warning: " .
-					    "Excess struct/union/enum/typedef member " .
-					    "'$sects[$sx]' " .
-					    "description in '$decl_name'\n";
-					++$warnings;
+					WARN("Excess struct/union/enum/typedef member " .
+					"'$sects[$sx]' " .
+					"description in '$decl_name'");
+					# print STDERR "${file}:$.: warning: " .
+					#     "Excess struct/union/enum/typedef member " .
+					#     "'$sects[$sx]' " .
+					#     "description in '$decl_name'\n";
+					# ++$warnings;
 				}
 			}
 		}
@@ -672,10 +687,15 @@ sub check_return_section {
 
 	if (!defined($sections{$section_return}) ||
 	    $sections{$section_return} eq "") {
-		print STDERR "${file}:$real_line: warning: " .
-		    "No description found for return value of " .
-		    "'$declaration_name'\n";
-		++$warnings;
+		my $oldPrefix = $prefix;
+		$prefix = "$file:$real_line: ";
+		WARN("No description found for return value of " .
+		"'$declaration_name'");
+		$prefix = $oldPrefix;
+		# print STDERR "${file}:$real_line: warning: " .
+		#     "No description found for return value of " .
+		#     "'$declaration_name'\n";
+		# ++$warnings;
 	}
 }
 
@@ -752,8 +772,9 @@ sub dump_function($$) {
 		create_parameterlist($args, ',', $file);
 	} else {
 		if ($prototype !~ /^(?:typedef\s*)?(struct|enum|union)/) {
-			print STDERR "${file}:$.: error: cannot understand function prototype: '$prototype'\n";
-			++$errors;
+			ERROR("cannot understand function prototype: '$prototype'");
+			# print STDERR "${file}:$.: error: cannot understand function prototype: '$prototype'\n";
+			# ++$errors;
 		}
 		return;
 	}
@@ -817,9 +838,10 @@ sub tracepoint_munge($) {
 		$tracepointargs = $1;
 	}
 	if (($tracepointname eq 0) || ($tracepointargs eq 0)) {
-		print STDERR "${file}:$.: warning: Unrecognized tracepoint format: \n".
-		    "$prototype\n";
-		++$warnings;
+		WARN("Unrecognized tracepoint format: $prototype");
+		# print STDERR "${file}:$.: warning: Unrecognized tracepoint format: \n".
+		#     "$prototype\n";
+		# ++$warnings;
 	} else {
 		$prototype = "static inline void trace_$tracepointname($tracepointargs)";
 	}
@@ -1077,37 +1099,88 @@ our $Type	= qr{
 		(?:\s+$Inline|\s+$Modifier)*
 	}x;
 
+sub report {
+	my ($level, $msg) = @_;
+
+	my $output = '';
+	if (-t STDOUT && $color) {
+		if ($level eq 'ERROR') {
+			$output .= RED;
+		} elsif ($level eq 'WARNING') {
+			$output .= YELLOW;
+		} else {
+			$output .= GREEN;
+		}
+	}
+	$output .= $prefix . $level . ':';
+	$output .= RESET if (-t STDOUT && $color);
+	$output .= ' ' . $msg . "\n";
+
+	$output = (split('\n', $output))[0] . "\n";
+
+	push(our @report, $output);
+
+	return 1;
+}
+
+sub report_dump {
+	our @report;
+}
+
+sub ERROR {
+	my ($msg) = @_;
+
+	if (report("ERROR", $msg)) {
+		our $clean = 0;
+		our $errors++;
+		return 1;
+	}
+	return 0;
+}
+sub WARN {
+	my ($msg) = @_;
+
+	if (report("WARNING", $msg)) {
+		our $clean = 0;
+		our $warnings++;
+		return 1;
+	}
+	return 0;
+}
+
 sub process_file($) {
-	my $file;
+	my ($file) = @_;
 	my $identifier;
 	my $func;
 	my $descr;
 	my $in_purpose = 0;
 	my $initial_section_counter = $section_counter;
-	my ($orig_file) = @_;
 
-	if (defined($ENV{'SRCTREE'})) {
-		$file = "$ENV{'SRCTREE'}" . "/" . $orig_file;
-	}
-	else {
-		$file = $orig_file;
-	}
+	our $clean = 1;
+	our @report = ();
+	our $errors = 0;
+	our $warnings = 0;
+	our $cnt_lines = 0;
+	$prefix = '';
 
-	if (!open(IN,"<$file")) {
+	my $FILE;
+	if (!open($FILE,"<$file")) {
 		print STDERR "Error: Cannot open file $file\n";
-		++$errors;
+		# ++$errors;
 		return;
 	}
 
 	$. = 1;
 
 	$section_counter = 0;
-	while (<IN>) {
+	while (<$FILE>) {
 		while (s/\\\s*$//) {
-			$_ .= <IN>;
+			$_ .= <$FILE>;
 		}
+		$prefix = "$file:$.: ";
 
 		# print "($.)STATE:$state($in_doc_sect)\t$_\n";
+		$cnt_lines++;
 
 		my $attr = qr{__attribute__\s*\(\(\w+\)\)};
 
@@ -1115,8 +1188,9 @@ sub process_file($) {
 		    $_ !~ /;\s*$/) {
 			# print STDOUT "Function found: $1\n";
 			if (!length $identifier || $identifier ne $1) {
-				print STDERR "${file}:$.: warning: no description found for function $1\n";
-				++$warnings;
+				WARN("no description found for function $1");
+				# print STDERR "${file}:$.: warning: no description found for function $1\n";
+				# ++$warnings;
 			}
 			elsif ($_ =~ /^(?:(?:$Storage|$Inline)\s*)*\s*($Type)\s*\(\**($Ident)\s*\((.*)\)\)\s*\(/s) {
 				my $type_ = $1;
@@ -1136,8 +1210,9 @@ sub process_file($) {
 		    $_ !~ /;\s*$/) {
 			# print STDOUT "$1 found: $2\n";
 			if (!length $identifier || $identifier ne "$1 $2") {
-				print STDERR "${file}:$.: warning: no description found for $1 $2\n";
-				++$warnings;
+				WARN("no description found for $1 $2");
+				# print STDERR "${file}:$.: warning: no description found for $1 $2\n";
+				# ++$warnings;
 			}
 		}
 
@@ -1176,9 +1251,10 @@ sub process_file($) {
 				}
 
 				if (($declaration_purpose eq "")) {
-					print STDERR "${file}:$.: warning: missing initial short description\n";
+					WARN("missing initial short description");
+					# print STDERR "${file}:$.: warning: missing initial short description\n";
 					#print STDERR $_;
-					++$warnings;
+					# ++$warnings;
 				}
 
 				if ($identifier =~ m/^struct/) {
@@ -1197,9 +1273,11 @@ sub process_file($) {
 					print STDERR "${file}:$.: info: Scanning doc for $identifier\n";
 				}
 			} else {
-				print STDERR "${file}:$.: warning: Cannot understand $_ on line $.",
-				    " - I thought it was a doc line\n";
-				++$warnings;
+				WARN("Cannot understand $_ on line $." .
+				    " - I thought it was a doc line");
+				# print STDERR "${file}:$.: warning: Cannot understand $_ on line $.",
+				#     " - I thought it was a doc line\n";
+				# ++$warnings;
 				$state = 0;
 			}
 		} elsif ($state == 2) {	# look for head: lines, and include content
@@ -1209,8 +1287,9 @@ sub process_file($) {
 
 				if (($contents ne "") && ($contents ne "\n")) {
 					if (!$in_doc_sect && $verbose) {
-						print STDERR "${file}:$.: warning: contents before sections\n";
-						++$warnings;
+						WARN("contents before sections");
+						# print STDERR "${file}:$.: warning: contents before sections\n";
+						# ++$warnings;
 					}
 					dump_section($file, $section, xml_escape($contents));
 					$section = $section_default;
@@ -1235,8 +1314,9 @@ sub process_file($) {
 				}
 				# look for doc_com + <text> + doc_end:
 				if ($_ =~ m'\s*\*\s*[a-zA-Z_0-9:\.]+\*/') {
-					print STDERR "${file}:$.: warning: suspicious ending line: $_";
-					++$warnings;
+					WARN("suspicious ending line: $_");
+					# print STDERR "${file}:$.: warning: suspicious ending line: $_";
+					# ++$warnings;
 				}
 
 				$prototype = "";
@@ -1265,8 +1345,9 @@ sub process_file($) {
 				}
 			} else {
 				# i dont know - bad line?  ignore.
-				print STDERR "${file}:$.: warning: bad line: $_";
-				++$warnings;
+				WARN("bad line: $_");
+				# print STDERR "${file}:$.: warning: bad line: $_";
+				# ++$warnings;
 			}
 		} elsif ($state == 5) { # scanning for split parameters
 			# First line (state 1) needs to be a @parameter
@@ -1298,7 +1379,7 @@ sub process_file($) {
 					$split_doc_state = 4;
 					print STDERR "Warning(${file}:$.): ";
 					print STDERR "Incorrect use of kernel-doc format: $_";
-					++$warnings;
+					# ++$warnings;
 				}
 			}
 		} elsif ($state == 3) {	# scanning for function '{' (end of prototype)
@@ -1347,9 +1428,20 @@ sub process_file($) {
 			}
 		}
 	}
+	close($FILE);
+
 	if ($initial_section_counter == $section_counter) {
 		#print STDERR "${file}:1: warning: no structured comments found\n";
 	}
+
+	print @report;
+	if (!($clean == 1 && $verbose == 0)) {
+		print "Total: ";
+		print RED "$errors errors", RESET, ", ";
+		print YELLOW "$warnings warnings", RESET, ", ";
+		print "$cnt_lines lines checked\n";
+	}
+	return $clean;
 }
 
 # generate a sequence of code that will splice in highlighting information
@@ -1361,15 +1453,13 @@ for (my $k = 0; $k < @highlights; $k++) {
 	$dohighlight .=  "\$contents =~ s:$pattern:$result:gs;\n";
 }
 
+my $exit = 0;
+
 foreach (@ARGV) {
 	chomp;
-	process_file($_);
-}
-if ($verbose && $errors) {
-	print STDERR "$errors errors\n";
-}
-if ($verbose && $warnings) {
-	print STDERR "$warnings warnings\n";
+	if (!process_file($_)) {
+		$exit = 1;
+	}
 }
 
-exit(($errors > 0 || $warnings > 0));
+exit($exit);

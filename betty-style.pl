@@ -3690,8 +3690,10 @@ sub process {
 
 	print report_dump();
 	if (!($clean == 1 && $verbose == 0)) {
-		print "total: $cnt_error errors, $cnt_warn warnings, " .
-			"$cnt_lines lines checked\n";
+		print "Total: ";
+		print RED "$errors errors", RESET, ", ";
+		print YELLOW "$warnings warnings", RESET, ", ";
+		print "$cnt_lines lines checked\n";
 	}
 
 	if ($verbose == 1) {
