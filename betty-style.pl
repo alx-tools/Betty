@@ -16,10 +16,10 @@ use Getopt::Long qw(:config no_auto_abbrev);
 
 my $P = $0;
 my $D = dirname(abs_path($P));
-my $V = '0.32';
+my $V = '2.0';
 my $minimum_perl_version = 5.10.0;
 
-my $quiet = 1;
+my $verbose = 0;
 my $help = 0;
 my $printVersion = 0;
 my $color = 1;
@@ -30,14 +30,14 @@ my $max_funcs = 5;
 my $safe_guard = 1;
 
 sub printVersion {
-	my ($exitcode) = @_;
+	my $exitcode = shift @_ || 0;
 
 	print "Version: $V\n";
 	exit($exitcode);
 }
 
 sub help {
-	my ($exitcode) = @_;
+	my $exitcode = shift @_ || 0;
 
 	print << "EOM";
 Usage: $P [OPTION]... [FILE]...
@@ -67,7 +67,7 @@ sub uniq {
 }
 
 GetOptions(
-	'q|quiet'	=> \$quiet,
+	'verbose'	=> \$verbose,
 	'color!'	=> \$color,
 	'h|help'	=> \$help,
 	'v|version'	=> \$printVersion,
@@ -3689,12 +3689,12 @@ sub process {
 	}
 
 	print report_dump();
-	if (!($clean == 1 && $quiet == 1)) {
+	if (!($clean == 1 && $verbose == 0)) {
 		print "total: $cnt_error errors, $cnt_warn warnings, " .
 			"$cnt_lines lines checked\n";
 	}
 
-	if ($quiet == 0) {
+	if ($verbose == 1) {
 		print "\n";
 		if ($clean == 1) {
 			print "$filename has no obvious style problems.\n";
