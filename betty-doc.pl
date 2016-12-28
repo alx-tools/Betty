@@ -113,8 +113,7 @@ my $section_counter = 0;
 # 1 - looking for function name
 # 2 - scanning field start.
 # 3 - scanning prototype.
-# 4 - documentation block
-# 5 - gathering documentation outside main block
+# 4 - gathering documentation outside main block
 my $state;
 my $in_doc_sect;
 

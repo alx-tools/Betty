@@ -3691,8 +3691,8 @@ sub process {
 	print report_dump();
 	if (!($clean == 1 && $verbose == 0)) {
 		print "Total: ";
-		print RED "$errors errors", RESET, ", ";
-		print YELLOW "$warnings warnings", RESET, ", ";
+		print RED "$cnt_error errors", RESET, ", ";
+		print YELLOW "$cnt_warn warnings", RESET, ", ";
 		print "$cnt_lines lines checked\n";
 	}
 
