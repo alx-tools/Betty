@@ -6,8 +6,7 @@ PURPLE='\033[0;35m'
 CYAN='\033[0;36m'
 NC='\033[0m'
 
-# tests_folder="tests"
-tests_folder="tests-v2"
+tests_folder="tests"
 tests_style_folder="$tests_folder/style"
 tests_doc_folder="$tests_folder/doc"
 
