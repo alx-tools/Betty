@@ -3836,8 +3836,8 @@ sub process {
 
 # check number of functions
 # and number of lines per function
-		if ($line =~ /.*}.*/) {
-			$inscope--;
+		if ($line =~ /(})/g) {
+			$inscope -= $#-;
 			if ($inscope == 0) {
 				$funclines = 0;
 			}
@@ -3851,8 +3851,8 @@ sub process {
 			}
 		}
 
-		if ($line =~ /.*{.*/) {
-			$inscope++;
+		if ($line =~ /({)/g) {
+			$inscope += $#-;
 			if ($prevline =~ /^(.(?:typedef\s*)?(?:(?:$Storage|$Inline)\s*)*\s*$Type\s*(?:\b$Ident|\(\*\s*$Ident\))\s*)\(/s && $inscope == 1) {
 				$nbfunc++;
 				$funclines = 0;
