@@ -23,7 +23,7 @@ use Getopt::Long qw(:config no_auto_abbrev);
 
 my $P = $0;
 my $D = dirname(abs_path($P));
-my $V = '2.0';
+my $V = '1.0';
 my $minimum_perl_version = 5.10.0;
 
 my $verbose = 0;
