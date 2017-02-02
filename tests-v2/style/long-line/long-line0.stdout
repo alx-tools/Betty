@@ -1,0 +1,4 @@
+trailing-whitespace0.c:
+    error line 7: trailing whitespace [--trailing-whitespace]
+    error line 8: trailing whitespace [--trailing-whitespace]
+Total: 2 errors, 0 warnings, 9 lines checked in 1 file

@@ -1,0 +1,5 @@
+trailing-whitespace1.h:
+    error line 2: trailing whitespace [--trailing-whitespace]
+    error line 4: trailing whitespace [--trailing-whitespace]
+    error line 6: trailing whitespace [--trailing-whitespace]
+Total: 3 errors, 0 warnings, 6 lines checked in 1 file
