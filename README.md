@@ -4,7 +4,8 @@
 
 ### Installation
 
-First set this gitub repository on your local machine with `git remote add origin https://github.com/holbertonschool/Betty.git`.  Then run `git fetch origin`, then `git merge origin/master`.  Then, run the script `install.sh` with **sudo privileges** to install `betty-style` and `betty-code` on your computer.  If using vagrant, run `$ sudo ./install.sh`.  Now, you will have the Betty installation along with the  following manuals:
+First set this gitub repository on your local machine with:
+`git remote add origin https://github.com/holbertonschool/Betty.git`.  Then run `git fetch origin`, then `git merge origin/master`.  Then, run the script `install.sh` with **sudo privileges** to install `betty-style` and `betty-code` on your computer.  If using vagrant, run `$ sudo ./install.sh`.  Now, you will have the Betty installation along with the  following manuals:
 
  * _betty(1)_
  * _betty-style(1)_
