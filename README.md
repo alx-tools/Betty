@@ -4,11 +4,13 @@
 
 ### Installation
 
-Run the script `install.sh` with **sudo privileges** to install `betty-style` and `betty-code` on your computer, along with the  following manuals:
+First clone the gitub repository on your local machine.  Then, run the script `install.sh` with **sudo privileges** to install `betty-style` and `betty-code` on your computer.  If using vagrant, run `$ sudo ./install.sh`.  Now, you will have the Betty installation along with the  following manuals:
 
  * _betty(1)_
  * _betty-style(1)_
  * _betty-doc(1)_
+
+To verify the installation run `$man betty`.
 
 ### Documentation
 
