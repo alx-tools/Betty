@@ -2955,6 +2955,15 @@ sub process {
 			     "networking block comments don't use an empty /* line, use /* Comment...\n" . $hereprev);
 		}
 
+# Block comments use /* on leading line
+		if ($rawline !~ m@^.\s*/\*\s*$@ &&		#leading /*
+		    $rawline !~ m@^.*/\*.*\*/\s*$@ &&		#inline /*...*/
+		    $rawline !~ m@^.*/\*{2,}\s*$@ &&		#leading /**
+		    $rawline =~ m@^.\s*/\*+.+\s*$@) {		#/* non blank
+			WARN("BLOCK_COMMENT_STYLE",
+			    "Block comments use a leading /* on a separate line\n" . $herecurr);
+		}
+
 # Block comments use * on subsequent lines
 		if ($prevline =~ /$;[ \t]*$/ &&			#ends in comment
 		    $prevrawline =~ /^\+.*?\/\*/ &&		#starting /*
@@ -3569,10 +3578,11 @@ sub process {
 
 # Check for global variables (not allowed).
 		if ($allow_global_variables == 0) {
-			if ($line =~ /^\+$Type\s*$Ident(?:\s+$Modifier)*(?:\s*=\s*.*)?;/ ||
-				$line =~ /^\+$Declare\s*\(\s*\*\s*$Ident\s*\)\s*[=,;:\[\(]/ ||
-				$line =~ /^\+$Ident(?:\s+|\s*\*\s*)$Ident\s*[=,;\[]/ ||
-				$line =~ /^\+$declaration_macros/) {
+			if ($inscope == 0 &&
+				($line =~ /^\+\s*$Type\s*$Ident(?:\s+$Modifier)*(?:\s*=\s*.*)?;/ ||
+				$line =~ /^\+\s*$Declare\s*\(\s*\*\s*$Ident\s*\)\s*[=,;:\[\(]/ ||
+				$line =~ /^\+\s*$Ident(?:\s+|\s*\*\s*)$Ident\s*[=,;\[]/ ||
+				$line =~ /^\+\s*$declaration_macros/)) {
 				ERROR("GLOBAL_DECLARATION",
 					"global variables are not allowed\n" . $herecurr);
 			}
