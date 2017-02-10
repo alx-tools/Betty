@@ -3578,10 +3578,11 @@ sub process {
 
 # Check for global variables (not allowed).
 		if ($allow_global_variables == 0) {
-			if ($line =~ /^\+$Type\s*$Ident(?:\s+$Modifier)*(?:\s*=\s*.*)?;/ ||
-				$line =~ /^\+$Declare\s*\(\s*\*\s*$Ident\s*\)\s*[=,;:\[\(]/ ||
-				$line =~ /^\+$Ident(?:\s+|\s*\*\s*)$Ident\s*[=,;\[]/ ||
-				$line =~ /^\+$declaration_macros/) {
+			if ($inscope == 0 &&
+				($line =~ /^\+\s*$Type\s*$Ident(?:\s+$Modifier)*(?:\s*=\s*.*)?;/ ||
+				$line =~ /^\+\s*$Declare\s*\(\s*\*\s*$Ident\s*\)\s*[=,;:\[\(]/ ||
+				$line =~ /^\+\s*$Ident(?:\s+|\s*\*\s*)$Ident\s*[=,;\[]/ ||
+				$line =~ /^\+\s*$declaration_macros/)) {
 				ERROR("GLOBAL_DECLARATION",
 					"global variables are not allowed\n" . $herecurr);
 			}
