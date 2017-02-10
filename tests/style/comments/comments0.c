@@ -14,3 +14,7 @@
 /* Bad
  * multi-line
  * comment */
+
+/** Also
+very bad
+comment*/

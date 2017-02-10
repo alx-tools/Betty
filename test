@@ -59,7 +59,7 @@ do
 		if [ "$output" != "$exp" ]
 		then
 			echo -e "\t${RED}Error. The output is not the one expected:${NC}"
-			echo $output
+			echo "$output"
 			let errors++
 		else
 			echo -e "\t${GREEN}Test passed successfully!${NC}"
@@ -122,7 +122,7 @@ do
 	if [ "$output" != "$exp_stdout" ]
 	then
 		echo -e "\t${RED}Error. The output (stdout) is not the one expected:${NC}"
-		echo $output
+		echo "$output"
 		let errors++
 	else
 		echo -e "\t${GREEN}Test passed successfully!${NC}"
@@ -130,7 +130,7 @@ do
 	if [ "$err" != "$exp_stderr" ]
 	then
 		echo -e "\t${RED}Error. The error output (stderr) is not the one expected:${NC}"
-		echo $err
+		echo "$err"
 		let errors++
 	else
 		echo -e "\t${GREEN}Test passed successfully!${NC}"
