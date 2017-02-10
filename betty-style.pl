@@ -52,6 +52,7 @@ my $max_line_length = 80;
 my $max_func_length = 40;
 my $max_funcs = 5;
 my $safe_guard = 1;
+my $allow_global_variables = 0;
 my $ignore_perl_version = 0;
 my $minimum_perl_version = 5.10.0;
 my $min_conf_desc_length = 4;
@@ -131,6 +132,7 @@ Options:
                              (default: 5)
                              Set it to -1 for infinite
   --no-safe-guard            Don't check for header files protection
+  --allow-global-variables   Allow global variable definition
 
   -h, --help, --version      Display this help and exit
 
@@ -231,7 +233,8 @@ GetOptions(
 	'max-line-length=i' => \$max_line_length,
 	'max-func-length=i' => \$max_func_length,
 	'max-funcs=i'	=> \$max_funcs,
-	'safe-guard!'	=> \$safe_guard
+	'safe-guard!'	=> \$safe_guard,
+	'allow-global-variables!'	=> \$allow_global_variables,
 ) or help(1);
 
 help(0) if ($help);
@@ -3574,12 +3577,14 @@ sub process {
 		}
 
 # Check for global variables (not allowed).
-		if ($line =~ /^\+$Type\s*$Ident(?:\s+$Modifier)*(?:\s*=\s*.*)?;/ ||
-			$line =~ /^\+$Declare\s*\(\s*\*\s*$Ident\s*\)\s*[=,;:\[\(]/ ||
-			$line =~ /^\+$Ident(?:\s+|\s*\*\s*)$Ident\s*[=,;\[]/ ||
-			$line =~ /^\+$declaration_macros/) {
-			ERROR("GLOBAL_DECLARATION",
-				  "global variables are not allowed\n" . $herecurr);
+		if ($allow_global_variables == 0) {
+			if ($line =~ /^\+$Type\s*$Ident(?:\s+$Modifier)*(?:\s*=\s*.*)?;/ ||
+				$line =~ /^\+$Declare\s*\(\s*\*\s*$Ident\s*\)\s*[=,;:\[\(]/ ||
+				$line =~ /^\+$Ident(?:\s+|\s*\*\s*)$Ident\s*[=,;\[]/ ||
+				$line =~ /^\+$declaration_macros/) {
+				ERROR("GLOBAL_DECLARATION",
+					"global variables are not allowed\n" . $herecurr);
+			}
 		}
 
 # check for global initialisers.
@@ -3840,8 +3845,8 @@ sub process {
 
 # check number of functions
 # and number of lines per function
-		if ($line =~ /.*}.*/) {
-			$inscope--;
+		if ($line =~ /(})/g) {
+			$inscope -= $#-;
 			if ($inscope == 0) {
 				$funclines = 0;
 			}
@@ -3855,8 +3860,8 @@ sub process {
 			}
 		}
 
-		if ($line =~ /.*{.*/) {
-			$inscope++;
+		if ($line =~ /({)/g) {
+			$inscope += $#-;
 			if ($prevline =~ /^(.(?:typedef\s*)?(?:(?:$Storage|$Inline)\s*)*\s*$Type\s*(?:\b$Ident|\(\*\s*$Ident\))\s*)\(/s && $inscope == 1) {
 				$nbfunc++;
 				$funclines = 0;
