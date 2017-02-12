@@ -36,6 +36,7 @@ my $tabstop = 1;
 my $parenthesis_alignment = 1;
 my $space_after_cast = 1;
 my $block_comment_subsequent = 1;
+my $block_comment_leading = 1;
 my $block_comment_trailing = 1;
 my $line_spacing = 1;
 my $single_line_spacing = 1;
@@ -160,6 +161,7 @@ Options:
   --[no-]parenthesis-alignment    Check for alignment with open parenthesis (default: on)
   --[no-]space-after-cast         Check for space after a cast (default: on)
   --[no-]block-comment-subsequent Check for block comment subsequent line style (default: on)
+  --[no-]block-comment-leading    Check for block comment leading line style (default: on)
   --[no-]block-comment-trailing   Check for block comment trailing line style (default: on)
   --[no-]line-spacing             Check for blank line after declaration (default: on)
   --[no-]single-line-spacing      Check for multiple blank lines after declaration (default: on)
@@ -284,6 +286,7 @@ GetOptions(
 	'parenthesis-alignment!' => \$parenthesis_alignment,
 	'space-after-cast!' => \$space_after_cast,
 	'block-comment-subsequent!' => \$block_comment_subsequent,
+	'block-comment-leading!' => \$block_comment_leading,
 	'block-comment-trailing!' => \$block_comment_trailing,
 	'line-spacing!' => \$line_spacing,
 	'single-line-spacing!' => \$single_line_spacing,
@@ -1806,6 +1809,15 @@ sub process {
 			    "Block comments start with * on subsequent lines\n");
 		}
 
+# Block comments use /* on leading line
+		if ($rawline !~ m@^.\s*/\*\s*$@ &&		#leading /*
+		    $rawline !~ m@^.*/\*.*\*/\s*$@ &&		#inline /*...*/
+		    $rawline !~ m@^.*/\*{2,}\s*$@ &&		#leading /**
+		    $rawline =~ m@^.\s*/\*+.+\s*$@) {		#/* non blank
+			WARN("block-comment-leading",
+			    "Block comments use a leading /* on a separate line\n" . $herecurr);
+		}
+
 # Block comments use */ on trailing lines
 		if ($block_comment_trailing &&
 		    $rawline !~ m@^\+[ \t]*\*/[ \t]*$@ &&	#trailing */
@@ -2288,10 +2300,11 @@ sub process {
 
 # Check for global variables (not allowed).
 		if ($global_declaration &&
-		    ($line =~ /^\+$Type\s*$Ident(?:\s+$Modifier)*(?:\s*=\s*.*)?;/ ||
-		     $line =~ /^\+$Declare\s*\(\s*\*\s*$Ident\s*\)\s*[=,;:\[\(]/ ||
-		     $line =~ /^\+$Ident(?:\s+|\s*\*\s*)$Ident\s*[=,;\[]/ ||
-		     $line =~ /^\+$declaration_macros/)) {
+		    $inscope == 0 &&
+		    ($line =~ /^\+\s*$Type\s*$Ident(?:\s+$Modifier)*(?:\s*=\s*.*)?;/ ||
+		     $line =~ /^\+\s*$Declare\s*\(\s*\*\s*$Ident\s*\)\s*[=,;:\[\(]/ ||
+		     $line =~ /^\+\s*$Ident(?:\s+|\s*\*\s*)$Ident\s*[=,;\[]/ ||
+		     $line =~ /^\+\s*$declaration_macros/)) {
 			ERROR("global-declaration",
 			    "do not declare global variables\n");
 		}
