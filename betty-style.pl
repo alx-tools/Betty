@@ -2302,7 +2302,7 @@ sub process {
 		if ($global_declaration &&
 		    $inscope == 0 &&
 		    ($line =~ /^\+\s*$Type\s*$Ident(?:\s+$Modifier)*(?:\s*=\s*.*)?;/ ||
-		     $line =~ /^\+\s*$Declare\s*\(\s*\*\s*$Ident\s*\)\s*[=,;:\[\(]/ ||
+		     $line =~ /^\+\s*$Declare\s*\(\s*\*\s*$Ident\s*\)\s*[=,;:\[\(].*;/ ||
 		     $line =~ /^\+\s*$Ident(?:\s+|\s*\*\s*)$Ident\s*[=,;\[]/ ||
 		     $line =~ /^\+\s*$declaration_macros/)) {
 			ERROR("global-declaration",
