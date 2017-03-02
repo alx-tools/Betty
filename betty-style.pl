@@ -2334,7 +2334,7 @@ sub process {
 		if ($func_without_args &&
 		    $line =~ /(\b$Type\s+$Ident)\s*\(\s*\)/) {
 			ERROR("func-without-args",
-			    "Bad function definition - $1() should probably be $1(void)\n");
+			    "$1() should probably be $1(void)\n");
 		}
 
 # * goes on variable not on type
