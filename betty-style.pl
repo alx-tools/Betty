@@ -399,8 +399,6 @@ if ($#ARGV < 0) {
 	exit(1);
 }
 
-my $emitted_corrupt = 0;
-
 our $Ident = qr{
 	[A-Za-z_][A-Za-z\d_]*
 	(?:\s*\#\#\s*[A-Za-z_][A-Za-z\d_]*)*
