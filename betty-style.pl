@@ -3833,21 +3833,6 @@ sub process {
 
 # check number of functions
 # and number of lines per function
-		if ($line =~ /(})/g) {
-			$inscope -= $#-;
-			if ($inscope == 0) {
-				$funclines = 0;
-			}
-		}
-
-		if ($inscope >= 1) {
-			$funclines++;
-			if ($funclines > $max_func_length) {
-				WARN("FUNCTIONS",
-				  "More than $max_func_length lines in a function\n");
-			}
-		}
-
 		if ($line =~ /({)/g) {
 			$inscope += $#-;
 			if ($prevline =~ /^(.(?:typedef\s*)?(?:(?:$Storage|$Inline)\s*)*\s*$Type\s*(?:\b$Ident|\(\*\s*$Ident\))\s*)\(/s && $inscope == 1) {
@@ -3868,6 +3853,19 @@ sub process {
 					  "More than $max_funcs functions in the file\n");
 				}
 			}
+		}
+		if ($line =~ /(})/g) {
+			$inscope -= $#-;
+		}
+		
+		if ($inscope >= 1) {
+			$funclines++;
+			if ($funclines > $max_func_length + 1) {
+				WARN("FUNCTIONS",
+				  "More than $max_func_length lines in a function\n");
+			}
+		} else {
+			$funclines = 0;
 		}
 
 # open braces for enum, union and struct go on the same line.

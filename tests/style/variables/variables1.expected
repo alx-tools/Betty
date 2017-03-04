@@ -1,0 +1,2 @@
+tests/style/variables/variables1.c:3: ERROR: global variables are not allowed
+total: 1 errors, 0 warnings, 19 lines checked
