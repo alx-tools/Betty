@@ -710,7 +710,6 @@ sub deparenthesize {
 my @rawlines = ();
 my @lines = ();
 
-my $total_errors = 0;
 my $total_warns = 0;
 my $total_lines = 0;
 my $total_files = 0;
@@ -737,15 +736,15 @@ for my $filename (@ARGV) {
 }
 
 if ($exit != 0) {
+	my $warns_plural = "";
+	$warns_plural = "s" if ($total_warns > 1);
+	my $line_plural = "";
+	$line_plural = "s" if ($total_lines > 1);
+	my $file_plural = "";
+	$file_plural = "s" if ($total_files > 1);
+
 	print "Total: ";
-	print "$total_errors errors, ";
-	print "$total_warns warnings, ";
-
-	my $line_plural = "s";
-	$line_plural = "" if ($total_lines < 2);
-	my $file_plural = "s";
-	$file_plural = "" if ($total_files < 2);
-
+	print "$total_warns warning$warns_plural, ";
 	print "$total_lines line$line_plural checked in $total_files file$file_plural\n";
 }
 
@@ -1390,23 +1389,15 @@ sub possible {
 my $prefix = '';
 
 sub report {
-	my ($level, $type, $msg) = @_;
+	my ($type, $msg) = @_;
 
 	$msg = (split('\n', $msg))[0];
 
 	my $output = '';
-	if (-t STDOUT && $color) {
-		if ($level eq 'error') {
-			$output .= RED;
-		} elsif ($level eq 'warning') {
-			$output .= YELLOW;
-		} else {
-			$output .= GREEN;
-		}
-	}
-	# $output .= $prefix . $level . ':';
 	my $line = (split(":", $prefix))[1]; # Line number only
-	$output .= "$level line $line:";
+
+	$output .= RED if (-t STDOUT && $color);
+	$output .= "line $line:";
 	$output .= RESET if (-t STDOUT && $color);
 	$output .= ' ' . $msg;
 	$output .= " [--$type]";
@@ -1423,21 +1414,10 @@ sub report_dump {
 	our @report;
 }
 
-sub ERROR {
-	my ($type, $msg) = @_;
-
-	if (report("error", $type, $msg)) {
-		our $clean = 0;
-		$total_errors++;
-		return 1;
-	}
-	return 0;
-}
-
 sub WARN {
 	my ($type, $msg) = @_;
 
-	if (report("warning", $type, $msg)) {
+	if (report($type, $msg)) {
 		our $clean = 0;
 		$total_warns++;
 		return 1;
@@ -1661,7 +1641,7 @@ sub process {
 		if ($trailing_whitespace &&
 		    ($rawline =~ /^\+.*\S\s+$/ ||
 		     $rawline =~ /^\+\s+$/)) {
-			ERROR("trailing-whitespace", "trailing whitespace\n");
+			WARN("trailing-whitespace", "trailing whitespace\n");
 		}
 
 # check we are in a valid source file if not then ignore this hunk
@@ -1725,7 +1705,7 @@ sub process {
 		if ($code_indent &&
 		    ($rawline =~ /^\+\s* \t\s*\S/ ||
 		     $rawline =~ /^\+\s*        \s*/)) {
-			ERROR("code-indent",
+			WARN("code-indent",
 			    "code indent should use tabs where possible\n");
 		}
 
@@ -1813,7 +1793,7 @@ sub process {
 		    $rawline !~ m@^.*/\*{2,}\s*$@ &&		#leading /**
 		    $rawline =~ m@^.\s*/\*+.+\s*$@) {		#/* non blank
 			WARN("block-comment-leading",
-			    "Block comments use a leading /* on a separate line\n" . $herecurr);
+			    "Block comments use a leading /* on a separate line\n");
 		}
 
 # Block comments use */ on trailing lines
@@ -2069,7 +2049,7 @@ sub process {
 			}
 			if ($switch_indent &&
 			    $err ne '') {
-				ERROR("switch-indent",
+				WARN("switch-indent",
 				    "switch and case should be at the same indent\n$err");
 			}
 		}
@@ -2103,12 +2083,12 @@ sub process {
 			}
 
 			# if ($ctx !~ /{\s*/ && defined($lines[$ctx_ln - 1]) && $lines[$ctx_ln - 1] =~ /^\+\s*{/) {
-			# 	ERROR("op-brace-to-rename",
+			# 	WARN("op-brace-to-rename",
 			# 	      "that open brace should be on the next line\n");
 			# }
 			if ($loop_open_brace &&
 			    $line =~ /\s*{/) {
-				ERROR("loop-open-brace",
+				WARN("loop-open-brace",
 				    "that open brace should be on the next line\n");
 			}
 			if ($level == 0 &&
@@ -2260,7 +2240,7 @@ sub process {
 		if ($init_open_brace &&
 		    $line =~ /^.\s*{/ &&
 		    $prevline =~ /(?:^|[^=])=\s*$/) {
-			ERROR("init-open-brace",
+			WARN("init-open-brace",
 			    "that open brace { should be on the previous line\n");
 		}
 
@@ -2268,7 +2248,7 @@ sub process {
 		if ($do_while_open_brace &&
 		    $line =~ /^.\s*{/ &&
 		    $prevline =~ /^.\s*\bdo\b\s*/) {
-			ERROR("do-while-open-brace",
+			WARN("do-while-open-brace",
 			    "that open brace { should be on the previous line\n");
 		}
 
@@ -2281,7 +2261,7 @@ sub process {
 			my $path = $1;
 			if ($malformed_include &&
 			    $path =~ m{//}) {
-				ERROR("malformed-include",
+				WARN("malformed-include",
 				    "malformed #include filename\n");
 			}
 		}
@@ -2289,7 +2269,7 @@ sub process {
 # no C99 // comments
 		if ($c99_comments &&
 		    $line =~ m{//}) {
-			ERROR("c99-comments",
+			WARN("c99-comments",
 			    "do not use C99 // comments\n");
 		}
 		# Remove C99 comments.
@@ -2303,20 +2283,20 @@ sub process {
 		     $line =~ /^\+\s*$Declare\s*\(\s*\*\s*$Ident\s*\)\s*[=,;:\[\(].*;/ ||
 		     $line =~ /^\+\s*$Ident(?:\s+|\s*\*\s*)$Ident\s*[=,;\[]/ ||
 		     $line =~ /^\+\s*$declaration_macros/)) {
-			ERROR("global-declaration",
+			WARN("global-declaration",
 			    "do not declare global variables\n");
 		}
 
 # check for global initialisers.
 		if ($global_init &&
 		    $line =~ /^\+$Type\s*$Ident(?:\s+$Modifier)*\s*=\s*($zero_initializer)\s*;/) {
-			ERROR("global-init",
+			WARN("global-init",
 				  "do not initialise globals to $1\n");
 		}
 # check for static initialisers.
 		if ($static_init &&
 		    $line =~ /^\+.*\bstatic\s.*=\s*($zero_initializer)\s*;/) {
-			ERROR("static-init",
+			WARN("static-init",
 			    "do not initialise statics to $1\n");
 		}
 
@@ -2331,7 +2311,7 @@ sub process {
 # check for function declarations without arguments like "int foo()"
 		if ($func_without_args &&
 		    $line =~ /(\b$Type\s+$Ident)\s*\(\s*\)/) {
-			ERROR("func-without-args",
+			WARN("func-without-args",
 			    "$1() should probably be $1(void)\n");
 		}
 
@@ -2351,7 +2331,7 @@ sub process {
 ##			print "1: from<$from> to<$to> ident<$ident>\n";
 			if ($pointer_location &&
 			    $from ne $to) {
-				ERROR("pointer-location",
+				WARN("pointer-location",
 				    "\"(foo$from)\" should be \"(foo$to)\"\n");
 			}
 		}
@@ -2371,7 +2351,7 @@ sub process {
 ##			print "2: from<$from> to<$to> ident<$ident>\n";
 			if ($pointer_location &&
 			    $from ne $to && $ident !~ /^$Modifier$/) {
-				ERROR("pointer-location",
+				WARN("pointer-location",
 				    "\"foo${from}bar\" should be \"foo${to}bar\"\n");
 			}
 		}
@@ -2382,7 +2362,7 @@ sub process {
 		    $line=~/$Type\s*$Ident\(.*\).*\s*{/ &&
 		    !($line=~/\#\s*define.*do\s\{/) &&
 		    !($line=~/}/)) {
-			ERROR("func-open-brace",
+			WARN("func-open-brace",
 			    "open brace following function declarations go on the next line\n");
 		}
 
@@ -2414,7 +2394,7 @@ sub process {
 				    $nbfunc > $count_func_max) {
 					my $tmpline = $realline - 1;
 					$prefix = "$realfile:$tmpline: ";
-					ERROR("count-func",
+					WARN("count-func",
 					    "More than $count_func_max functions declared\n");
 				}
 			}
@@ -2423,7 +2403,7 @@ sub process {
 # open braces for enum, union and struct go on the next line.
 		if ($struct_open_brace &&
 		    $line =~ /^.\s*(?:typedef\s+)?(enum|union|struct)(?:\s+$Ident)?\s*{/) {
-			ERROR("struct-open-brace",
+			WARN("struct-open-brace",
 			    "open brace following $1 go on the next line\n");
 		}
 
@@ -2500,7 +2480,7 @@ sub process {
 			if ($prefix !~ /$Type\s+$/ &&
 			    ($where != 0 || $prefix !~ /^.\s+$/) &&
 			    $prefix !~ /[{,]\s+$/) {
-				ERROR("bracket-space",
+				WARN("bracket-space",
 				    "space prohibited before open square bracket '['\n");
 			}
 		}
@@ -2622,7 +2602,7 @@ sub process {
 				} elsif ($op eq ';') {
 					if ($ctx !~ /.x[WEBC]/ &&
 					    $cc !~ /^\\/ && $cc !~ /^;/) {
-						ERROR("op-spacing",
+						WARN("op-spacing",
 						    "space required after that '$op'\n");
 					}
 
@@ -2637,7 +2617,7 @@ sub process {
 				#   ->
 				} elsif ($op eq '->') {
 					if ($ctx =~ /Wx.|.xW/) {
-						if (ERROR("op-spacing",
+						if (WARN("op-spacing",
 						    "spaces prohibited around that '$op'\n")) {
 							if (defined $fix_elements[$n + 2]) {
     								$fix_elements[$n + 2] =~ s/^\s+//;
@@ -2648,11 +2628,11 @@ sub process {
 				# , must not have a space before and must have a space on the right.
 				} elsif ($op eq ',') {
 					if ($ctx =~ /Wx./) {
-						ERROR("op-spacing",
+						WARN("op-spacing",
 						    "space prohibited before that '$op'\n");
 					}
 					if ($ctx !~ /.x[WEC]/ && $cc !~ /^}/) {
-						ERROR("op-spacing",
+						WARN("op-spacing",
 						    "space required after that '$op'\n");
 					}
 
@@ -2668,14 +2648,14 @@ sub process {
 				    $opv eq '&U' || $opv eq '&&U') {
 					if ($ctx !~ /[WEBC]x./ &&
 					    $ca !~ /(?:\)|!|~|\*|-|\+|\&|\||\+\+|\-\-|\{)$/) {
-						ERROR("op-spacing",
+						WARN("op-spacing",
 						    "space required before that '$op'\n");
 					}
 					if ($op eq '*' && $cc =~/\s*$Modifier\b/) {
 						# A unary '*' may be const
 
 					} elsif ($ctx =~ /.xW/) {
-						if (ERROR("op-spacing",
+						if (WARN("op-spacing",
 						    "space prohibited after that '$op'\n")) {
 							if (defined $fix_elements[$n + 2]) {
     								$fix_elements[$n + 2] =~ s/^\s+//;
@@ -2686,16 +2666,16 @@ sub process {
 				# unary ++ and unary -- are allowed no space on one side.
 				} elsif ($op eq '++' or $op eq '--') {
 					if ($ctx !~ /[WEOBC]x[^W]/ && $ctx !~ /[^W]x[WOBEC]/) {
-						ERROR("op-spacing",
+						WARN("op-spacing",
 						    "space required one side of that '$op'\n");
 					}
 					if ($ctx =~ /Wx[BE]/ ||
 					    ($ctx =~ /Wx./ && $cc =~ /^;/)) {
-						ERROR("op-spacing",
+						WARN("op-spacing",
 						    "space prohibited before that '$op'\n");
 					}
 					if ($ctx =~ /ExW/) {
-						if (ERROR("op-spacing",
+						if (WARN("op-spacing",
 						    "space prohibited after that '$op'\n")) {
 							if (defined $fix_elements[$n + 2]) {
     								$fix_elements[$n + 2] =~ s/^\s+//;
@@ -2712,16 +2692,16 @@ sub process {
 					my $force_check = 1;
 					if ($force_check) {
 						if (defined $fix_elements[$n + 2] && $ctx !~ /[EW]x[EW]/) {
-							if (ERROR("op-spacing",
+							if (WARN("op-spacing",
 							    "spaces preferred around that '$op'\n")) {
 								$fix_elements[$n + 2] =~ s/^\s+//;
 							}
 						} elsif (!defined $fix_elements[$n + 2] && $ctx !~ /Wx[OE]/) {
-							ERROR("op-spacing",
+							WARN("op-spacing",
 							    "space preferred before that '$op'\n");
 						}
 					} elsif ($ctx =~ /Wx[^WCE]|[^WCE]xW/) {
-						if (ERROR("op-spacing",
+						if (WARN("op-spacing",
 						    "need consistent spacing around '$op'\n")) {
 							if (defined $fix_elements[$n + 2]) {
     								$fix_elements[$n + 2] =~ s/^\s+//;
@@ -2733,7 +2713,7 @@ sub process {
 				# terminating a case value or a label.
 				} elsif ($opv eq ':C' || $opv eq ':L') {
 					if ($ctx =~ /Wx./) {
-						ERROR("op-spacing",
+						WARN("op-spacing",
 						    "space prohibited before that '$op'\n");
 					}
 
@@ -2758,7 +2738,7 @@ sub process {
 					}
 
 					if (!$ok) {
-						if (ERROR("op-spacing",
+						if (WARN("op-spacing",
 						    "spaces required around that '$op'\n")) {
 							if (defined $fix_elements[$n + 2]) {
     								$fix_elements[$n + 2] =~ s/^\s+//;
@@ -2805,7 +2785,7 @@ sub process {
 		if ($space_open_brace &&
 		    ($line =~ /\(.*\)\{/ && $line !~ /\($Type\)\{/) ||
 		    $line =~ /do\{/) {
-			ERROR("space-open-brace",
+			WARN("space-open-brace",
 			    "space required before the open brace\n");
 		}
 
@@ -2822,19 +2802,19 @@ sub process {
 # on the line
 		if ($close_brace_space &&
 		    $line =~ /}(?!(?:,|;|\)))\S/) {
-			ERROR("close-brace-space",
+			WARN("close-brace-space",
 			    "space required after that close brace\n");;
 		}
 
 # check spacing on square brackets
 		if ($bracket_space_in &&
 		    $line =~ /\[\s/ && $line !~ /\[\s*$/) {
-			ERROR("bracket-space-in",
+			WARN("bracket-space-in",
 			    "space prohibited after that open square bracket\n");
 		}
 		if ($bracket_space_in &&
 		    $line =~ /\s\]/) {
-			ERROR("bracket-space-in",
+			WARN("bracket-space-in",
 			    "space prohibited before that close square bracket\n");
 		}
 
@@ -2842,14 +2822,14 @@ sub process {
 		if ($parenthesis_space_in &&
 		    $line =~ /\(\s/ && $line !~ /\(\s*(?:\\)?$/ &&
 		    $line !~ /for\s*\(\s+;/) {
-			ERROR("parenthesis-space-in",
+			WARN("parenthesis-space-in",
 			    "space prohibited after that open parenthesis\n");
 		}
 		if ($parenthesis_space_in &&
 		    $line =~ /(\s+)\)/ && $line !~ /^.\s*\)/ &&
 		    $line !~ /for\s*\(.*;\s+\)/ &&
 		    $line !~ /:\s+\)/) {
-			ERROR("parenthesis-space-in",
+			WARN("parenthesis-space-in",
 			    "space prohibited before that close parenthesis\n");
 		}
 
@@ -2892,11 +2872,11 @@ sub process {
 				$value = deparenthesize($value);
 				if ($ret_parentheses &&
 				    $value =~ m/^\s*$FuncArg\s*(?:\?)|$/) {
-					ERROR("ret-parentheses",
+					WARN("ret-parentheses",
 					      "parentheses are required on a return statement\n");
 				}
 			} elsif ($ret_space && $spacing !~ /\s+/) {
-				ERROR("ret-space",
+				WARN("ret-space",
 				      "space required before the open parenthesis\n");
 			}
 		}
@@ -2952,7 +2932,7 @@ sub process {
 # Need a space before open parenthesis after if, while etc
 		if ($ctrl_space &&
 		    $line =~ /\b(if|while|for|switch)\(/) {
-			ERROR("ctrl-space",
+			WARN("ctrl-space",
 			    "space required before the open parenthesis\n");
 		}
 
@@ -2981,7 +2961,7 @@ sub process {
 
 			if ($assign_in_if &&
 			    $c =~ /\bif\s*\(.*[^<>!=]=[^=].*/s) {
-				ERROR("assign-in-if",
+				WARN("assign-in-if",
 				    "do not use assignment in if condition\n");
 			}
 
@@ -3006,7 +2986,7 @@ sub process {
 				}
 
 				if ($trailing_statements) {
-					ERROR("trailing-statements",
+					WARN("trailing-statements",
 					    "trailing statements should be on next line\n" .
 					    $stat_real);
 				}
@@ -3034,14 +3014,14 @@ sub process {
 			my $s = $1;
 			$s =~ s/$;//g; # Remove any comments
 			if ($s !~ /^\s*(?:\sif|(?:{|)\s*\\?\s*$)/) {
-				ERROR("trailing-statements",
+				WARN("trailing-statements",
 				    "trailing statements should be on next line\n");
 			}
 		}
 # if should not continue a brace
 		if ($if_after_brace &&
 		    $line =~ /}\s*if\b/) {
-			ERROR("if-after-brace",
+			WARN("if-after-brace",
 			    "'if' should not follow a closing brace\n");
 		}
 # case and default should not have general statements after them
@@ -3051,14 +3031,14 @@ sub process {
 			(?:\s*$;*)(?:\s*{)?(?:\s*$;*)(?:\s*\\)?\s*$|
 			\s*return\s+
 		    )/xg) {
-			ERROR("trailing-statements",
+			WARN("trailing-statements",
 			    "trailing statements should be on next line\n");
 		}
 
 		if ($else_after_brace &&
 		    $line=~/^.\s*}\s*else\s*/ &&
 		    $previndent == $indent) {
-			ERROR("else-after-brace",
+			WARN("else-after-brace",
 			    "else statement following close brace should be on the next line\n");
 		}
 
@@ -3074,7 +3054,7 @@ sub process {
 			$s =~ s/\n.*//g;
 
 			if ($s =~ /^\s*;/) {
-				ERROR("while-after-brace",
+				WARN("while-after-brace",
 				    "while should follow close brace '}'\n");
 			}
 		}
@@ -3180,12 +3160,12 @@ sub process {
 
 				if ($dstat =~ /;/) {
 					if ($multistatement_macro) {
-						ERROR("multistatement-macro",
+						WARN("multistatement-macro",
 						    "Macros with multiple statements should be enclosed in a do/while loop\n");
 					}
 				} else {
 					if ($complex_macro) {
-						ERROR("complex-macro",
+						WARN("complex-macro",
 						    "Macros with complex values should be enclosed in parentheses\n");
 					}
 				}
@@ -3435,7 +3415,7 @@ sub process {
 			}
 			if ($printf_0xdecimal &&
 			    $string =~ /0x%[\*\d\.\$\Llzth]*[udi]/) {
-				ERROR("printf-0xdecimal",
+				WARN("printf-0xdecimal",
 				    "Prefixing 0x with decimal output is defective\n");
 			}
 		}
@@ -3479,7 +3459,7 @@ sub process {
 # warn about spacing in #ifdefs
 		if ($preproc_if_space &&
 		    $line =~ /^.\s*\#\s*(ifdef|ifndef|elif)\s\s+/) {
-			ERROR("preproc-if-space",
+			WARN("preproc-if-space",
 			    "exactly one space required after that #$1\n");
 		}
 
@@ -3496,7 +3476,7 @@ sub process {
 		if ($inline_location &&
 		    ($line =~ /\b$Type\s+$Inline\b/ ||
 		     $line =~ /\b$Inline\s+$Storage\b/)) {
-			ERROR("inline-location",
+			WARN("inline-location",
 			    "inline keyword should sit between storage class and type\n");
 		}
 
@@ -3527,7 +3507,7 @@ sub process {
 		    $line =~ /(?:$Declare|$DeclareMisordered)\s*$Ident\s*$balanced_parens\s*(?:$Attribute)?\s*;/ &&
 		    ($line =~ /\b__attribute__\s*\(\s*\(.*\bweak\b/ ||
 		     $line =~ /\b__weak\b/)) {
-			ERROR("weak-declaration",
+			WARN("weak-declaration",
 			    "Using weak declarations can have unintended link defects\n");
 		}
 
