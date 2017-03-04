@@ -2370,30 +2370,22 @@ sub process {
 # and number of lines per function
 		if ($line =~ /({)/g) {
 			$inscope += $#-;
-			if ($inscope == 1 &&
-			    $prevline =~ /^(.(?:typedef\s*)?(?:(?:$Storage|$Inline)\s*)*\s*$Type\s*(?:\b$Ident|\(\*\s*$Ident\))\s*)\(/s) {
+			if ($prevline =~ /^(.(?:typedef\s*)?(?:(?:$Storage|$Inline)\s*)*\s*$Type\s*(?:\b$Ident|\(\*\s*$Ident\))\s*)\(/s &&
+			    $inscope == 1) {
 				$nbfunc++;
 				$funclines = 0;
-				if ($max_funcs > 0 && $nbfunc > $max_funcs) {
+				if ($count_func &&
+				    $nbfunc > $count_func_max) {
 					my $tmpline = $realline - 1;
-					if ($showfile) {
-						$prefix = "$realfile:$tmpline: ";
-					} elsif ($emacs) {
-						if ($file) {
-							$prefix = "$realfile:$tmpline: ";
-						} else {
-							$prefix = "$realfile:$tmpline: ";
-						}
-					}
-					ERROR("FUNCTIONS",
-					  "More than $max_funcs functions in the file\n");
+					$prefix = "$realfile:$tmpline: ";
+					WARN("count-func",
+					    "More than $count_func_max functions declared\n");
 				}
 			}
 		}
 		if ($line =~ /(})/g) {
 			$inscope -= $#-;
 		}
-
 		if ($inscope >= 1) {
 			$funclines++;
 			if ($long_func &&
