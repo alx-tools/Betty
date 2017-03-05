@@ -20,6 +20,7 @@ my $V = '1.0';
 my $minimum_perl_version = 5.10.0;
 
 my $verbose = 0;
+my $quiet = 0;
 my $help = 0;
 my $printVersion = 0;
 my $color = 1;
@@ -148,11 +149,12 @@ Version: $V
 
 Options:
   --verbose                       Verbose mode
+  -q, --quiet                     Quiet mode
   --[no-]color                    Use colors when output is STDOUT (default: on)
 
   --[no-]trailing-whitespace      Check for trailing whitespaces (default: on)
   --[no-]long-line                Check for long lines (default: on)
-  --long-line-max=n               When --long-line is enale, set the maximum length of a line (default: 80)
+  --long-line-max=n               When --long-line is enaled, set the maximum length of a line (default: 80)
   --[no-]eof-newline              Check for new line at end of file (default: on)
   --[no-]code-indent              Check if spaces are using instead of tabs (default: on)
   --[no-]space-before-tab         Check if spaces are used before a tab (default: on)
@@ -179,7 +181,7 @@ Options:
   --[no-]do-while-open-brace      Check for do/while loop open brace on the same line (default: on)
   --[no-]malformed-include        Check for malformed include filename (default: on)
   --[no-]c99-comments             Check for usage of C99 comments (default: on)
-  --[no-]global_declaration       Check for global variables declarations (default: on)
+  --[no-]global-declaration       Check for global variables declarations (default: on)
   --[no-]global-init              Check for global zero-initialisation (default: on)
   --[no-]static-init              Check for static zero-initialisation (default: on)
   --[no-]misordered-type          Check for misordered type in declaration (default: on)
@@ -230,7 +232,7 @@ Options:
   --[no-]volatile                 Check for volatile usage (default: off)
   --[no-]string-split             Check for split quoted string across lines (default: off)
   --[no-]string-missing-space     Check for missing space in quoted string concatenation (default: off)
-  --[no-]string_space_new_line    Check for spaces before wuoted new line (default: off)
+  --[no-]string-space-new-line    Check for spaces before wuoted new line (default: off)
   --[no-]string-concat            Check for space between elements when concatenating quoted strings (default: off)
   --[no-]string-fragments         Check for quoted string fragments instead of a single one (default: off)
   --[no-]printf-l                 Check for not standard \%Lu/\%Ld in printf (default: on)
@@ -271,6 +273,7 @@ sub uniq {
 
 GetOptions(
 	'verbose'	=> \$verbose,
+	'q|quiet'	=> \$quiet,
 	'color!'	=> \$color,
 	'h|help'	=> \$help,
 	'v|version'	=> \$printVersion,
@@ -396,9 +399,11 @@ if ($^V && $^V lt $minimum_perl_version) {
 if ($#ARGV < 0) {
 	my $exec_name = basename($P);
 	print "$exec_name: no input files\n";
+	print "Run '$exec_name --help' for usage\n";
 	exit(1);
 }
 
+# REGEX DECLARATIONS / INITIALIZATION
 our $Ident = qr{
 	[A-Za-z_][A-Za-z\d_]*
 	(?:\s*\#\#\s*[A-Za-z_][A-Za-z\d_]*)*
@@ -716,8 +721,20 @@ my $total_files = 0;
 
 for my $filename (@ARGV) {
 	my $FILE;
-	open($FILE, '-|', "diff -u /dev/null $filename") ||
-		die "$P: $filename: diff failed - $!\n";
+
+	if (! -f $filename) {
+		print STDERR "$filename: No such file\n";
+		next;
+	}
+	if ($filename !~ /\.(h|c)$/) {
+		print STDERR "$filename: Not a C source file\n";
+		next;
+	}
+	if (!open($FILE, '-|', "diff -u /dev/null $filename")) {
+		print STDERR "$P: $filename: diff failed - $!\n";
+		next;
+	}
+
 	while (<$FILE>) {
 		chomp;
 		push(@rawlines, $_);
@@ -735,7 +752,7 @@ for my $filename (@ARGV) {
 	build_types();
 }
 
-if ($exit != 0) {
+if ($exit != 0 && !$quiet) {
 	my $warns_plural = "";
 	$warns_plural = "s" if ($total_warns > 1);
 	my $line_plural = "";
@@ -1644,9 +1661,6 @@ sub process {
 			WARN("trailing-whitespace", "trailing whitespace\n");
 		}
 
-# check we are in a valid source file if not then ignore this hunk
-		next if ($realfile !~ /\.(h|c|s|S|pl|sh|dtsi|dts)$/);
-
 # line length limit (with some exclusions)
 #
 # There are a few types of lines that may extend beyond $long_line_max:
@@ -1696,9 +1710,6 @@ sub process {
 			WARN("eof-newline",
 			    "no newline at end of file\n");
 		}
-
-# check we are in a valid source file C or perl if not then ignore this hunk
-		next if ($realfile !~ /\.(h|c|pl|dtsi|dts)$/);
 
 # at the beginning of a line any tabs must come first and anything
 # more than 8 must use tabs.
@@ -1783,7 +1794,7 @@ sub process {
 		    $prevrawline !~ /\*\/[ \t]*$/ &&		#no trailing */
 		    $rawline =~ /^\+/ &&			#line is new
 		    $rawline !~ /^\+[ \t]*\*/) {		#no leading *
-			WARN("block-comment-sub",
+			WARN("block-comment-subsequent",
 			    "Block comments start with * on subsequent lines\n");
 		}
 
@@ -1883,9 +1894,6 @@ sub process {
 			WARN("leading-space",
 			    "please, no spaces at the start of a line\n");
 		}
-
-# check we are in a valid C source file if not then ignore this hunk
-		next if ($realfile !~ /\.(h|c)$/);
 
 # Check for header protection
 		if ($realfile =~ /\.h$/) {
@@ -3194,7 +3202,6 @@ sub process {
 # single-statement macros do not need to be enclosed in do while (0) loop,
 # macro should not end with a semicolon
 		if ($^V && $^V ge 5.10.0 &&
-		    $realfile !~ m@/vmlinux.lds.h$@ &&
 		    $line =~ /^.\s*\#\s*define\s+$Ident(\()?/) {
 			my $ln = $linenr;
 			my $cnt = $realcnt;
@@ -3374,7 +3381,7 @@ sub process {
 		if ($string_missing_space &&
 		    $prevrawline =~ /[^\\]\w"$/ &&
 		    $rawline =~ /^\+[\t ]+"\w/) {
-			WARN('string-missing-space',
+			WARN("string-missing-space",
 			    "break quoted strings at a space character\n");
 		}
 
@@ -3630,8 +3637,14 @@ sub process {
 	exit(0) if ($#rawlines == -1);
 
 	if (!$clean) {
-		print "$realfile:\n";
-		print " " x 4, join(" " x 4, report_dump());
+		if ($quiet) {
+			foreach my $rep (report_dump()) {
+				print "$realfile: $rep";
+			}
+		} else {
+			print "$realfile:\n";
+			print " " x 4, join(" " x 4, report_dump());
+		}
 	}
 
 	if ($verbose) {
