@@ -148,7 +148,7 @@ sub help {
 Usage: $P [OPTION]... [FILE]...
 Options:
   --verbose                       Verbose mode
-  -b, --brief                     Brief mode
+  -b, --brief                     Brief mode. One line per warning. No summary
   --[no-]color                    Use colors when output is STDOUT (default: on)
 
   --[no-]trailing-whitespace      Check for trailing whitespaces (default: on)
