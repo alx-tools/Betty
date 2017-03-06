@@ -20,7 +20,7 @@ my $V = '2.0.0';
 my $minimum_perl_version = 5.10.0;
 
 my $verbose = 0;
-my $quiet = 0;
+my $brief = 0;
 my $help = 0;
 my $version = 0;
 my $color = 1;
@@ -148,7 +148,7 @@ sub help {
 Usage: $P [OPTION]... [FILE]...
 Options:
   --verbose                       Verbose mode
-  -q, --quiet                     Quiet mode
+  -b, --brief                     Brief mode
   --[no-]color                    Use colors when output is STDOUT (default: on)
 
   --[no-]trailing-whitespace      Check for trailing whitespaces (default: on)
@@ -276,7 +276,7 @@ sub uniq {
 
 GetOptions(
 	'verbose'	=> \$verbose,
-	'q|quiet'	=> \$quiet,
+	'b|brief'	=> \$brief,
 	'color!'	=> \$color,
 	'h|help'	=> \$help,
 	'v|version'	=> \$version,
@@ -755,7 +755,7 @@ for my $filename (@ARGV) {
 	build_types();
 }
 
-if ($exit != 0 && !$quiet) {
+if ($exit != 0 && !$brief) {
 	my $warns_plural = "";
 	$warns_plural = "s" if ($total_warns > 1);
 	my $line_plural = "";
@@ -3640,7 +3640,7 @@ sub process {
 	exit(0) if ($#rawlines == -1);
 
 	if (!$clean) {
-		if ($quiet) {
+		if ($brief) {
 			foreach my $rep (report_dump()) {
 				print "$realfile: $rep";
 			}
