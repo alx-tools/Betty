@@ -1,0 +1,1 @@
+assign-in-if_00.c: lin 5: do not use assignment in if condition [--assign-in-if]
