@@ -1,2 +1,0 @@
-tests/doc/doc3.c:2: warning: missing initial short description
-tests/doc/doc3.c:18: warning: No description found for return value of 'main'

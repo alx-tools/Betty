@@ -1,2 +1,0 @@
-tests/doc/doc2.c:7: warning: No description found for parameter or member 'arg2'
-tests/doc/doc2.c:18: warning: No description found for parameter or member 'ac'

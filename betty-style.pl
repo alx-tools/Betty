@@ -16,13 +16,13 @@ use Getopt::Long qw(:config no_auto_abbrev);
 
 my $P = $0;
 my $D = dirname(abs_path($P));
-my $V = '1.0';
+my $V = '2.0.0';
 my $minimum_perl_version = 5.10.0;
 
 my $verbose = 0;
 my $quiet = 0;
 my $help = 0;
-my $printVersion = 0;
+my $version = 0;
 my $color = 1;
 
 # Options
@@ -133,9 +133,10 @@ my $single_semicolon = 1;
 my $missing_break = 1;
 my $default_no_break = 1;
 
-sub printVersion {
+sub version {
 	my $exitcode = shift @_ || 0;
 
+	print "Betty coding style checker\n";
 	print "Version: $V\n";
 	exit($exitcode);
 }
@@ -145,8 +146,6 @@ sub help {
 
 	print << "EOM";
 Usage: $P [OPTION]... [FILE]...
-Version: $V
-
 Options:
   --verbose                       Verbose mode
   -q, --quiet                     Quiet mode
@@ -260,7 +259,11 @@ Options:
   --[no-]default-no-break         Check for missing break in switch/default statement (default: on)
 
   -h, --help                      Display this help and exit
-  -v, --version                   Display the version of the srcipt
+  -v, --version                   Display the version of the srcipt and exit
+
+  Options starting with --[no-] are boolean options.
+  Use --option to enable it.
+  Use --no-option to disable it.
 EOM
 
 	exit($exitcode);
@@ -276,7 +279,7 @@ GetOptions(
 	'q|quiet'	=> \$quiet,
 	'color!'	=> \$color,
 	'h|help'	=> \$help,
-	'v|version'	=> \$printVersion,
+	'v|version'	=> \$version,
 
 	'trailing-whitespace!' => \$trailing_whitespace,
 	'long-line!' => \$long_line,
@@ -387,7 +390,7 @@ GetOptions(
 ) or help(1);
 
 help(0) if ($help);
-printVersion(0) if ($printVersion);
+version(0) if ($version);
 
 my $exit = 0;
 

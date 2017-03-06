@@ -1,7 +1,0 @@
-tests/style/comments/comments0.c:3: ERROR: do not use C99 // comments
-tests/style/comments/comments0.c:14: WARNING: Block comments use a leading /* on a separate line
-tests/style/comments/comments0.c:16: WARNING: Block comments use a trailing */ on a separate line
-tests/style/comments/comments0.c:18: WARNING: Block comments use a leading /* on a separate line
-tests/style/comments/comments0.c:19: WARNING: Block comments use * on subsequent lines
-tests/style/comments/comments0.c:20: WARNING: Block comments use a trailing */ on a separate line
-total: 1 errors, 5 warnings, 20 lines checked
