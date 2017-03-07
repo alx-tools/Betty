@@ -1,15 +1,14 @@
 #!/usr/bin/perl -w
-## Copyright (c) 1998 Michael Zucchi, All Rights Reserved        ##
-## Copyright (C) 2000, 1  Tim Waugh <twaugh@redhat.com>          ##
-## Copyright (C) 2001  Simon Huggins                             ##
-## Copyright (C) 2005-2012  Randy Dunlap                         ##
-## Copyright (C) 2012  Dan Luedtke                               ##
-## 								 ##
-## #define enhancements by Armin Kuster <akuster@mvista.com>	 ##
-## Copyright (c) 2000 MontaVista Software, Inc.			 ##
-## 								 ##
-## This software falls under the GNU General Public License.     ##
-## Please read the COPYING file for more information             ##
+# Copyright (c) 1998 Michael Zucchi, All Rights Reserved
+# Copyright (C) 2000, 1  Tim Waugh <twaugh@redhat.com>
+# Copyright (C) 2001  Simon Huggins
+# Copyright (C) 2005-2012  Randy Dunlap
+# Copyright (C) 2012  Dan Luedtke
+#
+# #define enhancements by Armin Kuster <akuster@mvista.com>
+# Copyright (c) 2000 MontaVista Software, Inc.
+#
+# This software falls under the GNU General Public License.
 
 use strict;
 use warnings;
@@ -18,61 +17,70 @@ use diagnostics;
 use File::Basename;
 use Cwd 'abs_path';
 use Term::ANSIColor qw(:constants);
-local $Term::ANSIColor::AUTORESET = 1;
 use Getopt::Long qw(:config no_auto_abbrev);
 
 my $P = $0;
 my $D = dirname(abs_path($P));
-my $V = '1.0';
-my $minimum_perl_version = 5.10.0;
+my $V = '2.0.0';
+my $min_perl_version = 5.10.0;
 
 my $verbose = 0;
+my $brief = 0;
 my $help = 0;
-my $printVersion = 0;
+my $version = 0;
 my $color = 1;
 
-sub printVersion {
+# version subroutine
+# $exitcode (optional): Exit status (default 0)
+#
+# Prints out informations about the script and exit
+sub version {
 	my $exitcode = shift @_ || 0;
 
+	print STDOUT "Betty documentation style checker\n";
 	print STDOUT "Version: $V\n";
 	exit($exitcode);
 }
 
+# help subroutine
+# $exitcode (optional): Exit status (default 0)
+#
+# Prints out a help message on how to use the script and exit
 sub help {
 	my $exitcode = shift @_ || 0;
 
 	print << "EOM";
-Usage: $P [OPTION]... [FILE]...
-Version: $V
-
+Usage: $P [OPTION]... FILE...
 Options:
-  --verbose                  Verbose mode
-  --no-color                 Use colors when output is STDOUT (default: on)
+  --verbose                       Verbose mode
+  -b, --brief                     Brief mode. One line per warning. No summary
+  --no-color                      Use colors when output is STDOUT (default: on)
 
-  -h, --help                 Display this help and exit
-  -v, --version              Display the version of the srcipt
+  -h, --help                      Display this help and exit
+  -v, --version                   Display the version of the srcipt
 EOM
 	exit($exitcode);
 }
 
 GetOptions(
 	'verbose'	=> \$verbose,
+	'b|brief'	=> \$brief,
 	'color!'	=> \$color,
 	'h|help'	=> \$help,
-	'v|version'	=> \$printVersion
+	'v|version'	=> \$version
 ) or help(1);
-
 help(0) if ($help);
-printVersion(0) if ($printVersion);
+version(0) if ($version);
 
-if ($^V && $^V lt $minimum_perl_version) {
-	printf "$P: requires at least perl version %vd\n", $minimum_perl_version;
+if ($^V && $^V lt $min_perl_version) {
+	printf "$P: requires at least perl version %vd\n", $min_perl_version;
 	exit(1);
 }
 
 if ($#ARGV < 0) {
 	my $exec_name = basename($P);
 	print "$exec_name: no input files\n";
+	print "Run '$exec_name --help' for usage\n";
 	exit(1);
 }
 
@@ -162,6 +170,178 @@ my $undescribed = "-- undescribed --";
 
 reset_state();
 
+#Regular expressions
+our $Storage = qr{extern|static|asmlinkage};
+our $Inline = qr{inline|__always_inline|noinline|__inline|__inline__};
+our $InitAttributePrefix = qr{__(?:mem|cpu|dev|net_|)};
+our $InitAttributeData = qr{$InitAttributePrefix(?:initdata\b)};
+our $InitAttributeConst = qr{$InitAttributePrefix(?:initconst\b)};
+our $InitAttributeInit = qr{$InitAttributePrefix(?:init\b)};
+our $InitAttribute = qr{$InitAttributeData|$InitAttributeConst|$InitAttributeInit};
+our $Attribute = qr{
+	const|
+	__percpu|
+	__nocast|
+	__safe|
+	__bitwise__|
+	__packed__|
+	__packed2__|
+	__naked|
+	__maybe_unused|
+	__always_unused|
+	__noreturn|
+	__used|
+	__cold|
+	__pure|
+	__noclone|
+	__deprecated|
+	__read_mostly|
+	__kprobes|
+	$InitAttribute|
+	____cacheline_aligned|
+	____cacheline_aligned_in_smp|
+	____cacheline_internodealigned_in_smp|
+	__weak
+}x;
+our $Sparse = qr{
+	__user|
+	__kernel|
+	__force|
+	__iomem|
+	__pmem|
+	__must_check|
+	__init_refok|
+	__kprobes|
+	__ref|
+	__rcu|
+	__private
+}x;
+our @modifierList = (
+	qr{fastcall},
+);
+our @modifierListFile = ();
+my $mods = "(?x:  \n" . join("|\n  ", (@modifierList, @modifierListFile)) . "\n)";
+our $Ident = qr{
+	[A-Za-z_][A-Za-z\d_]*
+	(?:\s*\#\#\s*[A-Za-z_][A-Za-z\d_]*)*
+}x;
+our @typeListMisordered = (
+	qr{char\s+(?:un)?signed},
+	qr{int\s+(?:(?:un)?signed\s+)?short\s},
+	qr{int\s+short(?:\s+(?:un)?signed)},
+	qr{short\s+int(?:\s+(?:un)?signed)},
+	qr{(?:un)?signed\s+int\s+short},
+	qr{short\s+(?:un)?signed},
+	qr{long\s+int\s+(?:un)?signed},
+	qr{int\s+long\s+(?:un)?signed},
+	qr{long\s+(?:un)?signed\s+int},
+	qr{int\s+(?:un)?signed\s+long},
+	qr{int\s+(?:un)?signed},
+	qr{int\s+long\s+long\s+(?:un)?signed},
+	qr{long\s+long\s+int\s+(?:un)?signed},
+	qr{long\s+long\s+(?:un)?signed\s+int},
+	qr{long\s+long\s+(?:un)?signed},
+	qr{long\s+(?:un)?signed},
+);
+our @typeList = (
+	qr{void},
+	qr{(?:(?:un)?signed\s+)?char},
+	qr{(?:(?:un)?signed\s+)?short\s+int},
+	qr{(?:(?:un)?signed\s+)?short},
+	qr{(?:(?:un)?signed\s+)?int},
+	qr{(?:(?:un)?signed\s+)?long\s+int},
+	qr{(?:(?:un)?signed\s+)?long\s+long\s+int},
+	qr{(?:(?:un)?signed\s+)?long\s+long},
+	qr{(?:(?:un)?signed\s+)?long},
+	qr{(?:un)?signed},
+	qr{float},
+	qr{double},
+	qr{bool},
+	qr{struct\s+$Ident},
+	qr{union\s+$Ident},
+	qr{enum\s+$Ident},
+	qr{${Ident}_t},
+	qr{${Ident}_handler},
+	qr{${Ident}_handler_fn},
+	@typeListMisordered,
+);
+our @typeListFile = ();
+my $all = "(?x:  \n" . join("|\n  ", (@typeList, @typeListFile)) . "\n)";
+our $Modifier = qr{(?:$Attribute|$Sparse|$mods)};
+our $typeC99Typedefs = qr{(?:__)?(?:[us]_?)?int_?(?:8|16|32|64)_t};
+our $typeOtherOSTypedefs = qr{(?x:
+	u_(?:char|short|int|long) |          # bsd
+	u(?:nchar|short|int|long)            # sysv
+)};
+our $typeKernelTypedefs = qr{(?x:
+	(?:__)?(?:u|s|be|le)(?:8|16|32|64)|
+	atomic_t
+)};
+our $typeTypedefs = qr{(?x:
+	$typeC99Typedefs\b|
+	$typeOtherOSTypedefs\b|
+	$typeKernelTypedefs\b
+)};
+our $NonptrType = qr{
+	(?:$Modifier\s+|const\s+)*
+	(?:
+		(?:typeof|__typeof__)\s*\([^\)]*\)|
+		(?:$typeTypedefs\b)|
+		(?:${all}\b)
+	)
+	(?:\s+$Modifier|\s+const)*
+}x;
+our $Type = qr{
+	$NonptrType
+	(?:(?:\s|\*|\[\])+\s*const|(?:\s|\*\s*(?:const\s*)?|\[\])+|(?:\s*\[\s*\])+)?
+	(?:\s+$Inline|\s+$Modifier)*
+}x;
+
+# generate a sequence of code that will splice in highlighting information
+# using the s// operator.
+for (my $k = 0; $k < @highlights; $k++) {
+	my $pattern = $highlights[$k][0];
+	my $result = $highlights[$k][1];
+
+	$dohighlight .=  "\$contents =~ s:$pattern:$result:gs;\n";
+}
+
+my $exit = 0;
+
+my $total_warns = 0;
+my $total_lines = 0;
+my $total_files = 0;
+
+foreach my $filename (@ARGV) {
+	if (! -f $filename) {
+		print STDERR "$filename: No such file\n";
+		next;
+	}
+	if ($filename !~ /\.(h|c)$/) {
+		print STDERR "$filename: Not a C source file\n";
+		next;
+	}
+	$total_files++;
+	if (!process($filename)) {
+		$exit = 1;
+	}
+}
+
+if ($exit != 0 && !$brief) {
+	my $warns_plural = "";
+	$warns_plural = "s" if ($total_warns > 1);
+	my $line_plural = "";
+	$line_plural = "s" if ($total_lines > 1);
+	my $file_plural = "";
+	$file_plural = "s" if ($total_files > 1);
+
+	print "Total: ";
+	print "$total_warns warning$warns_plural, ";
+	print "$total_lines line$line_plural checked in $total_files file$file_plural\n";
+}
+
+exit($exit);
+
 ##
 # dumps section contents to arrays/hashes intended for that purpose.
 #
@@ -183,7 +363,7 @@ sub dump_section {
 		$sectcheck = $sectcheck . $name . " ";
 	} else {
 		if (defined($sections{$name}) && ($sections{$name} ne "")) {
-			ERROR("duplicate section name '$name'");
+			WARN("duplicate section name '$name'");
 			# print STDERR "${file}:$.: error: duplicate section name '$name'\n";
 			# ++$errors;
 		}
@@ -292,7 +472,7 @@ sub dump_struct($$) {
 		);
 	}
 	else {
-		ERROR("Cannot parse struct or union!");
+		WARN("Cannot parse struct or union!");
 		# print STDERR "${file}:$.: error: Cannot parse struct or union!\n";
 		# ++$errors;
 	}
@@ -335,7 +515,7 @@ sub dump_enum($$) {
 		);
 	}
 	else {
-		ERROR("Cannot parse enum!");
+		WARN("Cannot parse enum!");
 		# print STDERR "${file}:$.: error: Cannot parse enum!\n";
 		# ++$errors;
 	}
@@ -389,7 +569,7 @@ sub dump_typedef($$) {
 		);
 	}
 	else {
-		ERROR("Cannot parse typedef!");
+		WARN("Cannot parse typedef!");
 		# print STDERR "${file}:$.: error: Cannot parse typedef!\n";
 		# ++$errors;
 	}
@@ -712,7 +892,7 @@ sub dump_function($$) {
 		create_parameterlist($args, ',', $file);
 	} else {
 		if ($prototype !~ /^(?:typedef\s*)?(struct|enum|union)/) {
-			ERROR("cannot understand function prototype: '$prototype'");
+			WARN("cannot understand function prototype: '$prototype'");
 			# print STDERR "${file}:$.: error: cannot understand function prototype: '$prototype'\n";
 			# ++$errors;
 		}
@@ -815,149 +995,17 @@ sub xml_escape($) {
 	return $text;
 }
 
-#Regular expressions
-our $Storage = qr{extern|static|asmlinkage};
-our $Inline = qr{inline|__always_inline|noinline|__inline|__inline__};
-our $InitAttributePrefix = qr{__(?:mem|cpu|dev|net_|)};
-our $InitAttributeData = qr{$InitAttributePrefix(?:initdata\b)};
-our $InitAttributeConst = qr{$InitAttributePrefix(?:initconst\b)};
-our $InitAttributeInit = qr{$InitAttributePrefix(?:init\b)};
-our $InitAttribute = qr{$InitAttributeData|$InitAttributeConst|$InitAttributeInit};
-our $Attribute = qr{
-	const|
-	__percpu|
-	__nocast|
-	__safe|
-	__bitwise__|
-	__packed__|
-	__packed2__|
-	__naked|
-	__maybe_unused|
-	__always_unused|
-	__noreturn|
-	__used|
-	__cold|
-	__pure|
-	__noclone|
-	__deprecated|
-	__read_mostly|
-	__kprobes|
-	$InitAttribute|
-	____cacheline_aligned|
-	____cacheline_aligned_in_smp|
-	____cacheline_internodealigned_in_smp|
-	__weak
-}x;
-our $Sparse = qr{
-	__user|
-	__kernel|
-	__force|
-	__iomem|
-	__pmem|
-	__must_check|
-	__init_refok|
-	__kprobes|
-	__ref|
-	__rcu|
-	__private
-}x;
-our @modifierList = (
-	qr{fastcall},
-);
-our @modifierListFile = ();
-my $mods = "(?x:  \n" . join("|\n  ", (@modifierList, @modifierListFile)) . "\n)";
-our $Ident = qr{
-	[A-Za-z_][A-Za-z\d_]*
-	(?:\s*\#\#\s*[A-Za-z_][A-Za-z\d_]*)*
-}x;
-our @typeListMisordered = (
-	qr{char\s+(?:un)?signed},
-	qr{int\s+(?:(?:un)?signed\s+)?short\s},
-	qr{int\s+short(?:\s+(?:un)?signed)},
-	qr{short\s+int(?:\s+(?:un)?signed)},
-	qr{(?:un)?signed\s+int\s+short},
-	qr{short\s+(?:un)?signed},
-	qr{long\s+int\s+(?:un)?signed},
-	qr{int\s+long\s+(?:un)?signed},
-	qr{long\s+(?:un)?signed\s+int},
-	qr{int\s+(?:un)?signed\s+long},
-	qr{int\s+(?:un)?signed},
-	qr{int\s+long\s+long\s+(?:un)?signed},
-	qr{long\s+long\s+int\s+(?:un)?signed},
-	qr{long\s+long\s+(?:un)?signed\s+int},
-	qr{long\s+long\s+(?:un)?signed},
-	qr{long\s+(?:un)?signed},
-);
-our @typeList = (
-	qr{void},
-	qr{(?:(?:un)?signed\s+)?char},
-	qr{(?:(?:un)?signed\s+)?short\s+int},
-	qr{(?:(?:un)?signed\s+)?short},
-	qr{(?:(?:un)?signed\s+)?int},
-	qr{(?:(?:un)?signed\s+)?long\s+int},
-	qr{(?:(?:un)?signed\s+)?long\s+long\s+int},
-	qr{(?:(?:un)?signed\s+)?long\s+long},
-	qr{(?:(?:un)?signed\s+)?long},
-	qr{(?:un)?signed},
-	qr{float},
-	qr{double},
-	qr{bool},
-	qr{struct\s+$Ident},
-	qr{union\s+$Ident},
-	qr{enum\s+$Ident},
-	qr{${Ident}_t},
-	qr{${Ident}_handler},
-	qr{${Ident}_handler_fn},
-	@typeListMisordered,
-);
-our @typeListFile = ();
-my $all = "(?x:  \n" . join("|\n  ", (@typeList, @typeListFile)) . "\n)";
-our $Modifier = qr{(?:$Attribute|$Sparse|$mods)};
-our $typeC99Typedefs = qr{(?:__)?(?:[us]_?)?int_?(?:8|16|32|64)_t};
-our $typeOtherOSTypedefs = qr{(?x:
-	u_(?:char|short|int|long) |          # bsd
-	u(?:nchar|short|int|long)            # sysv
-)};
-our $typeKernelTypedefs = qr{(?x:
-	(?:__)?(?:u|s|be|le)(?:8|16|32|64)|
-	atomic_t
-)};
-our $typeTypedefs = qr{(?x:
-	$typeC99Typedefs\b|
-	$typeOtherOSTypedefs\b|
-	$typeKernelTypedefs\b
-)};
-our $NonptrType = qr{
-	(?:$Modifier\s+|const\s+)*
-	(?:
-		(?:typeof|__typeof__)\s*\([^\)]*\)|
-		(?:$typeTypedefs\b)|
-		(?:${all}\b)
-	)
-	(?:\s+$Modifier|\s+const)*
-}x;
-our $Type = qr{
-	$NonptrType
-	(?:(?:\s|\*|\[\])+\s*const|(?:\s|\*\s*(?:const\s*)?|\[\])+|(?:\s*\[\s*\])+)?
-	(?:\s+$Inline|\s+$Modifier)*
-}x;
-
 sub report {
-	my ($level, $msg) = @_;
+	my ($msg) = @_;
+	$msg = (split('\n', $msg))[0];
 
 	my $output = '';
-	if (-t STDOUT && $color) {
-		if ($level eq 'ERROR') {
-			$output .= RED;
-		} elsif ($level eq 'WARNING') {
-			$output .= YELLOW;
-		} else {
-			$output .= GREEN;
-		}
-	}
-	$output .= $prefix . $level . ':';
+	my $line = (split(":", $prefix))[1]; # Line number only
+	$output .= RED if (-t STDOUT && $color);
+	$output .= "line $line:";
 	$output .= RESET if (-t STDOUT && $color);
-	$output .= ' ' . $msg . "\n";
+	$output .= ' ' . $msg;
+	$output .= "\n";
 
 	$output = (split('\n', $output))[0] . "\n";
 
@@ -970,29 +1018,20 @@ sub report_dump {
 	our @report;
 }
 
-sub ERROR {
-	my ($msg) = @_;
-
-	if (report("ERROR", $msg)) {
-		our $clean = 0;
-		our $errors++;
-		return 1;
-	}
-	return 0;
-}
 sub WARN {
 	my ($msg) = @_;
 
-	if (report("WARNING", $msg)) {
+	if (report($msg)) {
 		our $clean = 0;
 		our $warnings++;
+		$total_warns++;
 		return 1;
 	}
 	return 0;
 }
 
-sub process_file($) {
-	my ($file) = @_;
+sub process {
+	my $filename = shift;
 	my $identifier;
 	my $func;
 	my $descr;
@@ -1007,20 +1046,20 @@ sub process_file($) {
 	$prefix = '';
 
 	my $FILE;
-	if (!open($FILE,"<$file")) {
-		print STDERR "Error: Cannot open file $file\n";
-		# ++$errors;
-		return;
+	if (!open($FILE,'<', $filename)) {
+		print STDERR "$P: Couldn't open file $filename\n";
+		return (1);
 	}
 
 	$. = 1;
-
 	$section_counter = 0;
 	while (<$FILE>) {
+		$total_lines++;
 		while (s/\\\s*$//) {
 			$_ .= <$FILE>;
+			$total_lines++;
 		}
-		$prefix = "$file:$.: ";
+		$prefix = "$filename:$.: ";
 
 		# print "($.)STATE:$state($in_doc_sect)\t$_\n";
 		$cnt_lines++;
@@ -1104,7 +1143,7 @@ sub process_file($) {
 				}
 
 				if ($verbose) {
-					print STDERR "${file}:$.: info: Scanning doc for $identifier\n";
+					print STDERR "${filename}:$.: info: Scanning doc for $identifier\n";
 				}
 			} else {
 				WARN("Cannot understand $_ on line $." .
@@ -1125,7 +1164,7 @@ sub process_file($) {
 						# print STDERR "${file}:$.: warning: contents before sections\n";
 						# ++$warnings;
 					}
-					dump_section($file, $section, xml_escape($contents));
+					dump_section($filename, $section, xml_escape($contents));
 					$section = $section_default;
 				}
 
@@ -1142,7 +1181,7 @@ sub process_file($) {
 				$section = $newsection;
 			} elsif (/$doc_end/) {
 				if (($contents ne "") && ($contents ne "\n")) {
-					dump_section($file, $section, xml_escape($contents));
+					dump_section($filename, $section, xml_escape($contents));
 					$section = $section_default;
 					$contents = "";
 				}
@@ -1162,7 +1201,7 @@ sub process_file($) {
 				# @parameter line to signify start of description
 				if ($1 eq "") {
 					if ($section =~ m/^@/ || $section eq $section_context) {
-						dump_section($file, $section, xml_escape($contents));
+						dump_section($filename, $section, xml_escape($contents));
 						$section = $section_default;
 						$contents = "";
 					} else {
@@ -1188,9 +1227,9 @@ sub process_file($) {
 				$state = 4;
 				$split_doc_state = 1;
 			} elsif ($decl_type eq 'function' && $_ !~ /(?:struct|enum|union)+/) {
-				process_state3_function($_, $file);
+				process_state3_function($_, $filename);
 			} else {
-				process_state3_type($_, $file);
+				process_state3_type($_, $filename);
 			}
 		} elsif ($state == 4) { # scanning for split parameters
 			# First line (state 1) needs to be a @parameter
@@ -1208,7 +1247,7 @@ sub process_file($) {
 			# Documentation block end */
 			} elsif (/$doc_split_end/) {
 				if (($contents ne "") && ($contents ne "\n")) {
-					dump_section($file, $section, xml_escape($contents));
+					dump_section($filename, $section, xml_escape($contents));
 					$section = $section_default;
 					$contents = "";
 				}
@@ -1220,7 +1259,7 @@ sub process_file($) {
 					$contents .= $1 . "\n";
 				} elsif ($split_doc_state == 1) {
 					$split_doc_state = 4;
-					print STDERR "Warning(${file}:$.): ";
+					print STDERR "Warning(${filename}:$.): ";
 					print STDERR "Incorrect use of kernel-doc format: $_";
 					# ++$warnings;
 				}
@@ -1233,32 +1272,15 @@ sub process_file($) {
 		#print STDERR "${file}:1: warning: no structured comments found\n";
 	}
 
-	print @report;
-	if (!($clean == 1 && $verbose == 0)) {
-		print "Total: ";
-		print RED "$errors errors", RESET, ", ";
-		print YELLOW "$warnings warnings", RESET, ", ";
-		print "$cnt_lines lines checked\n";
+	if (!$clean) {
+		if ($brief) {
+			foreach my $rep (report_dump()) {
+				print "$filename: $rep";
+			}
+		} else {
+			print "$filename:\n";
+			print " " x 4, join(" " x 4, report_dump());
+		}
 	}
 	return $clean;
 }
-
-# generate a sequence of code that will splice in highlighting information
-# using the s// operator.
-for (my $k = 0; $k < @highlights; $k++) {
-	my $pattern = $highlights[$k][0];
-	my $result = $highlights[$k][1];
-
-	$dohighlight .=  "\$contents =~ s:$pattern:$result:gs;\n";
-}
-
-my $exit = 0;
-
-foreach (@ARGV) {
-	chomp;
-	if (!process_file($_)) {
-		$exit = 1;
-	}
-}
-
-exit($exit);
