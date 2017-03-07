@@ -22,6 +22,7 @@ use warnings;
 use diagnostics;
 use Term::ANSIColor qw(:constants);
 use Getopt::Long qw(:config no_auto_abbrev);
+use File::Copy qw(copy);
 
 my $V = "1.0.0";
 
@@ -200,12 +201,12 @@ foreach my $type (sort keys $options) {
 	# The corresponding test folder does not exist
 	if (! -e $type_folder) {
 		print STDERR RED, "No test suite found for '$type'\n", RESET;
-		if ($create) {
-			mkdir $type_folder;
-			my $filename = "TODO.md";
-			write_todo("$type_folder/$filename", $type);
-		}
-		next;
+		mkdir $type_folder if ($create);
+	}
+
+	if (! -f "$type_folder/run_tests.pl") {
+		my $test_script = "run_tests";
+		copy "${test_script}_template.pl", "$type_folder/$test_script.pl";
 	}
 
 	# Lists all the C source and header files in the test folder
@@ -216,4 +217,7 @@ foreach my $type (sort keys $options) {
 		print STDERR YELLOW, "You should have at least ", $options->{$type}->{count},
 			" tests for '$type', you currently have ", scalar @test_files, "\n", RESET;
 	}
+
+	my $filename = "TODO.md";
+	write_todo("$type_folder/$filename", $type);
 }

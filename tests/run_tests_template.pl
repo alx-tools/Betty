@@ -17,6 +17,8 @@ if (scalar @files == 0) {
 	die "$0: Error: Couldn't find any C source/header file to test\n";
 }
 
+my $exit = 0;
+
 foreach my $file (sort @files) {
 	my @errors = ();
 	my $spec = "$file.stdout";
@@ -38,7 +40,6 @@ foreach my $file (sort @files) {
 	if (scalar @errors > 0) {
 		my $report_file = "$file.report";
 
-		unlink $report_file if (-f $report_file);
 		open(my $rp, '>', $report_file) || die "Couldn't open file '$report_file' $!";
 
 		foreach my $error (@errors) {
@@ -46,7 +47,8 @@ foreach my $file (sort @files) {
 		}
 
 		close $rp;
-	} else {
-		print "All good\n";
+		$exit = 1;
 	}
 }
+
+exit ($exit);
