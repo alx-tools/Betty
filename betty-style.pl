@@ -17,7 +17,7 @@ use Getopt::Long qw(:config no_auto_abbrev);
 my $P = $0;
 my $D = dirname(abs_path($P));
 my $V = '2.0.0';
-my $minimum_perl_version = 5.10.0;
+my $min_perl_version = 5.10.0;
 
 my $verbose = 0;
 my $brief = 0;
@@ -25,7 +25,7 @@ my $help = 0;
 my $version = 0;
 my $color = 1;
 
-# Options
+# Command-line options with default values
 my $trailing_whitespace = 1;
 my $long_line = 1;
 my $long_line_max = 80;
@@ -133,6 +133,10 @@ my $single_semicolon = 1;
 my $missing_break = 1;
 my $default_no_break = 1;
 
+# version subroutine
+# $exitcode (optional): Exit status (default 0)
+#
+# Prints out informations about the script and exit
 sub version {
 	my $exitcode = shift @_ || 0;
 
@@ -141,11 +145,15 @@ sub version {
 	exit($exitcode);
 }
 
+# help subroutine
+# $exitcode (optional): Exit status (default 0)
+#
+# Prints out a help message on how to use the script and exit
 sub help {
 	my $exitcode = shift @_ || 0;
 
 	print << "EOM";
-Usage: $P [OPTION]... [FILE]...
+Usage: $P [OPTION]... FILE...
 Options:
   --verbose                       Verbose mode
   -b, --brief                     Brief mode. One line per warning. No summary
@@ -269,11 +277,6 @@ EOM
 	exit($exitcode);
 }
 
-sub uniq {
-	my %seen;
-	return grep { !$seen{$_}++ } @_;
-}
-
 GetOptions(
 	'verbose'	=> \$verbose,
 	'b|brief'	=> \$brief,
@@ -388,14 +391,13 @@ GetOptions(
 	'missing-break!' => \$missing_break,
 	'default-no-break!' => \$default_no_break
 ) or help(1);
-
 help(0) if ($help);
 version(0) if ($version);
 
 my $exit = 0;
 
-if ($^V && $^V lt $minimum_perl_version) {
-	printf "$P: requires at least perl version %vd\n", $minimum_perl_version;
+if ($^V && $^V lt $min_perl_version) {
+	printf "$P: requires at least perl version %vd\n", $min_perl_version;
 	exit(1);
 }
 
@@ -702,6 +704,10 @@ our $declaration_macros = qr{(?x:
 	(?:$Storage\s+)?${Type}\s+uninitialized_var\s*\(
 )};
 
+# deparenthesize subroutine
+# $string: String to remove the parenthesis from
+#
+# Removes the parenthesis around the string an returns it
 sub deparenthesize {
 	my ($string) = @_;
 	return "" if (!defined($string));
@@ -722,7 +728,7 @@ my $total_warns = 0;
 my $total_lines = 0;
 my $total_files = 0;
 
-for my $filename (@ARGV) {
+foreach my $filename (@ARGV) {
 	my $FILE;
 
 	if (! -f $filename) {
@@ -1661,7 +1667,7 @@ sub process {
 		if ($trailing_whitespace &&
 		    ($rawline =~ /^\+.*\S\s+$/ ||
 		     $rawline =~ /^\+\s+$/)) {
-			WARN("trailing-whitespace", "trailing whitespace\n");
+			WARN("trailing-whitespace", "trailing whitespace");
 		}
 
 # line length limit (with some exclusions)
@@ -1689,7 +1695,7 @@ sub process {
 			# logging functions that end in a string that starts
 			# before $long_line_max
 			if ($line =~ /^\+\s*$logFunctions\s*\(\s*(?:(?:KERN_\S+\s*|[^"]*))?($String\s*(?:|,|\)\s*;)\s*)$/ &&
-			    length(expand_tabs(substr($line, 1, length($line) - length($1) - 1))) <= $long_line_max) {
+			    length((substr($line, 1, length($line) - length($1) - 1))) <= $long_line_max) {
 				$ignore = 1;
 
 			# lines with only strings (w/ possible termination)
@@ -1701,7 +1707,7 @@ sub process {
 
 			if (!$ignore) {
 				WARN("long-line",
-				    "line over $long_line_max characters ($real_length)\n");
+				    "line over $long_line_max characters ($real_length)");
 			}
 		}
 
@@ -1711,7 +1717,7 @@ sub process {
 		    defined $lines[$linenr] &&
 		    $lines[$linenr] =~ /^\\ No newline at end of file/) {
 			WARN("eof-newline",
-			    "no newline at end of file\n");
+			    "no newline at end of file");
 		}
 
 # at the beginning of a line any tabs must come first and anything
@@ -1720,21 +1726,21 @@ sub process {
 		    ($rawline =~ /^\+\s* \t\s*\S/ ||
 		     $rawline =~ /^\+\s*        \s*/)) {
 			WARN("code-indent",
-			    "code indent should use tabs where possible\n");
+			    "code indent should use tabs where possible");
 		}
 
 # check for space before tabs.
 		if ($space_before_tab &&
 		    $rawline =~ /^\+/ && $rawline =~ / \t/) {
 			WARN("space-before-tab",
-			    "please, no space before tabs\n");
+			    "please, no space before tabs");
 		}
 
 # check for && or || at the start of a line
 		if ($logical_continuations &&
 		    $rawline =~ /^\+\s*(&&|\|\|)/) {
 			WARN("logical-continuations",
-			    "Logical continuations should be on the previous line\n");
+			    "Logical continuations should be on the previous line");
 		}
 
 # check indentation starts on a tab stop
@@ -1744,7 +1750,7 @@ sub process {
 			my $indent = length($1);
 			if ($indent % 8) {
 				WARN("tabstop",
-				    "Statements should start on a tabstop\n");
+				    "Statements should start on a tabstop");
 			}
 		}
 
@@ -1769,7 +1775,7 @@ sub process {
 				    $newindent ne $goodtabindent &&
 				    $newindent ne $goodspaceindent) {
 					WARN("parenthesis-alignment",
-					    "Alignment should match open parenthesis\n");
+					    "Alignment should match open parenthesis");
 				}
 			}
 		}
@@ -1785,7 +1791,7 @@ sub process {
 		    $line =~ /^\+(.*)\(\s*$Type\s*\)([ \t]++)((?![={]|\\$|$Attribute|__attribute__))/ &&
 		    (!defined($1) || $1 !~ /\b(?:sizeof|__alignof__)\s*$/)) {
 			WARN("space-after-cast",
-			    "No space is necessary after a cast\n");
+			    "No space is necessary after a cast");
 		}
 
 # Block comment styles
@@ -1798,7 +1804,7 @@ sub process {
 		    $rawline =~ /^\+/ &&			#line is new
 		    $rawline !~ /^\+[ \t]*\*/) {		#no leading *
 			WARN("block-comment-subsequent",
-			    "Block comments start with * on subsequent lines\n");
+			    "Block comments start with * on subsequent lines");
 		}
 
 # Block comments use /* on leading line
@@ -1807,7 +1813,7 @@ sub process {
 		    $rawline !~ m@^.*/\*{2,}\s*$@ &&		#leading /**
 		    $rawline =~ m@^.\s*/\*+.+\s*$@) {		#/* non blank
 			WARN("block-comment-leading",
-			    "Block comments use a leading /* on a separate line\n");
+			    "Block comments use a leading /* on a separate line");
 		}
 
 # Block comments use */ on trailing lines
@@ -1817,7 +1823,7 @@ sub process {
 		    $rawline !~ m@^\+.*\*{2,}/[ \t]*$@ &&	#trailing **/
 		    $rawline =~ m@^\+[ \t]*.+\*\/[ \t]*$@) {	#non blank */
 			WARN("block-comment-trailing",
-			    "Block comments use a trailing */ on a separate line\n");
+			    "Block comments use a trailing */ on a separate line");
 		}
 
 # check for missing blank lines after struct/union declarations
@@ -1834,7 +1840,7 @@ sub process {
 		      $line =~ /^\+\s*DECLARE/ ||
 		      $line =~ /^\+\s*__setup/)) {
 			WARN("line-spacing",
-			    "Please use a blank line after function/struct/union/enum declarations\n");
+			    "Please use a blank line after function/struct/union/enum declarations");
 		}
 
 # check for multiple consecutive blank lines
@@ -1844,7 +1850,7 @@ sub process {
 			$last_blank_line = $linenr;
 			if ($single_line_spacing) {
 				WARN("single-line-spacing",
-				    "Please don't use multiple blank lines\n");
+				    "Please don't use multiple blank lines");
 			}
 		}
 
@@ -1884,7 +1890,7 @@ sub process {
 			# indentation of previous and current line are the same
 		    (($prevline =~ /\+(\s+)\S/) && $sline =~ /^\+$1\S/)) {
 			WARN("line-spacing",
-			    "Missing a blank line after declarations\n");
+			    "Missing a blank line after declarations");
 		}
 
 # check for spaces at the beginning of a line.
@@ -1895,7 +1901,7 @@ sub process {
 		if ($leading_space &&
 		    $rawline =~ /^\+ / && $line !~ /^\+ *(?:$;|#|$Ident:)/)  {
 			WARN("leading-space",
-			    "please, no spaces at the start of a line\n");
+			    "please, no spaces at the start of a line");
 		}
 
 # Check for header protection
@@ -1918,7 +1924,7 @@ sub process {
 				    $line !~ /^.\s*$/ &&
 				    $line !~ /^.#\s*(?:end)?if/) {
 					WARN("safe-guard",
-					    "This line is not protected from double inclusion\n");
+					    "This line is not protected from double inclusion");
 				}
 			}
 
@@ -1945,7 +1951,7 @@ sub process {
 			     defined $lines[$linenr] &&
 			     $lines[$linenr] !~ /^[ \+]\t{$tabs,$tabs}return/)) {
 				WARN("unnecessary-else",
-				    "else is not generally useful after a break or return\n");
+				    "else is not generally useful after a break or return");
 			}
 		}
 
@@ -1956,7 +1962,7 @@ sub process {
 			my $tabs = $1;
 			if ($prevline =~ /^\+$tabs(?:goto|return)\b/) {
 				WARN("unnecessary-break",
-				    "break is not useful after a goto or return\n");
+				    "break is not useful after a goto or return");
 			}
 		}
 
@@ -2077,7 +2083,7 @@ sub process {
 			if ($deep_indent &&
 			    $line =~ /^\+\t{6,}/) {
 				WARN("deep-indent",
-				    "Too many leading tabs - consider code refactoring\n");
+				    "Too many leading tabs - consider code refactoring");
 			}
 
 			my $ctx_cnt = $realcnt - $#ctx - 1;
@@ -2095,12 +2101,12 @@ sub process {
 
 			# if ($ctx !~ /{\s*/ && defined($lines[$ctx_ln - 1]) && $lines[$ctx_ln - 1] =~ /^\+\s*{/) {
 			# 	WARN("op-brace-to-rename",
-			# 	      "that open brace should be on the next line\n");
+			# 	      "that open brace should be on the next line");
 			# }
 			if ($loop_open_brace &&
 			    $line =~ /\s*{/) {
 				WARN("loop-open-brace",
-				    "that open brace should be on the next line\n");
+				    "that open brace should be on the next line");
 			}
 			if ($level == 0 &&
 			    $pre_ctx !~ /}\s*while\s*\($/ &&
@@ -2110,7 +2116,7 @@ sub process {
 				if ($loop_trailing_semicolon &&
 				    $nindent > $indent) {
 					WARN("loop-trailing-semicolon",
-					    "trailing semicolon indicates no statements, indent implies otherwise\n");
+					    "trailing semicolon indicates no statements, indent implies otherwise");
 				}
 			}
 		}
@@ -2214,7 +2220,7 @@ sub process {
 			     ($sindent < $indent) ||
 			     ($sindent > $indent + 8))) {
 				WARN("suspect-indent",
-				     "suspect code indent for conditional statements ($indent, $sindent)\n" . "$stat_real\n");
+				     "suspect code indent for conditional statements ($indent, $sindent)");
 			}
 		}
 
@@ -2242,7 +2248,7 @@ sub process {
 				if ($unspecified_int) {
 					WARN("unspecified-int",
 					    "Prefer '" . trim($sign) . " int" . rtrim($pointer) .
-					    "' to bare use of '$sign" . rtrim($pointer) . "'\n");
+					    "' to bare use of '$sign" . rtrim($pointer) . "'");
 				}
 			}
 		}
@@ -2252,7 +2258,7 @@ sub process {
 		    $line =~ /^.\s*{/ &&
 		    $prevline =~ /(?:^|[^=])=\s*$/) {
 			WARN("init-open-brace",
-			    "that open brace { should be on the previous line\n");
+			    "that open brace { should be on the previous line");
 		}
 
 # Check for do/while loop open brace on the same line
@@ -2260,7 +2266,7 @@ sub process {
 		    $line =~ /^.\s*{/ &&
 		    $prevline =~ /^.\s*\bdo\b\s*/) {
 			WARN("do-while-open-brace",
-			    "that open brace { should be on the previous line\n");
+			    "that open brace { should be on the previous line");
 		}
 
 #
@@ -2273,7 +2279,7 @@ sub process {
 			if ($malformed_include &&
 			    $path =~ m{//}) {
 				WARN("malformed-include",
-				    "malformed #include filename\n");
+				    "malformed #include filename");
 			}
 		}
 
@@ -2281,7 +2287,7 @@ sub process {
 		if ($c99_comments &&
 		    $line =~ m{//}) {
 			WARN("c99-comments",
-			    "do not use C99 // comments\n");
+			    "do not use C99 // comments");
 		}
 		# Remove C99 comments.
 		$line =~ s@//.*@@;
@@ -2295,20 +2301,20 @@ sub process {
 		     $line =~ /^\+\s*$Ident(?:\s+|\s*\*\s*)$Ident\s*[=,;\[]/ ||
 		     $line =~ /^\+\s*$declaration_macros/)) {
 			WARN("global-declaration",
-			    "do not declare global variables\n");
+			    "do not declare global variables");
 		}
 
 # check for global initialisers.
 		if ($global_init &&
 		    $line =~ /^\+$Type\s*$Ident(?:\s+$Modifier)*\s*=\s*($zero_initializer)\s*;/) {
 			WARN("global-init",
-				  "do not initialise globals to $1\n");
+				  "do not initialise globals to $1");
 		}
 # check for static initialisers.
 		if ($static_init &&
 		    $line =~ /^\+.*\bstatic\s.*=\s*($zero_initializer)\s*;/) {
 			WARN("static-init",
-			    "do not initialise statics to $1\n");
+			    "do not initialise statics to $1");
 		}
 
 # check for misordered declarations of char/short/int/long with signed/unsigned
@@ -2316,14 +2322,14 @@ sub process {
 		    $sline =~ m{(\b$TypeMisordered\b)}g) {
 			my $tmp = trim($1);
 			WARN("misordered-type",
-			    "type '$tmp' should be specified in [[un]signed] [short|int|long|long long] order\n");
+			    "type '$tmp' should be specified in [[un]signed] [short|int|long|long long] order");
 		}
 
 # check for function declarations without arguments like "int foo()"
 		if ($func_without_args &&
 		    $line =~ /(\b$Type\s+$Ident)\s*\(\s*\)/) {
 			WARN("func-without-args",
-			    "$1() should probably be $1(void)\n");
+			    "$1() should probably be $1(void)");
 		}
 
 # * goes on variable not on type
@@ -2343,7 +2349,7 @@ sub process {
 			if ($pointer_location &&
 			    $from ne $to) {
 				WARN("pointer-location",
-				    "\"(foo$from)\" should be \"(foo$to)\"\n");
+				    "\"(foo$from)\" should be \"(foo$to)\"");
 			}
 		}
 		while ($line =~ m{(\b$NonptrType(\s*(?:$Modifier\b\s*|\*\s*)+)($Ident))}g) {
@@ -2363,7 +2369,7 @@ sub process {
 			if ($pointer_location &&
 			    $from ne $to && $ident !~ /^$Modifier$/) {
 				WARN("pointer-location",
-				    "\"foo${from}bar\" should be \"foo${to}bar\"\n");
+				    "\"foo${from}bar\" should be \"foo${to}bar\"");
 			}
 		}
 
@@ -2374,7 +2380,7 @@ sub process {
 		    !($line=~/\#\s*define.*do\s\{/) &&
 		    !($line=~/}/)) {
 			WARN("func-open-brace",
-			    "open brace following function declarations go on the next line\n");
+			    "open brace following function declarations go on the next line");
 		}
 
 # check number of functions
@@ -2390,7 +2396,7 @@ sub process {
 					my $tmpline = $realline - 1;
 					$prefix = "$realfile:$tmpline: ";
 					WARN("count-func",
-					    "More than $count_func_max functions declared\n");
+					    "More than $count_func_max functions declared");
 				}
 			}
 		}
@@ -2402,7 +2408,7 @@ sub process {
 			if ($long_func &&
 			    $funclines > $long_func_max + 1) {
 				WARN("long-func",
-				    "More than $long_func_max lines in a function\n");
+				    "More than $long_func_max lines in a function");
 			}
 		} else {
 			$funclines = 0;
@@ -2412,7 +2418,7 @@ sub process {
 		if ($struct_open_brace &&
 		    $line =~ /^.\s*(?:typedef\s+)?(enum|union|struct)(?:\s+$Ident)?\s*{/) {
 			WARN("struct-open-brace",
-			    "open brace following $1 go on the next line\n");
+			    "open brace following $1 go on the next line");
 		}
 
 		if ($struct_def &&
@@ -2420,7 +2426,7 @@ sub process {
 		    $line =~ /^.\s*(?:typedef\s+)?(enum|union|struct)(?:\s+$Ident)?\s*.*/ &&
 		    $line !~ /;$/) {
 			WARN("struct-def",
-			    "$1 definition should be avoided in .c files\n");
+			    "$1 definition should be avoided in .c files");
 		}
 
 # Function pointer declarations
@@ -2445,7 +2451,7 @@ sub process {
 			}
 			if ($declare !~ /\*$/ && $post_declare_space =~ /^$/) {
 				WARN("func-ptr-space",
-				    "missing space after return type\n");
+				    "missing space after return type");
 				$post_declare_space = " ";
 			}
 
@@ -2453,28 +2459,28 @@ sub process {
 			if (defined $pre_pointer_space &&
 			    $pre_pointer_space =~ /^\s/) {
 				WARN("func-ptr-space",
-				    "Unnecessary space after function pointer open parenthesis\n");
+				    "Unnecessary space after function pointer open parenthesis");
 			}
 
 # unnecessary space "type (* funcptr)(args...)"
 			if (defined $post_pointer_space &&
 			    $post_pointer_space =~ /^\s/) {
 				WARN("func-ptr-space",
-				    "Unnecessary space before function pointer name\n");
+				    "Unnecessary space before function pointer name");
 			}
 
 # unnecessary space "type (*funcptr )(args...)"
 			if (defined $post_funcname_space &&
 			    $post_funcname_space =~ /^\s/) {
 				WARN("func-ptr-space",
-				    "Unnecessary space after function pointer name\n");
+				    "Unnecessary space after function pointer name");
 			}
 
 # unnecessary space "type (*funcptr) (args...)"
 			if (defined $pre_args_space &&
 			    $pre_args_space =~ /^\s/) {
 				WARN("func-ptr-space",
-				    "Unnecessary space before function pointer arguments\n");
+				    "Unnecessary space before function pointer arguments");
 			}
 		}
 
@@ -2489,7 +2495,7 @@ sub process {
 			    ($where != 0 || $prefix !~ /^.\s+$/) &&
 			    $prefix !~ /[{,]\s+$/) {
 				WARN("bracket-space",
-				    "space prohibited before open square bracket '['\n");
+				    "space prohibited before open square bracket '['");
 			}
 		}
 
@@ -2520,7 +2526,7 @@ sub process {
 
 			} else {
 				WARN("func-parenthesis-space",
-				    "space prohibited between function name and open parenthesis\n");
+				    "space prohibited between function name and open parenthesis");
 			}
 		}
 
@@ -2611,7 +2617,7 @@ sub process {
 					if ($ctx !~ /.x[WEBC]/ &&
 					    $cc !~ /^\\/ && $cc !~ /^;/) {
 						WARN("op-spacing",
-						    "space required after that '$op'\n");
+						    "space required after that '$op'");
 					}
 
 				# // is a comment
@@ -2626,7 +2632,7 @@ sub process {
 				} elsif ($op eq '->') {
 					if ($ctx =~ /Wx.|.xW/) {
 						if (WARN("op-spacing",
-						    "spaces prohibited around that '$op'\n")) {
+						    "spaces prohibited around that '$op'")) {
 							if (defined $fix_elements[$n + 2]) {
     								$fix_elements[$n + 2] =~ s/^\s+//;
     							}
@@ -2637,11 +2643,11 @@ sub process {
 				} elsif ($op eq ',') {
 					if ($ctx =~ /Wx./) {
 						WARN("op-spacing",
-						    "space prohibited before that '$op'\n");
+						    "space prohibited before that '$op'");
 					}
 					if ($ctx !~ /.x[WEC]/ && $cc !~ /^}/) {
 						WARN("op-spacing",
-						    "space required after that '$op'\n");
+						    "space required after that '$op'");
 					}
 
 				# '*' as part of a type definition -- reported already.
@@ -2657,14 +2663,14 @@ sub process {
 					if ($ctx !~ /[WEBC]x./ &&
 					    $ca !~ /(?:\)|!|~|\*|-|\+|\&|\||\+\+|\-\-|\{)$/) {
 						WARN("op-spacing",
-						    "space required before that '$op'\n");
+						    "space required before that '$op'");
 					}
 					if ($op eq '*' && $cc =~/\s*$Modifier\b/) {
 						# A unary '*' may be const
 
 					} elsif ($ctx =~ /.xW/) {
 						if (WARN("op-spacing",
-						    "space prohibited after that '$op'\n")) {
+						    "space prohibited after that '$op'")) {
 							if (defined $fix_elements[$n + 2]) {
     								$fix_elements[$n + 2] =~ s/^\s+//;
     							}
@@ -2675,16 +2681,16 @@ sub process {
 				} elsif ($op eq '++' or $op eq '--') {
 					if ($ctx !~ /[WEOBC]x[^W]/ && $ctx !~ /[^W]x[WOBEC]/) {
 						WARN("op-spacing",
-						    "space required one side of that '$op'\n");
+						    "space required one side of that '$op'");
 					}
 					if ($ctx =~ /Wx[BE]/ ||
 					    ($ctx =~ /Wx./ && $cc =~ /^;/)) {
 						WARN("op-spacing",
-						    "space prohibited before that '$op'\n");
+						    "space prohibited before that '$op'");
 					}
 					if ($ctx =~ /ExW/) {
 						if (WARN("op-spacing",
-						    "space prohibited after that '$op'\n")) {
+						    "space prohibited after that '$op'")) {
 							if (defined $fix_elements[$n + 2]) {
     								$fix_elements[$n + 2] =~ s/^\s+//;
     							}
@@ -2701,16 +2707,16 @@ sub process {
 					if ($force_check) {
 						if (defined $fix_elements[$n + 2] && $ctx !~ /[EW]x[EW]/) {
 							if (WARN("op-spacing",
-							    "spaces preferred around that '$op'\n")) {
+							    "spaces preferred around that '$op'")) {
 								$fix_elements[$n + 2] =~ s/^\s+//;
 							}
 						} elsif (!defined $fix_elements[$n + 2] && $ctx !~ /Wx[OE]/) {
 							WARN("op-spacing",
-							    "space preferred before that '$op'\n");
+							    "space preferred before that '$op'");
 						}
 					} elsif ($ctx =~ /Wx[^WCE]|[^WCE]xW/) {
 						if (WARN("op-spacing",
-						    "need consistent spacing around '$op'\n")) {
+						    "need consistent spacing around '$op'")) {
 							if (defined $fix_elements[$n + 2]) {
     								$fix_elements[$n + 2] =~ s/^\s+//;
     							}
@@ -2722,7 +2728,7 @@ sub process {
 				} elsif ($opv eq ':C' || $opv eq ':L') {
 					if ($ctx =~ /Wx./) {
 						WARN("op-spacing",
-						    "space prohibited before that '$op'\n");
+						    "space prohibited before that '$op'");
 					}
 
 				# All the others need spaces both sides.
@@ -2747,7 +2753,7 @@ sub process {
 
 					if (!$ok) {
 						if (WARN("op-spacing",
-						    "spaces required around that '$op'\n")) {
+						    "spaces required around that '$op'")) {
 							if (defined $fix_elements[$n + 2]) {
     								$fix_elements[$n + 2] =~ s/^\s+//;
     							}
@@ -2762,14 +2768,14 @@ sub process {
 		if ($semicolon_space &&
 		    $line =~ /^\+.*\S\s+;\s*$/) {
 			WARN("semicolon-space",
-			    "space prohibited before semicolon\n");
+			    "space prohibited before semicolon");
 		}
 
 # check for multiple assignments
 		if ($multiple_assignments &&
 		    $line =~ /^.\s*$Lval\s*=\s*$Lval\s*=(?!=)/) {
 			WARN("multiple-assignments",
-			    "multiple assignments should be avoided\n");
+			    "multiple assignments should be avoided");
 		}
 
 # NOTE: Can be useful
@@ -2785,7 +2791,7 @@ sub process {
 		# 	}
 		# 	if ($ln =~ /,/) {
 		# 		WARN("multiple-declaration",
-		# 		     "declaring multiple variables together should be avoided\n");
+		# 		     "declaring multiple variables together should be avoided");
 		# 	}
 		# }
 
@@ -2794,7 +2800,7 @@ sub process {
 		    ($line =~ /\(.*\)\{/ && $line !~ /\($Type\)\{/) ||
 		    $line =~ /do\{/) {
 			WARN("space-open-brace",
-			    "space required before the open brace\n");
+			    "space required before the open brace");
 		}
 
 # check for blank lines before declarations
@@ -2802,7 +2808,7 @@ sub process {
 		    $line =~ /^.\t+$Type\s+$Ident(?:\s*=.*)?;/ &&
 		    $prevrawline =~ /^.\s*$/) {
 			WARN("blank-before-decl",
-			     "No blank lines before declarations\n");
+			     "No blank lines before declarations");
 		}
 
 
@@ -2811,19 +2817,19 @@ sub process {
 		if ($close_brace_space &&
 		    $line =~ /}(?!(?:,|;|\)))\S/) {
 			WARN("close-brace-space",
-			    "space required after that close brace\n");;
+			    "space required after that close brace");;
 		}
 
 # check spacing on square brackets
 		if ($bracket_space_in &&
 		    $line =~ /\[\s/ && $line !~ /\[\s*$/) {
 			WARN("bracket-space-in",
-			    "space prohibited after that open square bracket\n");
+			    "space prohibited after that open square bracket");
 		}
 		if ($bracket_space_in &&
 		    $line =~ /\s\]/) {
 			WARN("bracket-space-in",
-			    "space prohibited before that close square bracket\n");
+			    "space prohibited before that close square bracket");
 		}
 
 # check spacing on parentheses
@@ -2831,14 +2837,14 @@ sub process {
 		    $line =~ /\(\s/ && $line !~ /\(\s*(?:\\)?$/ &&
 		    $line !~ /for\s*\(\s+;/) {
 			WARN("parenthesis-space-in",
-			    "space prohibited after that open parenthesis\n");
+			    "space prohibited after that open parenthesis");
 		}
 		if ($parenthesis_space_in &&
 		    $line =~ /(\s+)\)/ && $line !~ /^.\s*\)/ &&
 		    $line !~ /for\s*\(.*;\s+\)/ &&
 		    $line !~ /:\s+\)/) {
 			WARN("parenthesis-space-in",
-			    "space prohibited before that close parenthesis\n");
+			    "space prohibited before that close parenthesis");
 		}
 
 # check unnecessary parentheses around addressof/dereference single $Lvals
@@ -2848,7 +2854,7 @@ sub process {
 		    $line =~ /(?:[^&]&\s*|\*)\(\s*($Ident\s*(?:$Member\s*)+)\s*\)/g) {
 			my $var = $1;
 			WARN("unnecessary-parentheses",
-			    "Unnecessary parentheses around $var\n");
+			    "Unnecessary parentheses around $var");
 		}
 
 # check for unnecessary parentheses around function pointer uses
@@ -2859,7 +2865,7 @@ sub process {
 		    $1 !~ /^if/) {
 			my $var = $2;
 			WARN("unnecessary-parentheses",
-			    "Unnecessary parentheses around function pointer $var\n");
+			    "Unnecessary parentheses around function pointer $var");
 		}
 
 #goto labels aren't indented, allow a single space however
@@ -2868,7 +2874,7 @@ sub process {
 		    !($line=~/^. [A-Za-z\d_]+:/) &&
 		    !($line=~/^.\s+(?:default|case):/)) {
 			WARN("indented-label",
-			    "labels should not be indented\n");
+			    "labels should not be indented");
 		}
 
 # return needs parentheses
@@ -2881,11 +2887,11 @@ sub process {
 				if ($ret_parentheses &&
 				    $value =~ m/^\s*$FuncArg\s*(?:\?)|$/) {
 					WARN("ret-parentheses",
-					      "parentheses are required on a return statement\n");
+					      "parentheses are required on a return statement");
 				}
 			} elsif ($ret_space && $spacing !~ /\s+/) {
 				WARN("ret-space",
-				      "space required before the open parenthesis\n");
+				      "space required before the open parenthesis");
 			}
 		}
 
@@ -2901,7 +2907,7 @@ sub process {
 			my $tmpline = $realline - 1;
 			$prefix = "$realfile:$tmpline: ";
 			WARN("return-void",
-			    "void function return statements are not generally useful\n");
+			    "void function return statements are not generally useful");
 		}
 
 # if statements using unnecessary parentheses - ie: if ((foo == bar))
@@ -2915,7 +2921,7 @@ sub process {
 				my $comp = $4;	#Not $1 because of $LvalOrFunc
 				$msg = " - maybe == should be = ?" if ($comp eq "==");
 				WARN("unnecessary-parentheses",
-				    "Unnecessary parentheses$msg\n");
+				    "Unnecessary parentheses$msg");
 			}
 		}
 
@@ -2933,7 +2939,7 @@ sub process {
 			if ($lead !~ /(?:$Operators|\.)\s*$/ &&
 			    $to !~ /^(?:Constant|[A-Z_][A-Z0-9_]*)$/) {
 				WARN("const-comp",
-				    "Comparisons should place the constant on the right side of the test\n");
+				    "Comparisons should place the constant on the right side of the test");
 			}
 		}
 
@@ -2941,7 +2947,7 @@ sub process {
 		if ($ctrl_space &&
 		    $line =~ /\b(if|while|for|switch)\(/) {
 			WARN("ctrl-space",
-			    "space required before the open parenthesis\n");
+			    "space required before the open parenthesis");
 		}
 
 # Check for illegal assignment in if conditional -- and check for trailing
@@ -2970,7 +2976,7 @@ sub process {
 			if ($assign_in_if &&
 			    $c =~ /\bif\s*\(.*[^<>!=]=[^=].*/s) {
 				WARN("assign-in-if",
-				    "do not use assignment in if condition\n");
+				    "do not use assignment in if condition");
 			}
 
 			# Find out what is on the end of the line after the
@@ -2995,8 +3001,7 @@ sub process {
 
 				if ($trailing_statements) {
 					WARN("trailing-statements",
-					    "trailing statements should be on next line\n" .
-					    $stat_real);
+					    "trailing statements should be on next line");
 				}
 			}
 		}
@@ -3013,7 +3018,7 @@ sub process {
 				(?:\&\&|\|\||\)|\])
 			)/x) {
 			WARN("hexa-bool-test",
-			    "boolean test with hexadecimal, perhaps just 1 \& or \|?\n");
+			    "boolean test with hexadecimal, perhaps just 1 \& or \|?");
 		}
 
 # if and else should not have general statements after it
@@ -3023,14 +3028,14 @@ sub process {
 			$s =~ s/$;//g; # Remove any comments
 			if ($s !~ /^\s*(?:\sif|(?:{|)\s*\\?\s*$)/) {
 				WARN("trailing-statements",
-				    "trailing statements should be on next line\n");
+				    "trailing statements should be on next line");
 			}
 		}
 # if should not continue a brace
 		if ($if_after_brace &&
 		    $line =~ /}\s*if\b/) {
 			WARN("if-after-brace",
-			    "'if' should not follow a closing brace\n");
+			    "'if' should not follow a closing brace");
 		}
 # case and default should not have general statements after them
 		if ($trailing_statements &&
@@ -3040,14 +3045,14 @@ sub process {
 			\s*return\s+
 		    )/xg) {
 			WARN("trailing-statements",
-			    "trailing statements should be on next line\n");
+			    "trailing statements should be on next line");
 		}
 
 		if ($else_after_brace &&
 		    $line=~/^.\s*}\s*else\s*/ &&
 		    $previndent == $indent) {
 			WARN("else-after-brace",
-			    "else statement following close brace should be on the next line\n");
+			    "else statement following close brace should be on the next line");
 		}
 
 		if ($while_after_brace &&
@@ -3063,7 +3068,7 @@ sub process {
 
 			if ($s =~ /^\s*;/) {
 				WARN("while-after-brace",
-				    "while should follow close brace '}'\n");
+				    "while should follow close brace '}'");
 			}
 		}
 
@@ -3086,7 +3091,7 @@ sub process {
 						$camelcase_hash{$word} = 1;
 						if ($camelcase) {
 							WARN("camelcase",
-							    "Avoid CamelCase: <$word>\n");
+							    "Avoid CamelCase: <$word>");
 						}
 					}
 				}
@@ -3097,7 +3102,7 @@ sub process {
 		if ($whitespace_continuation &&
 		    $line =~ /\#\s*define.*\\\s+$/) {
 			WARN("whitespace-continuation",
-			    "Whitespace after \\ makes next lines useless\n");
+			    "Whitespace after \\ makes next lines useless");
 		}
 
 # multi-statement macros should be enclosed in a do while loop, grab the
@@ -3169,12 +3174,12 @@ sub process {
 				if ($dstat =~ /;/) {
 					if ($multistatement_macro) {
 						WARN("multistatement-macro",
-						    "Macros with multiple statements should be enclosed in a do/while loop\n");
+						    "Macros with multiple statements should be enclosed in a do/while loop");
 					}
 				} else {
 					if ($complex_macro) {
 						WARN("complex-macro",
-						    "Macros with complex values should be enclosed in parentheses\n");
+						    "Macros with complex values should be enclosed in parentheses");
 					}
 				}
 			}
@@ -3185,7 +3190,7 @@ sub process {
 			    $has_flow_statement &&
 			    !$has_arg_concat) {
 				WARN("macro-flow-control",
-				    "Macros with flow control statements should be avoided\n");
+				    "Macros with flow control statements should be avoided");
 			}
 
 # check for line continuations outside of #defines, preprocessor #, and asm
@@ -3197,7 +3202,7 @@ sub process {
 			    $line !~ /^\+.*\b(__asm__|asm)\b.*\\$/ && # asm
 			    $line =~ /^\+.*\\$/) {
 				WARN("line-continuation",
-				    "Avoid unnecessary line continuations\n");
+				    "Avoid unnecessary line continuations");
 			}
 		}
 
@@ -3226,20 +3231,20 @@ sub process {
 				    ($stmts =~ tr/;/;/) == 1 &&
 				    $stmts !~ /^\s*(if|while|for|switch)\b/) {
 					WARN("single-statement-macro",
-					    "Single statement macros should not use a do/while loop\n");
+					    "Single statement macros should not use a do/while loop");
 				}
 				if ($macro_semicolon &&
 				    defined $semis &&
 				    $semis ne "") {
 					WARN("macro-semicolon",
-					    "macros should not be semicolon terminated\n");
+					    "macros should not be semicolon terminated");
 				}
 			} elsif ($dstat =~ /^\+\s*#\s*define\s+$Ident.*;\s*$/) {
 				$ctx =~ s/\n*$//;
 
 				if ($macro_semicolon) {
 					WARN("macro-semicolon",
-					    "macros should not be semicolon terminated\n");
+					    "macros should not be semicolon terminated");
 				}
 			}
 		}
@@ -3290,13 +3295,13 @@ sub process {
 					if ($sum_allowed == 0) {
 						if ($unnecessary_braces) {
 							WARN("unnecessary-braces",
-							    "braces are not necessary for any arm of this statement\n");
+							    "braces are not necessary for any arm of this statement");
 						}
 					} elsif ($sum_allowed != $allow &&
 						 $seen != $allow) {
 						if ($necessary_braces) {
 							WARN("necessary-braces",
-							    "braces should be used on all arms of this statement\n");
+							    "braces should be used on all arms of this statement");
 						}
 					}
 				}
@@ -3340,7 +3345,7 @@ sub process {
 			if (!$level && $block =~ /^\s*\{/ && !$allowed) {
 				if ($unnecessary_braces) {
 					WARN("unnecessary-braces",
-					    "braces are not necessary for single statement blocks\n");
+					    "braces are not necessary for single statement blocks");
 				}
 			}
 		}
@@ -3350,13 +3355,13 @@ sub process {
 		    $line =~ /^.\s*}\s*$/ &&
 		    $prevrawline =~ /^.\s*$/) {
 			WARN("blank-line-brace",
-			    "Blank lines aren't necessary before a close brace\n");
+			    "Blank lines aren't necessary before a close brace");
 		}
 		if ($blank_line_brace &&
 		    $rawline =~ /^.\s*$/ &&
 		    $prevline =~ /^..*{\s*$/) {
 			WARN("blank-line-brace",
-			    "Blank lines aren't necessary after an open brace\n");
+			    "Blank lines aren't necessary after an open brace");
 		}
 
 # no volatiles please
@@ -3365,7 +3370,7 @@ sub process {
 		    $line =~ /\bvolatile\b/ &&
 		    $line !~ /$asm_volatile/) {
 			WARN("volatile",
-			    "Use of volatile is usually wrong\n");
+			    "Use of volatile is usually wrong");
 		}
 
 # Check for user-visible strings broken across lines, which breaks the ability
@@ -3377,7 +3382,7 @@ sub process {
 		    $prevline =~ /"\s*$/ &&
 		    $prevrawline !~ /(?:\\(?:[ntr]|[0-7]{1,3}|x[0-9a-fA-F]{1,2})|;\s*|\{\s*)"\s*$/) {
 			WARN("string-split",
-			    "quoted string split across lines\n");
+			    "quoted string split across lines");
 		}
 
 # check for missing a space in a string concatenation
@@ -3385,28 +3390,28 @@ sub process {
 		    $prevrawline =~ /[^\\]\w"$/ &&
 		    $rawline =~ /^\+[\t ]+"\w/) {
 			WARN("string-missing-space",
-			    "break quoted strings at a space character\n");
+			    "break quoted strings at a space character");
 		}
 
 # check for spaces before a quoted newline
 		if ($string_space_new_line &&
 		    $rawline =~ /^.*\".*\s\\n/) {
 			WARN("string-space-new-line",
-			    "unnecessary whitespace before a quoted newline\n");
+			    "unnecessary whitespace before a quoted newline");
 		}
 
 # concatenated string without spaces between elements
 		if ($string_concat &&
 		    ($line =~ /$String[A-Z_]/ || $line =~ /[A-Za-z0-9_]$String/)) {
 			WARN("string-concat",
-			    "Concatenated strings should use spaces between elements\n");
+			    "Concatenated strings should use spaces between elements");
 		}
 
 # uncoalesced string fragments
 		if ($string_fragments &&
 		    $line =~ /$String\s*"/) {
 			WARN("string-fragments",
-			    "Consecutive strings are generally better as a single string\n");
+			    "Consecutive strings are generally better as a single string");
 		}
 
 # check for %L{u,d,i} and 0x%[udi] in strings
@@ -3417,13 +3422,13 @@ sub process {
 			if ($printf_l &&
 			    $string =~ /(?<!%)%[\*\d\.\$]*L[udi]/) {
 				WARN("printf-l",
-				    "\%Ld/\%Lu are not-standard C, use \%lld/\%llu\n");
+				    "\%Ld/\%Lu are not-standard C, use \%lld/\%llu");
 				last;
 			}
 			if ($printf_0xdecimal &&
 			    $string =~ /0x%[\*\d\.\$\Llzth]*[udi]/) {
 				WARN("printf-0xdecimal",
-				    "Prefixing 0x with decimal output is defective\n");
+				    "Prefixing 0x with decimal output is defective");
 			}
 		}
 
@@ -3432,14 +3437,14 @@ sub process {
 		    $rawline =~ /\\$/ &&
 		    $rawline =~ tr/"/"/ % 2) {
 			WARN("string-line-continuation",
-			    "Avoid line continuations in quoted strings\n");
+			    "Avoid line continuations in quoted strings");
 		}
 
 # warn about #if 0
 		if ($redundant_code &&
 		    $line =~ /^.\s*\#\s*if\s+0\b/) {
 			WARN("redundant-code",
-			    "if this code is redundant consider removing it\n");
+			    "if this code is redundant consider removing it");
 		}
 
 # check for mask then right shift without a parentheses
@@ -3448,7 +3453,7 @@ sub process {
 		    $line =~ /$LvalOrFunc\s*\&\s*($LvalOrFunc)\s*>>/ &&
 		    $4 !~ /^\&/) { # $LvalOrFunc may be &foo, ignore if so
 			WARN("mask-then-shift",
-			    "Possible precedence defect with mask then right shift - may need parentheses\n");
+			    "Possible precedence defect with mask then right shift - may need parentheses");
 		}
 
 # check for pointer comparisons to NULL
@@ -3459,7 +3464,7 @@ sub process {
 				my $equal = "!";
 				$equal = "" if ($4 eq "!=");
 				WARN("null-comparison",
-				    "Comparison to NULL could be written \"${equal}${val}\"\n");
+				    "Comparison to NULL could be written \"${equal}${val}\"");
 			}
 		}
 
@@ -3467,7 +3472,7 @@ sub process {
 		if ($preproc_if_space &&
 		    $line =~ /^.\s*\#\s*(ifdef|ifndef|elif)\s\s+/) {
 			WARN("preproc-if-space",
-			    "exactly one space required after that #$1\n");
+			    "exactly one space required after that #$1");
 		}
 
 # Check that the storage class is at the beginning of a declaration
@@ -3475,7 +3480,7 @@ sub process {
 		    $line =~ /\b$Storage\b/ &&
 		    $line !~ /^.\s*$Storage\b/) {
 			WARN("storage-class",
-			    "storage class should be at the beginning of the declaration\n");
+			    "storage class should be at the beginning of the declaration");
 		}
 
 # check the location of the inline attribute, that it is between
@@ -3484,28 +3489,28 @@ sub process {
 		    ($line =~ /\b$Type\s+$Inline\b/ ||
 		     $line =~ /\b$Inline\s+$Storage\b/)) {
 			WARN("inline-location",
-			    "inline keyword should sit between storage class and type\n");
+			    "inline keyword should sit between storage class and type");
 		}
 
 # Check for __inline__ and __inline, prefer inline
 		if ($prefer_inline &&
 		    $line =~ /\b(__inline__|__inline)\b/) {
 			WARN("prefer-inline",
-			    "plain inline is preferred over $1\n");
+			    "plain inline is preferred over $1");
 		}
 
 # Check for __attribute__ packed, prefer __packed
 		if ($prefer_packed &&
 		    $line =~ /\b__attribute__\s*\(\s*\(.*\bpacked\b/) {
 			WARN("prefer-packed",
-			    "__packed is preferred over __attribute__((packed))\n");
+			    "__packed is preferred over __attribute__((packed))");
 		}
 
 # Check for __attribute__ aligned, prefer __aligned
 		if ($prefer_aligned &&
 		    $line =~ /\b__attribute__\s*\(\s*\(.*aligned/) {
 			WARN("prefer-aligned",
-			    "__aligned(size) is preferred over __attribute__((aligned(size)))\n");
+			    "__aligned(size) is preferred over __attribute__((aligned(size)))");
 		}
 
 # Check for __attribute__ weak, or __weak declarations (may have link issues)
@@ -3515,28 +3520,28 @@ sub process {
 		    ($line =~ /\b__attribute__\s*\(\s*\(.*\bweak\b/ ||
 		     $line =~ /\b__weak\b/)) {
 			WARN("weak-declaration",
-			    "Using weak declarations can have unintended link defects\n");
+			    "Using weak declarations can have unintended link defects");
 		}
 
 # check for cast of C90 native int or longer types constants
 		if ($cast_int_const &&
 		    $line =~ /(\(\s*$C90_int_types\s*\)\s*)($Constant)\b/) {
 			WARN("cast-int-const",
-			    "Unnecessary typecast of c90 int constant\n");
+			    "Unnecessary typecast of c90 int constant");
 		}
 
 # check for sizeof(&)
 		if ($sizeof_address &&
 		    $line =~ /\bsizeof\s*\(\s*\&/) {
 			WARN("sizeof-address",
-			    "sizeof(& should be avoided\n");
+			    "sizeof(& should be avoided");
 		}
 
 # check for sizeof without parenthesis
 		if ($sizeof_parenthesis &&
 		    $line =~ /\bsizeof\s+((?:\*\s*|)$Lval|$Type(?:\s+$Lval|))/) {
 			WARN("sizeof-parenthesis",
-			    "sizeof $1 should be sizeof($1)\n");
+			    "sizeof $1 should be sizeof($1)");
 		}
 
 # check for new externs in .h files.
@@ -3544,7 +3549,7 @@ sub process {
 		    $realfile =~ /\.h$/ &&
 		    $line =~ /^\+\s*(extern\s+)$Type\s*$Ident\s*\(/s) {
 			WARN("header-externs",
-			    "extern prototypes should be avoided in .h files\n");
+			    "extern prototypes should be avoided in .h files");
 		}
 
 # check for new externs in .c files.
@@ -3562,13 +3567,13 @@ sub process {
 			    $s =~ /^\s*;/ &&
 			    $function_name ne 'uninitialized_var') {
 				WARN("avoid-externs",
-				    "externs should be avoided in .c files\n");
+				    "externs should be avoided in .c files");
 			}
 
 			if ($func_args &&
 			    $paren_space =~ /\n/) {
 				WARN("func-args",
-				    "arguments for function declarations should follow identifier\n");
+				    "arguments for function declarations should follow identifier");
 			}
 
 		} elsif ($avoid_externs &&
@@ -3576,7 +3581,7 @@ sub process {
 		    defined $stat &&
 		    $stat =~ /^.\s*extern\s+/) {
 			WARN("avoid-externs",
-			    "externs should be avoided in .c files\n");
+			    "externs should be avoided in .c files");
 		}
 
 		# check for new typedefs in source files
@@ -3588,14 +3593,14 @@ sub process {
 		    $line !~ /\b$typeTypedefs\b/ &&
 		    $line !~ /\b__bitwise(?:__|)\b/) {
 			WARN("typedefs",
-			    "typedefs should be avoided in .c files\n");
+			    "typedefs should be avoided in .c files");
 		}
 
 # check for multiple semicolons
 		if ($single_semicolon &&
 		    $line =~ /;\s*;\s*$/) {
 			WARN("single-semicolon",
-			    "Statements terminations use 1 semicolon\n");
+			    "Statements terminations use 1 semicolon");
 		}
 
 # check for case / default statements not preceded by break/fallthrough/switch
@@ -3620,7 +3625,7 @@ sub process {
 			if ($missing_break &&
 			    !$has_break && $has_statement) {
 				WARN("missing-break",
-				    "Possible switch case/default not preceeded by break or fallthrough comment\n");
+				    "Possible switch case/default not preceeded by break or fallthrough comment");
 			}
 		}
 
@@ -3630,7 +3635,7 @@ sub process {
 		    $stat =~ /^\+[$;\s]*(?:case[$;\s]+\w+[$;\s]*:[$;\s]*|)*[$;\s]*\bdefault[$;\s]*:[$;\s]*;/g) {
 			if ($default_no_break) {
 				WARN("default-no-break",
-				    "switch default: should use break\n");
+				    "switch default: should use break");
 			}
 		}
 	}
