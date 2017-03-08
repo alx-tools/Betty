@@ -1005,7 +1005,6 @@ sub report {
 	$output .= "line $line:";
 	$output .= RESET if (-t STDOUT && $color);
 	$output .= ' ' . $msg;
-	$output .= "\n";
 
 	$output = (split('\n', $output))[0] . "\n";
 

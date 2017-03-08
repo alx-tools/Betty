@@ -1427,7 +1427,6 @@ sub report {
 	$output .= RESET if (-t STDOUT && $color);
 	$output .= ' ' . $msg;
 	$output .= " [--$type]";
-	$output .= "\n";
 
 	$output = (split('\n', $output))[0] . "\n";
 
