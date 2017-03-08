@@ -2833,7 +2833,7 @@ sub process_file($) {
 
 	my $attr = qr{__attribute__\s*\(\(\w+\)\)};
 
-	if ($_ =~ /^(?:typedef\s+)?(?:(?:$Storage|$Inline)\s*)*\s*$Type\s*(?:$attr\s*)?\(?\**($Ident)\s*\(/s &&
+	if ($_ =~ /^(?:typedef\s+)?(?:(?:$Storage|$Inline)\s*)*\s*$Type\s*(?:$attr\s*)?\(?\**($Ident)\s*\(.*\)/s &&
 	    $_ !~ /;\s*$/)
 	{
 		# print STDOUT "Function found: $1\n";
