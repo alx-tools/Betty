@@ -2830,6 +2830,22 @@ sub process {
 			}
 		}
 
+		my $no_comment = $rawline;
+		if ($no_comment =~ /\/\*/ || $no_comment =~ /\*\//) {
+			if ($no_comment =~ /\/\*/ && $no_comment =~ /\*\//) {
+				$no_comment =~ s/\/\*.*\*\///;
+			} elsif ($no_comment =~ /\/\*/) {
+				$no_comment =~ s/\/\*.*//;
+			} else {
+				$no_comment =~ s/.*\*\///;
+			}
+		}
+		if ($no_comment =~ /;\s*[^\s]+/ &&
+		    $no_comment !~ /for/) {
+			WARN("MULTIPLE_INSTRUCTIONS",
+			    "multiple instructions on a single line\n");
+		    }
+
 # check for adding lines without a newline.
 		if ($line =~ /^\+/ && defined $lines[$linenr] && $lines[$linenr] =~ /^\\ No newline at end of file/) {
 			WARN("MISSING_EOF_NEWLINE",
