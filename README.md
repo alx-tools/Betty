@@ -4,7 +4,7 @@
 
 ### Installation
 
-Run the script `install.sh` with **sudo privileges** to install `betty-style` and `betty-code` on your computer, along with the  following manuals:
+Run the script `install.sh` with **sudo privileges** to install `betty-style` and `betty-doc` on your computer, along with the  following manuals:
 
  * _betty(1)_
  * _betty-style(1)_

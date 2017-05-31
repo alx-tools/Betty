@@ -1,4 +1,4 @@
-script: bash test
+script: bash test.sh
 branches:
   only:
     - master
