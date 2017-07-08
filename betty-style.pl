@@ -2843,8 +2843,9 @@ sub process {
 		}
 		if ($no_comment =~ /;\s*[^\s]+/ &&
 		    $no_comment !~ /for/) {
-			WARN("MULTIPLE_INSTRUCTIONS",
-			    "multiple instructions on a single line\n");
+			# TODO: Really bad detection. To bed fixed
+			#WARN("MULTIPLE_INSTRUCTIONS",
+			#    "multiple instructions on a single line\n");
 		    }
 
 # check for adding lines without a newline.
