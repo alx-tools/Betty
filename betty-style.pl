@@ -2234,6 +2234,7 @@ sub process {
 	$fixlinenr = -1;
 	my $nbfunc = 0;
 	my $inscope = 0;
+	my $infunction_params = 0;
 	my $funclines = 0;
 
 	foreach my $line (@lines) {
@@ -3593,12 +3594,12 @@ sub process {
 		}
 
 # Check for global variables (not allowed).
-		if ($allow_global_variables == 0) {
-			if ($inscope == 0 &&
-				($line =~ /^\+\s*$Type\s*$Ident(?:\s+$Modifier)*(?:\s*=\s*.*)?;/ ||
-				$line =~ /^\+\s*$Declare\s*\(\s*\*\s*$Ident\s*\)\s*[=,;:\[\(].*;/ ||
-				$line =~ /^\+\s*$Ident(?:\s+|\s*\*\s*)$Ident\s*[=,;\[]/ ||
-				$line =~ /^\+\s*$declaration_macros/)) {
+		if ($allow_global_variables == 0 &&
+		    $inscope == 0 && $infunction_params == 0) {
+			if ($line =~ /^\+\s*$Type\s*$Ident(?:\s+$Modifier)*(?:\s*=\s*.*)?;/ ||
+			    $line =~ /^\+\s*$Declare\s*\(\s*\*\s*$Ident\s*\)\s*[=,;:\[\(].*;/ ||
+			    $line =~ /^\+\s*$Ident(?:\s+|\s*\*\s*)$Ident\s*[=,;\[]/ ||
+			    $line =~ /^\+\s*$declaration_macros/) {
 				ERROR("GLOBAL_DECLARATION",
 					"global variables are not allowed\n" . $herecurr);
 			}
@@ -3669,6 +3670,21 @@ sub process {
 			    $fix) {
 				$fixed[$fixlinenr] =~ s/(\b($Type)\s+($Ident))\s*\(\s*\)/$2 $3(void)/;
 			}
+		}
+
+#check if in function parameters section
+		if ($line =~ /\b$Type\s+$Ident\s*\(/ ||
+		    $line =~ /\b$Ident(?:\s+|\s*\*\s*)$Ident\s*\(/ &&
+		    $line !~ /(?:else|if|while|for|switch)/) {
+			if ($line =~ /(\()/g) {
+				$infunction_params += $#-;
+			}
+			if ($line =~ /(\))/g) {
+				$infunction_params -= $#-;
+			}
+		}
+		if ($infunction_params > 0 && $line =~ /(\))/g) {
+			$infunction_params -= $#-;
 		}
 
 # check for uses of DEFINE_PCI_DEVICE_TABLE
