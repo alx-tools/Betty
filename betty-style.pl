@@ -5867,12 +5867,12 @@ sub process {
 			if (defined $cond) {
 				substr($s, 0, length($cond), '');
 			}
-			if ($s =~ /^\s*;/ &&
-			    $function_name ne 'uninitialized_var')
-			{
-				WARN("AVOID_EXTERNS",
-				     "externs should be avoided in .c files\n" .  $herecurr);
-			}
+			# if ($s =~ /^\s*;/ &&
+			#     $function_name ne 'uninitialized_var')
+			# {
+			# 	WARN("AVOID_EXTERNS",
+			# 	     "externs should be avoided in .c files\n" .  $herecurr);
+			# }
 
 			if ($paren_space =~ /\n/) {
 				WARN("FUNCTION_ARGUMENTS",
