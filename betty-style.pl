@@ -60,6 +60,7 @@ my $spelling_file = "$D/spelling.txt";
 my $codespell = 0;
 my $codespellfile = "/usr/share/codespell/dictionary.txt";
 my $color = 1;
+my $recursive = 0;
 
 sub printVersion {
 	my ($exitcode) = @_;
@@ -133,6 +134,7 @@ Options:
                              Set it to -1 for infinite
   --no-safe-guard            Don't check for header files protection
   --allow-global-variables   Allow global variable definition
+  -r, --recursive            Run for every C source file (.c and .h) recursively
 
   -h, --help, --version      Display this help and exit
 
@@ -235,6 +237,7 @@ GetOptions(
 	'max-funcs=i'	=> \$max_funcs,
 	'safe-guard!'	=> \$safe_guard,
 	'allow-global-variables!'	=> \$allow_global_variables,
+	'r|recursive!'	=> \$recursive
 ) or help(1);
 
 help(0) if ($help);
@@ -255,7 +258,7 @@ if ($^V && $^V lt $minimum_perl_version) {
 	}
 }
 
-if ($#ARGV < 0) {
+if ($recursive == 0 && $#ARGV < 0) {
 	my $exec_name = basename($P);
 	print "$exec_name: no input files\n";
 	exit(1);
@@ -859,8 +862,13 @@ if ($git) {
 	@ARGV = @commits;
 }
 
+my @files_to_process = @ARGV;
+if ($recursive == 1) {
+	@files_to_process = split(/\n/, `find . -name "*.c" -o -name "*.h"`);
+}
+
 my $vname;
-for my $filename (@ARGV) {
+for my $filename (@files_to_process) {
 	my $FILE;
 	if ($git) {
 		open($FILE, '-|', "git format-patch -M --stdout -1 $filename") ||

@@ -84,6 +84,7 @@ Output selection modifiers:
 Other parameters:
   -v			Verbose output, more warnings and other information.
   -h			print STDOUT this help.
+  -r                    Run for every C source file (.c and .h) recursively
 
 EOF
     print STDOUT $message;
@@ -311,6 +312,7 @@ if ($#ARGV == -1) {
 my $kernelversion;
 my $dohighlight = "";
 
+my $recursive = 0;
 my $verbose = 0;
 my $output_mode = "list";
 my $output_preformatted = 0;
@@ -412,10 +414,13 @@ my $undescribed = "-- undescribed --";
 
 reset_state();
 
-while ($ARGV[0] =~ m/^-(.*)/) {
-    my $cmd = shift @ARGV;
-		if ($cmd eq "--version") {
-			printVersion();
+# while ($ARGV[0] =~ m/^-(.*)/) {
+for my $cmd (@ARGV) {
+    if ($cmd =~ m/^-(.*)/) {
+	shift @ARGV;
+    }
+    if ($cmd eq "--version") {
+	printVersion();
     } elsif ($cmd eq "-html") {
 	$output_mode = "html";
 	@highlights = @highlights_html;
@@ -462,8 +467,10 @@ while ($ARGV[0] =~ m/^-(.*)/) {
 	$verbose = 1;
     } elsif (($cmd eq "-h") || ($cmd eq "--help")) {
 	usage();
+    } elsif (($cmd eq "-r") || ($cmd eq "--recursive")) {
+	$recursive = 1;
     } elsif ($cmd eq '-no-doc-sections') {
-	    $no_doc_sections = 1;
+	$no_doc_sections = 1;
     } elsif ($cmd eq '-show-not-found') {
 	$show_not_found = 1;
     }
@@ -3141,7 +3148,12 @@ if (open(SOURCE_MAP, "<.tmp_filelist.txt")) {
 	close(SOURCE_MAP);
 }
 
-foreach (@ARGV) {
+my @files_to_process = @ARGV;
+if ($recursive == 1) {
+	@files_to_process = split(/\n/, `find . -name "*.c" -o -name "*.h"`);
+}
+
+foreach (@files_to_process) {
     chomp;
     process_file($_);
 }
