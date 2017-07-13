@@ -3675,7 +3675,7 @@ sub process {
 
 #check if in function parameters section
 		if ($line =~ /\b$Type\s+$Ident\s*\(/ ||
-		    $line =~ /\b$Ident(?:\s+|\s*\*\s*)$Ident\s*\(/ &&
+		    $line =~ /\b$Ident(?:\s+|\s*\*+\s*)$Ident\s*\(/ &&
 		    $line !~ /(?:else|if|while|for|switch)/) {
 			if ($line =~ /(\()/g) {
 				$infunction_params += $#-;
