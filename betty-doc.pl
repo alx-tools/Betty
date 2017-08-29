@@ -41,6 +41,7 @@ use File::Basename;
 # -- Dan Luedtke <mail@danrl.de>
 
 my $V = '1.0';
+my $P = $0;
 
 sub printVersion {
 
@@ -3151,6 +3152,11 @@ if (open(SOURCE_MAP, "<.tmp_filelist.txt")) {
 my @files_to_process = @ARGV;
 if ($recursive == 1) {
 	@files_to_process = split(/\n/, `find . -name "*.c" -o -name "*.h"`);
+	if (scalar @files_to_process == 0) {
+		my $exec_name = basename($P);
+		print "$exec_name: no input files\n";
+		exit(1);
+	}
 }
 
 foreach (@files_to_process) {
