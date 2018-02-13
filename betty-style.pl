@@ -2246,6 +2246,7 @@ sub process {
 	$linenr = 0;
 	$fixlinenr = -1;
 	my $nbfunc = 0;
+	my $infunc = 0;
 	my $inscope = 0;
 	my $infunction_params = 0;
 	my $funclines = 0;
@@ -3882,6 +3883,7 @@ sub process {
 		if ($line =~ /({)/g) {
 			$inscope += $#-;
 			if ($prevline =~ /^(.(?:typedef\s*)?(?:(?:$Storage|$Inline)\s*)*\s*$Type\s*(?:\b$Ident|\(\*\s*$Ident\))\s*)\(/s && $inscope == 1) {
+				$infunc = 1;
 				$nbfunc++;
 				$funclines = 0;
 				if ($max_funcs > 0 && $nbfunc > $max_funcs) {
@@ -3899,12 +3901,15 @@ sub process {
 					  "More than $max_funcs functions in the file\n");
 				}
 			}
+			else {
+				$infunc = 0;
+			}
 		}
 		if ($line =~ /(})/g) {
 			$inscope -= $#-;
 		}
 		
-		if ($inscope >= 1) {
+		if ($inscope >= 1 && $infunc == 1) {
 			$funclines++;
 			if ($funclines > $max_func_length + 1) {
 				WARN("FUNCTIONS",
@@ -4452,7 +4457,7 @@ sub process {
 
 # closing brace should have a space following it when it has anything
 # on the line
-		if ($line =~ /}(?!(?:,|;|\)))\S/) {
+		if ($line =~ /}(?!(?:}|,|;|\)))\S/) {
 			if (ERROR("SPACING",
 				  "space required after that close brace '}'\n" . $herecurr) &&
 			    $fix) {
