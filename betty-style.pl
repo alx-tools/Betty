@@ -3936,12 +3936,14 @@ sub process {
 		# 		}
 		# 	}
 		# }
-		#
+
 		if ($realfile =~ /\.c$/ &&
+		    $inscope == 0 &&
+		    ($line !~ /$Type\s*$Ident/ || $line =~ /union\s*$Ident(?!\s+\**$Ident)/) &&
 		    $line =~ /^.\s*(?:typedef\s+)?(enum|union|struct)(?:\s+$Ident)?\s*.*/ &&
 		    $line !~ /;$/) {
-					WARN("STRUCT_DEF",
-						"$1 definition should be avoided in .c files\n");
+			WARN("STRUCT_DEF",
+				"$1 definition should be avoided in .c files\n");
 		}
 
 		if ($line =~ /^.\s*(?:typedef\s+)?(enum|union|struct)(?:\s+$Ident)?\s*{/) {
