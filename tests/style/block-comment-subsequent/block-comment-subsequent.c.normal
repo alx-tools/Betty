@@ -1,0 +1,17 @@
+style/block-comment-subsequent/block-comment-subsequent.c:
+    line 22: Block comments start with * on subsequent lines [block-comment-subsequent]
+    line 30: Block comments start with * on subsequent lines [block-comment-subsequent]
+    line 31: Block comments start with * on subsequent lines [block-comment-subsequent]
+    line 32: Block comments start with * on subsequent lines [block-comment-subsequent]
+    line 33: Block comments start with * on subsequent lines [block-comment-subsequent]
+    line 34: Block comments start with * on subsequent lines [block-comment-subsequent]
+    line 35: Block comments start with * on subsequent lines [block-comment-subsequent]
+    line 36: Block comments start with * on subsequent lines [block-comment-subsequent]
+    line 40: Block comments start with * on subsequent lines [block-comment-subsequent]
+    line 41: Block comments start with * on subsequent lines [block-comment-subsequent]
+    line 42: Block comments start with * on subsequent lines [block-comment-subsequent]
+    line 43: Block comments start with * on subsequent lines [block-comment-subsequent]
+    line 44: Block comments start with * on subsequent lines [block-comment-subsequent]
+    line 45: Block comments start with * on subsequent lines [block-comment-subsequent]
+    line 46: Block comments start with * on subsequent lines [block-comment-subsequent]
+Total: 15 errors, 50 lines checked in 1 file

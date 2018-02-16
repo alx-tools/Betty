@@ -87,6 +87,11 @@ my $options = {
 				desc => 'Check for block comment leading line style',
 				type => 'Switch',
 				value => 1
+			},
+			'block-comment-subsequent' => {
+				desc => 'Check for block comment subsequent line style',
+				type => 'Switch',
+				value => 1
 			}
 		}
 	},
@@ -710,10 +715,20 @@ sub process_style {
 	my $linenr = 0;
 	my $prevline = "";
 
+	my $in_comment = 0;
+
 	foreach my $line (@lines) {
 		$linenr++;
 		$total_lines++;
 		$prefix = "$filename:$linenr: ";
+
+		$in_comment = 1 if ($line =~ /\/\*+/);
+		$in_comment = 0 if ($line =~ /\*+\//);
+
+
+		################################################################
+		# CHECKS
+		################################################################
 
 		# assign-in-cond
 		# check fro assignment in condition
@@ -774,6 +789,17 @@ sub process_style {
 			WARN("block-comment-leading",
 			    "Block comments use a leading '/*' on a separate line",
 			    $line, $1);
+		}
+
+		# block-comment-subsequent
+		# Block comments use * on subsequent lines
+		if (s_option('block-comment-subsequent') &&
+		    $in_comment == 1 &&
+		    $line !~ /^\s*\/\*+.*$/ &&		#leading /*
+		    $line !~ /^[ \t]*\*/) {		#no leading *
+			WARN("block-comment-subsequent",
+			    "Block comments start with * on subsequent lines",
+			    $line);
 		}
 
 		$prevline = $line;
