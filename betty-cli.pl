@@ -803,7 +803,7 @@ sub process_style {
 		    $line !~ /^[ \t]*\/\*+.*$/ &&		#leading /*
 		    $line !~ /^[ \t]*\*/) {			#no leading *
 			WARN("block-comment-subsequent",
-			    "Block comments start with * on subsequent lines",
+			    "Block comments start with '*' on subsequent lines",
 			    $line);
 		}
 
