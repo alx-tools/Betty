@@ -1,0 +1,6 @@
+style/blank-before-decl/blank-before-decl.c:
+    line 8: No blank lines before declarations [blank-before-decl]
+        int var;
+    line 10: No blank lines before declarations [blank-before-decl]
+        char *var2[] = {
+Total: 2 errors, 16 lines checked in 1 file

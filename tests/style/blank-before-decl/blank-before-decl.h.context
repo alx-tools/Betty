@@ -1,0 +1,6 @@
+style/blank-before-decl/blank-before-decl.h:
+    line 7: No blank lines before declarations [blank-before-decl]
+        int i;
+    line 9: No blank lines before declarations [blank-before-decl]
+        struct test_s *ptr;
+Total: 2 errors, 12 lines checked in 1 file

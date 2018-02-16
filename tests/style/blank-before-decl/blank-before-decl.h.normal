@@ -1,0 +1,4 @@
+style/blank-before-decl/blank-before-decl.h:
+    line 7: No blank lines before declarations [blank-before-decl]
+    line 9: No blank lines before declarations [blank-before-decl]
+Total: 2 errors, 12 lines checked in 1 file

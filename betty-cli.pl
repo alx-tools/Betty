@@ -72,6 +72,11 @@ my $options = {
 				desc => 'Check for externs in C source files',
 				type => 'Switch',
 				value => 1
+			},
+			'blank-before-decl' => {
+				desc => 'Check for blank line before declaration',
+				type => 'Switch',
+				value => 1
 			}
 		}
 	},
@@ -614,13 +619,13 @@ sub report {
 	my $output = '';
 	my $line_no = (split(":", $prefix))[1]; # Line number only
 	$line =~ s/\t/        /g;
-	my $r_begin = index($line, $region);
-	my $r_end = $r_begin + length($region);
+	my $r_begin = index($line, $region) if (defined $region);
+	my $r_end = $r_begin + length($region) if (defined $region);
 
 	$output .= RED if (-t STDOUT && s_option('color'));
 	$output .= "line " if (!s_option('brief'));
 	$output .= "$line_no";
-	$output .= "[$r_begin,$r_end]" if (s_option('brief'));
+	$output .= "[$r_begin,$r_end]" if (defined($r_begin) && defined($r_end) && s_option('brief'));
 	$output .= RESET if (-t STDOUT && s_option('color'));
 	$output .= ': ' . $msg;
 	$output .= " [$type]";
@@ -632,6 +637,15 @@ sub report {
 	if (!s_option('brief') && s_option('context')) {
 		$line =~ s/^\s+//g;
 		$line =~ s/\s+$//g;
+
+		if (!defined $region) {
+			$output .= BRIGHT_BLACK if (-t STDOUT && s_option('color'));
+			$output .= "    $line\n";
+			$output .= RESET if (-t STDOUT && s_option('color'));
+			push(@report, $output);
+			return 1;
+		}
+
 		my $region_idx = index($line, $region);
 
 		my $l1 = substr($line, 0, $region_idx);
@@ -713,6 +727,16 @@ sub process_style {
 			WARN("avoid-externs",
 			    "externs should be avoided in '.c' files",
 			    $line, $1);
+		}
+
+		# blank-before-decl
+		# check for blank lines before declarations
+		if (s_option('blank-before-decl') &&
+		    $line =~ /^\t+$Type\s*$Ident\s*(?:=.*|;)?/ &&
+		    $prevline =~ /^\s*$/) {
+			WARN("blank-before-decl",
+			     "No blank lines before declarations",
+			     $line);
 		}
 
 		$prevline = $line;
