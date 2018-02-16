@@ -1,0 +1,8 @@
+style/block-comment-leading/block-comment-leading.c:
+    line 19: Block comments use a leading '/*' on a separate line [block-comment-leading]
+        /* This
+        ^^
+    line 28: Block comments use a leading '/*' on a separate line [block-comment-leading]
+        /** This
+        ^-^
+Total: 2 errors, 38 lines checked in 1 file

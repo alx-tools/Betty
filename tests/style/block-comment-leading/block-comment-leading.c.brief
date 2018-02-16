@@ -1,0 +1,2 @@
+style/block-comment-leading/block-comment-leading.c:19[0,2]: Block comments use a leading '/*' on a separate line [block-comment-leading]
+style/block-comment-leading/block-comment-leading.c:28[0,3]: Block comments use a leading '/*' on a separate line [block-comment-leading]

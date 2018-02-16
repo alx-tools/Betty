@@ -82,6 +82,11 @@ my $options = {
 				desc => 'Check for unnecessary blank line around braces',
 				type => 'Switch',
 				value => 1
+			},
+			'block-comment-leading' => {
+				desc => 'Check for block comment leading line style',
+				type => 'Switch',
+				value => 1
 			}
 		}
 	},
@@ -757,6 +762,18 @@ sub process_style {
 				WARN("blank-line-brace",
 				    "Blank lines aren't necessary after an open brace");
 			}
+		}
+
+		# block-comment-leading
+		# Block comments use /* on leading line
+		if (s_option('block-comment-leading') &&
+		    $line !~ /^\s*\/\*\s*$/ &&		#leading /*
+		    $line !~ /^.*\/\*.*\*\/\s*$/ &&	#inline /*...*/
+		    $line !~ /^.*\/\*{2,}\s*$/ &&	#leading /**
+		    $line =~ /^\s*(\/\*+).+\s*$/) {	#/* non blank
+			WARN("block-comment-leading",
+			    "Block comments use a leading '/*' on a separate line",
+			    $line, $1);
 		}
 
 		$prevline = $line;
