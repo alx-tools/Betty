@@ -1,0 +1,7 @@
+style/code-indent/code-indent.c:
+    line 6: code indent should use tabs where possible [code-indent]
+    line 7: code indent should use tabs where possible [code-indent]
+    line 8: code indent should use tabs where possible [code-indent]
+    line 9: code indent should use tabs where possible [code-indent]
+    line 12: code indent should use tabs where possible [code-indent]
+Total: 5 errors, 13 lines checked in 1 file

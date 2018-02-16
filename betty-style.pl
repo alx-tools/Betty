@@ -163,7 +163,7 @@ Options:
   --[no]long-line                Check for long lines (default: on)
   --long-line-max=n               When --long-line is enaled, set the maximum length of a line (default: 80)
   --[no]eof-newline              Check for new line at end of file (default: on)
-  --[no]code-indent              Check if spaces are using instead of tabs (default: on)
+  --[no]code-indent              Check if spaces are used instead of tabs (default: on)
   --[no]space-before-tab         Check if spaces are used before a tab (default: on)
   --[no]logical-continuations    Check for logical operators at the beginning of a line (default: on)
   --[no]tabstop                  Check for indentation after tabstop (default: on)

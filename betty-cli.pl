@@ -127,6 +127,11 @@ my $options = {
 				desc => 'Check for missed space after closing brace',
 				type => 'Switch',
 				value => 1
+			},
+			'code-indent' => {
+				desc => 'Check if spaces are used instead of tabs',
+				type => 'Switch',
+				value => 1
 			}
 		}
 	},
@@ -948,6 +953,17 @@ sub process_style {
 			WARN("close-brace-space",
 			    "Space required after that close brace",
 			    $line, $1);;
+		}
+
+		# code-indent
+		# at the beginning of a line any tabs must come first and
+		# anything more than 8 must use tabs.
+		if (s_option('code-indent') &&
+		    ($line =~ /^\s* \t\s*\S/ ||
+		     $line =~ /^\s*        \s*/)) {
+			WARN("code-indent",
+			    "code indent should use tabs where possible",
+			    $line);
 		}
 
 		################################################################

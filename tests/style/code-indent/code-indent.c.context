@@ -1,0 +1,12 @@
+style/code-indent/code-indent.c:
+    line 6: code indent should use tabs where possible [code-indent]
+        printf("Test\n");
+    line 7: code indent should use tabs where possible [code-indent]
+        printf("Test\n");
+    line 8: code indent should use tabs where possible [code-indent]
+        printf("Test\n");
+    line 9: code indent should use tabs where possible [code-indent]
+        printf("Test\n");
+    line 12: code indent should use tabs where possible [code-indent]
+        return (EXIT_SUCCESS);
+Total: 5 errors, 13 lines checked in 1 file
