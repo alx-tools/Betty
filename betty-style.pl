@@ -2814,7 +2814,7 @@ sub process {
 # closing brace should have a space following it when it has anything
 # on the line
 		if ($close_brace_space &&
-		    $line =~ /}(?!(?:,|;|\)))\S/) {
+		    $line =~ /}(?!(?:}|,|;|\)))\S/) {
 			WARN("close-brace-space",
 			    "space required after that close brace");;
 		}

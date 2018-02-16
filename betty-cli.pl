@@ -122,6 +122,11 @@ my $options = {
 				desc => 'Check for unnecessary cast of C90 int constant',
 				type => 'Switch',
 				value => 1
+			},
+			'close-brace-space' => {
+				desc => 'Check for missed space after closing brace',
+				type => 'Switch',
+				value => 1
 			}
 		}
 	},
@@ -934,6 +939,20 @@ sub process_style {
 			    "Unnecessary typecast of c90 int constant",
 			    $line, $1);
 		}
+
+		# close-brace-space
+		# closing brace should have a space following it when it has
+		# anything on the line
+		if (s_option('close-brace-space') &&
+		    $line =~ /(}(?!(?:}|,|;|\)))\S)/) {
+			WARN("close-brace-space",
+			    "Space required after that close brace",
+			    $line, $1);;
+		}
+
+		################################################################
+		# CHECKS DONE
+		################################################################
 	}
 
 	# Report errors after a file has been analyzed
