@@ -1,0 +1,17 @@
+style/cast-int-const/cast-int-const.c:
+    line 5: Unnecessary typecast of c90 int constant [cast-int-const]
+        int i = (int) 2;
+                ^---^
+    line 6: Unnecessary typecast of c90 int constant [cast-int-const]
+        long int l = (long int) 23.234f;
+                     ^--------^
+    line 7: Unnecessary typecast of c90 int constant [cast-int-const]
+        unsigned int ui = (unsigned int) 0b0111;
+                          ^------------^
+    line 8: Unnecessary typecast of c90 int constant [cast-int-const]
+        unsigned int ui = (unsigned int) 0755;
+                          ^------------^
+    line 9: Unnecessary typecast of c90 int constant [cast-int-const]
+        unsigned int ui = (unsigned int) 0x8b6c42;
+                          ^------------^
+Total: 5 errors, 12 lines checked in 1 file

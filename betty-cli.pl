@@ -117,6 +117,11 @@ my $options = {
 				desc => 'Check for camelcase variable naming',
 				type => 'Switch',
 				value => 1
+			},
+			'cast-int-const' => {
+				desc => 'Check for unnecessary cast of C90 int constant',
+				type => 'Switch',
+				value => 1
 			}
 		}
 	},
@@ -919,6 +924,15 @@ sub process_style {
 					}
 				}
 			}
+		}
+
+		# cast-int-const
+		# check for cast of C90 native int or longer types constants
+		if (s_option('cast-int-const') &&
+		    $line =~ /(\(\s*$C90_int_types\s*\))\s*($Constant)\b/) {
+			WARN("cast-int-const",
+			    "Unnecessary typecast of c90 int constant",
+			    $line, $1);
 		}
 	}
 

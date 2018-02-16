@@ -1,0 +1,5 @@
+style/cast-int-const/cast-int-const.c:5[16,21]: Unnecessary typecast of c90 int constant [cast-int-const]
+style/cast-int-const/cast-int-const.c:6[21,31]: Unnecessary typecast of c90 int constant [cast-int-const]
+style/cast-int-const/cast-int-const.c:7[26,40]: Unnecessary typecast of c90 int constant [cast-int-const]
+style/cast-int-const/cast-int-const.c:8[26,40]: Unnecessary typecast of c90 int constant [cast-int-const]
+style/cast-int-const/cast-int-const.c:9[26,40]: Unnecessary typecast of c90 int constant [cast-int-const]

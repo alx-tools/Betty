@@ -1,0 +1,7 @@
+style/cast-int-const/cast-int-const.c:
+    line 5: Unnecessary typecast of c90 int constant [cast-int-const]
+    line 6: Unnecessary typecast of c90 int constant [cast-int-const]
+    line 7: Unnecessary typecast of c90 int constant [cast-int-const]
+    line 8: Unnecessary typecast of c90 int constant [cast-int-const]
+    line 9: Unnecessary typecast of c90 int constant [cast-int-const]
+Total: 5 errors, 12 lines checked in 1 file
