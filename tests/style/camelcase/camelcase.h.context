@@ -1,0 +1,14 @@
+style/camelcase/camelcase.h:
+    line 4: Avoid CamelCase: 'CamelStruct_s' [camelcase]
+        struct CamelStruct_s
+               ^-----------^
+    line 6: Avoid CamelCase: 'CamelElement' [camelcase]
+        int CamelElement;
+            ^----------^
+    line 7: Avoid CamelCase: 'CamelFuncPtr' [camelcase]
+        void (*CamelFuncPtr)(void);
+               ^----------^
+    line 10: Avoid CamelCase: 'CamelType' [camelcase]
+        typedef unsigned int CamelType;
+                             ^-------^
+Total: 4 errors, 12 lines checked in 1 file

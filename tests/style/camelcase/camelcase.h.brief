@@ -1,0 +1,4 @@
+style/camelcase/camelcase.h:4[7,20]: Avoid CamelCase: 'CamelStruct_s' [camelcase]
+style/camelcase/camelcase.h:6[12,24]: Avoid CamelCase: 'CamelElement' [camelcase]
+style/camelcase/camelcase.h:7[15,27]: Avoid CamelCase: 'CamelFuncPtr' [camelcase]
+style/camelcase/camelcase.h:10[21,30]: Avoid CamelCase: 'CamelType' [camelcase]

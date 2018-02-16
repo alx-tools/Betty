@@ -1,0 +1,32 @@
+style/camelcase/camelcase.c:
+    line 3: Avoid CamelCase: 'CamelFunc' [camelcase]
+        void CamelFunc(void);
+             ^-------^
+    line 4: Avoid CamelCase: 'CamelFunc2' [camelcase]
+        void (*CamelFunc2(void))(void);
+               ^--------^
+    line 8: Avoid CamelCase: 'CamelCaseVar' [camelcase]
+        int CamelCaseVar = 0;
+            ^----------^
+    line 9: Avoid CamelCase: 'camelCaseVar' [camelcase]
+        int camelCaseVar = 0;
+            ^----------^
+    line 10: Avoid CamelCase: 'Camelcasevar' [camelcase]
+        int Camelcasevar = 0;
+            ^----------^
+    line 12: Avoid CamelCase: 'CamelCase_Var' [camelcase]
+        int CamelCase_Var = 0;
+            ^-----------^
+    line 13: Avoid CamelCase: 'Camel_Case_Var' [camelcase]
+        int Camel_Case_Var = 0;
+            ^------------^
+    line 14: Avoid CamelCase: 'camel_Case_Var' [camelcase]
+        int camel_Case_Var = 0;
+            ^------------^
+    line 15: Avoid CamelCase: 'camel_case_Var' [camelcase]
+        int camel_case_Var = 0;
+            ^------------^
+    line 17: Avoid CamelCase: 'Camel_case_var' [camelcase]
+        int Camel_case_var = 0;
+            ^------------^
+Total: 10 errors, 20 lines checked in 1 file

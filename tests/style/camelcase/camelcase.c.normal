@@ -1,0 +1,12 @@
+style/camelcase/camelcase.c:
+    line 3: Avoid CamelCase: 'CamelFunc' [camelcase]
+    line 4: Avoid CamelCase: 'CamelFunc2' [camelcase]
+    line 8: Avoid CamelCase: 'CamelCaseVar' [camelcase]
+    line 9: Avoid CamelCase: 'camelCaseVar' [camelcase]
+    line 10: Avoid CamelCase: 'Camelcasevar' [camelcase]
+    line 12: Avoid CamelCase: 'CamelCase_Var' [camelcase]
+    line 13: Avoid CamelCase: 'Camel_Case_Var' [camelcase]
+    line 14: Avoid CamelCase: 'camel_Case_Var' [camelcase]
+    line 15: Avoid CamelCase: 'camel_case_Var' [camelcase]
+    line 17: Avoid CamelCase: 'Camel_case_var' [camelcase]
+Total: 10 errors, 20 lines checked in 1 file

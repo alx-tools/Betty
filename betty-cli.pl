@@ -112,6 +112,11 @@ my $options = {
 				desc => 'Check for usage of C99 comments',
 				type => 'Switch',
 				value => 1
+			},
+			'camelcase' => {
+				desc => 'Check for camelcase variable naming',
+				type => 'Switch',
+				value => 1
 			}
 		}
 	},
@@ -731,6 +736,8 @@ sub process_style {
 
 	my $linenr = 0;
 	my $prevline = "";
+	my $stashline = "";
+	my %camelcase_hash = ();
 
 	my $in_comment = 0;
 
@@ -738,6 +745,8 @@ sub process_style {
 		$linenr++;
 		$total_lines++;
 		$prefix = "$filename:$linenr: ";
+
+		($prevline, $stashline) = ($stashline, $line);
 
 		$in_comment = 1 if ($line =~ /\/\*+/);
 		$in_comment = 0 if ($line =~ /\*+\//);
@@ -877,7 +886,40 @@ sub process_style {
 			    $line, $1);
 		}
 
-		$prevline = $line;
+		$line =~ s/\/\/.*//g;
+
+		# camelcase
+		# Specific variable tests
+		while ($line =~ m{($Constant|$Lval)}g) {
+			my $var = $1;
+			my $v = $var;
+			$v =~ s/(\[|\]|\(|\))/\\$1/g;
+			# print "VAR: [$var] --> [$v]\n";
+			next if ($line =~ /\/\*.*$v/ || $in_comment || $line =~ /"[^"]*$v/);
+			if ($var !~ /^$Constant$/ &&
+			    $var =~ /[A-Z][a-z]|[a-z][A-Z]/ &&
+			    # Ignore Page<foo> variants
+			    $var !~ /^(?:Clear|Set|TestClear|TestSet|)Page[A-Z]/ &&
+			    # Ignore SI style variants like nS, mV and dB
+			    # (ie: max_uV, regulator_min_uA_show)
+			    $var !~ /^(?:[a-z_]*?)_?[a-z][A-Z](?:_[a-z_]+)?$/ &&
+			    # Ignore some three character SI units explicitly,
+			    # like MiB and KHz
+			    $var !~ /^(?:[a-z_]*?)_?(?:[KMGT]iB|[KMGT]?Hz)(?:_[a-z_]+)?$/) {
+				while ($var =~ m{($Ident)}g) {
+					my $word = $1;
+					next if ($word !~ /[A-Z][a-z]|[a-z][A-Z]/);
+					if (!defined $camelcase_hash{$word}) {
+						$camelcase_hash{$word} = 1;
+						if (s_option('camelcase')) {
+							WARN("camelcase",
+							    "Avoid CamelCase: '$word'",
+							    $line, $word);
+						}
+					}
+				}
+			}
+		}
 	}
 
 	# Report errors after a file has been analyzed

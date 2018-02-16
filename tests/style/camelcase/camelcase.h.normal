@@ -1,0 +1,6 @@
+style/camelcase/camelcase.h:
+    line 4: Avoid CamelCase: 'CamelStruct_s' [camelcase]
+    line 6: Avoid CamelCase: 'CamelElement' [camelcase]
+    line 7: Avoid CamelCase: 'CamelFuncPtr' [camelcase]
+    line 10: Avoid CamelCase: 'CamelType' [camelcase]
+Total: 4 errors, 12 lines checked in 1 file
