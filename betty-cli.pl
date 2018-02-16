@@ -92,6 +92,11 @@ my $options = {
 				desc => 'Check for block comment subsequent line style',
 				type => 'Switch',
 				value => 1
+			},
+			'block-comment-trailing' => {
+				desc => 'Check for block comment trailing line style',
+				type => 'Switch',
+				value => 1
 			}
 		}
 	},
@@ -782,10 +787,10 @@ sub process_style {
 		# block-comment-leading
 		# Block comments use /* on leading line
 		if (s_option('block-comment-leading') &&
-		    $line !~ /^\s*\/\*\s*$/ &&		#leading /*
-		    $line !~ /^.*\/\*.*\*\/\s*$/ &&	#inline /*...*/
-		    $line !~ /^.*\/\*{2,}\s*$/ &&	#leading /**
-		    $line =~ /^\s*(\/\*+).+\s*$/) {	#/* non blank
+		    $line !~ /^[ \t]*\/\*[ \t]*$/ &&		#leading /*
+		    $line !~ /^.*\/\*.*\*\/[ \t]*$/ &&		#inline /*...*/
+		    $line !~ /^.*\/\*{2,}[ \t]*$/ &&		#leading /**
+		    $line =~ /^[ \t]*(\/\*+).+[ \t]*$/) {	#/* non blank
 			WARN("block-comment-leading",
 			    "Block comments use a leading '/*' on a separate line",
 			    $line, $1);
@@ -795,11 +800,23 @@ sub process_style {
 		# Block comments use * on subsequent lines
 		if (s_option('block-comment-subsequent') &&
 		    $in_comment == 1 &&
-		    $line !~ /^\s*\/\*+.*$/ &&		#leading /*
-		    $line !~ /^[ \t]*\*/) {		#no leading *
+		    $line !~ /^[ \t]*\/\*+.*$/ &&		#leading /*
+		    $line !~ /^[ \t]*\*/) {			#no leading *
 			WARN("block-comment-subsequent",
 			    "Block comments start with * on subsequent lines",
 			    $line);
+		}
+
+		# block-comment-trailing
+		# Block comments use */ on trailing lines
+		if (s_option('block-comment-trailing') &&
+		    $line !~ /^[ \t]*\*\/[ \t]*$/ &&		#trailing */
+		    $line !~ /^.*\/\*.*\*\/[ \t]*$/ &&		#inline /*...*/
+		    $line !~ /^[ \t]*\*{2,}\/[ \t]*$/ &&	#trailing **/
+		    $line =~ /^[ \t]*.+[^\*](\*+\/)[ \t]*$/) {	#non blank */
+			WARN("block-comment-trailing",
+			    "Block comments use a trailing '*/' on a separate line",
+			    $line, $1);
 		}
 
 		$prevline = $line;

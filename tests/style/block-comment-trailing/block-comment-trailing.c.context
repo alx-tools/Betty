@@ -1,0 +1,8 @@
+style/block-comment-trailing/block-comment-trailing.c:
+    line 26: Block comments use a trailing '*/' on a separate line [block-comment-trailing]
+        * block */
+                ^^
+    line 35: Block comments use a trailing '*/' on a separate line [block-comment-trailing]
+        * block **/
+                ^-^
+Total: 2 errors, 38 lines checked in 1 file

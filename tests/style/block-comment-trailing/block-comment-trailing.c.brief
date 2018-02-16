@@ -1,0 +1,2 @@
+style/block-comment-trailing/block-comment-trailing.c:26[9,11]: Block comments use a trailing '*/' on a separate line [block-comment-trailing]
+style/block-comment-trailing/block-comment-trailing.c:35[9,12]: Block comments use a trailing '*/' on a separate line [block-comment-trailing]
