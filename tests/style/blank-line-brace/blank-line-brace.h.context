@@ -1,0 +1,6 @@
+style/blank-line-brace/blank-line-brace.h:
+    line 6: Blank lines aren't necessary after an open brace [blank-line-brace]
+    line 7: No blank lines before declarations [blank-before-decl]
+        int i;
+    line 9: Blank lines aren't necessary before a close brace [blank-line-brace]
+Total: 3 errors, 12 lines checked in 1 file

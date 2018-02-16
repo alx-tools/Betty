@@ -77,6 +77,11 @@ my $options = {
 				desc => 'Check for blank line before declaration',
 				type => 'Switch',
 				value => 1
+			},
+			'blank-line-brace' => {
+				desc => 'Check for unnecessary blank line around braces',
+				type => 'Switch',
+				value => 1
 			}
 		}
 	},
@@ -618,9 +623,9 @@ sub report {
 
 	my $output = '';
 	my $line_no = (split(":", $prefix))[1]; # Line number only
-	$line =~ s/\t/        /g;
-	my $r_begin = index($line, $region) if (defined $region);
-	my $r_end = $r_begin + length($region) if (defined $region);
+	$line =~ s/\t/        /g if (defined $line);
+	my $r_begin = index($line, $region) if (defined $line && defined $region);
+	my $r_end = $r_begin + length($region) if (defined $line && defined $region);
 
 	$output .= RED if (-t STDOUT && s_option('color'));
 	$output .= "line " if (!s_option('brief'));
@@ -634,7 +639,7 @@ sub report {
 
 	$output = '';
 	# Print context
-	if (!s_option('brief') && s_option('context')) {
+	if (defined $line && !s_option('brief') && s_option('context')) {
 		$line =~ s/^\s+//g;
 		$line =~ s/\s+$//g;
 
@@ -737,6 +742,21 @@ sub process_style {
 			WARN("blank-before-decl",
 			     "No blank lines before declarations",
 			     $line);
+		}
+
+		# blank-line-brace
+		# check for unnecessary blank lines around braces
+		if (s_option('blank-line-brace')) {
+			if ($line =~ /^\s*}\s*(?:;\s*)?$/ &&
+			    $prevline =~ /^\s*$/) {
+				$prefix = "$filename:". ($linenr - 1) . ": ";
+				WARN("blank-line-brace",
+				    "Blank lines aren't necessary before a close brace");
+			} elsif ($line =~ /^\s*$/ &&
+			    $prevline =~ /^.*{\s*$/) {
+				WARN("blank-line-brace",
+				    "Blank lines aren't necessary after an open brace");
+			}
 		}
 
 		$prevline = $line;

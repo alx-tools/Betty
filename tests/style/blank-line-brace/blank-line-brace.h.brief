@@ -1,0 +1,3 @@
+style/blank-line-brace/blank-line-brace.h:6: Blank lines aren't necessary after an open brace [blank-line-brace]
+style/blank-line-brace/blank-line-brace.h:7: No blank lines before declarations [blank-before-decl]
+style/blank-line-brace/blank-line-brace.h:9: Blank lines aren't necessary before a close brace [blank-line-brace]

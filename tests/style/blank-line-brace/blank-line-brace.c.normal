@@ -1,0 +1,8 @@
+style/blank-line-brace/blank-line-brace.c:
+    line 6: Blank lines aren't necessary after an open brace [blank-line-brace]
+    line 8: Blank lines aren't necessary before a close brace [blank-line-brace]
+    line 13: Blank lines aren't necessary after an open brace [blank-line-brace]
+    line 16: Blank lines aren't necessary before a close brace [blank-line-brace]
+    line 22: Blank lines aren't necessary after an open brace [blank-line-brace]
+    line 24: Blank lines aren't necessary before a close brace [blank-line-brace]
+Total: 6 errors, 25 lines checked in 1 file

@@ -1,0 +1,6 @@
+style/blank-line-brace/blank-line-brace.c:6: Blank lines aren't necessary after an open brace [blank-line-brace]
+style/blank-line-brace/blank-line-brace.c:8: Blank lines aren't necessary before a close brace [blank-line-brace]
+style/blank-line-brace/blank-line-brace.c:13: Blank lines aren't necessary after an open brace [blank-line-brace]
+style/blank-line-brace/blank-line-brace.c:16: Blank lines aren't necessary before a close brace [blank-line-brace]
+style/blank-line-brace/blank-line-brace.c:22: Blank lines aren't necessary after an open brace [blank-line-brace]
+style/blank-line-brace/blank-line-brace.c:24: Blank lines aren't necessary before a close brace [blank-line-brace]
