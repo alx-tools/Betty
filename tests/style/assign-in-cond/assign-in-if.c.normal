@@ -1,0 +1,14 @@
+style/assign-in-cond/assign-in-if.c:
+    line 6: Do not use assignment in 'if' condition [assign-in-cond]
+    line 10: Do not use assignment in 'if' condition [assign-in-cond]
+    line 14: Do not use assignment in 'if' condition [assign-in-cond]
+    line 16: Do not use assignment in 'if' condition [assign-in-cond]
+    line 18: Do not use assignment in 'if' condition [assign-in-cond]
+    line 20: Do not use assignment in 'if' condition [assign-in-cond]
+    line 22: Do not use assignment in 'if' condition [assign-in-cond]
+    line 26: Do not use assignment in 'if' condition [assign-in-cond]
+    line 28: Do not use assignment in 'if' condition [assign-in-cond]
+    line 30: Do not use assignment in 'if' condition [assign-in-cond]
+    line 32: Do not use assignment in 'if' condition [assign-in-cond]
+    line 34: Do not use assignment in 'if' condition [assign-in-cond]
+Total: 12 errors, 48 lines checked in 1 file

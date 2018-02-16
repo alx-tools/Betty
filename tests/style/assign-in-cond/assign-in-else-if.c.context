@@ -1,0 +1,38 @@
+style/assign-in-cond/assign-in-else-if.c:
+    line 9: Do not use assignment in 'if' condition [assign-in-cond]
+        else if ((i = 0) == 1)
+                  ^---^
+    line 13: Do not use assignment in 'if' condition [assign-in-cond]
+        else if (1 == (i = 0))
+                       ^---^
+    line 17: Do not use assignment in 'if' condition [assign-in-cond]
+        else if ((i *= 2) == 1)
+                  ^----^
+    line 19: Do not use assignment in 'if' condition [assign-in-cond]
+        else if ((i /= 2) == 1)
+                  ^----^
+    line 21: Do not use assignment in 'if' condition [assign-in-cond]
+        else if ((i %= 2) == 1)
+                  ^----^
+    line 23: Do not use assignment in 'if' condition [assign-in-cond]
+        else if ((i += 2) == 1)
+                  ^----^
+    line 25: Do not use assignment in 'if' condition [assign-in-cond]
+        else if ((i -= 2) == 1)
+                  ^----^
+    line 29: Do not use assignment in 'if' condition [assign-in-cond]
+        else if ((i &= 2) == 1)
+                  ^----^
+    line 31: Do not use assignment in 'if' condition [assign-in-cond]
+        else if ((i |= 2) == 1)
+                  ^----^
+    line 33: Do not use assignment in 'if' condition [assign-in-cond]
+        else if ((i ^= 2) == 1)
+                  ^----^
+    line 35: Do not use assignment in 'if' condition [assign-in-cond]
+        else if ((i >>= 2) == 1)
+                  ^-----^
+    line 37: Do not use assignment in 'if' condition [assign-in-cond]
+        else if ((i <<= 2) == 1)
+                  ^-----^
+Total: 12 errors, 51 lines checked in 1 file

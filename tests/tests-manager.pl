@@ -26,12 +26,17 @@ use File::Copy qw(copy);
 
 my $V = "1.0.0";
 
-# Path to the Betty-Style script
-my $file = "../betty-style.pl";
-die "$file is missing !\n" if (! -f $file);
+# Path to the old Betty-Style script
+my $old_betty_style = "../betty-style.pl";
+die "$old_betty_style is missing!\n" if (! -f $old_betty_style);
+
 # Path to the folder containing the test suites for bett-style
 my $base_folder = "style";
-die "$base_folder is missing !\n" if (! -e $base_folder);
+die "$base_folder is missing!\n" if (! -e $base_folder);
+
+# Path to the new Betty script (the one that will be tested)
+my $betty_cli = "../betty-cli.pl";
+die "$betty_cli is missing!\n" if (! -f $betty_cli);
 
 # Debug mode.
 # Outputs more informations about the tests anylisis
@@ -105,7 +110,8 @@ my $options;
 sub read_script {
 	my $count = 0;
 
-	open(IN, '<', "$file") || die "Error: Cannot open file $file\n";
+	open(IN, '<', "$old_betty_style") ||
+		die "Error: Cannot open file $old_betty_style\n";
 	my $i = 0;
 	while (<IN>)
 	{
@@ -114,7 +120,7 @@ sub read_script {
 
 		# command-line options section
 		# Retrive the prefix, the suffix, and the description
-		if ($line =~ /^\s*(--(?:\[no-\])?)([^\s=]+)((?:=\S+)?)\s+(.*)$/ &&
+		if ($line =~ /^\s*(--(?:\[no\])?)([^\s=]+)((?:=\S+)?)\s+(.*)$/ &&
 		    $line !~ /;\s*$/ &&
 		    $line !~ /(?:color|verbose)/) {
 			$options->{$2}->{prefix} = $1;
@@ -200,24 +206,73 @@ foreach my $type (sort keys $options) {
 
 	# The corresponding test folder does not exist
 	if (! -e $type_folder) {
-		print STDERR RED, "No test suite found for '$type'\n", RESET;
+		print RED, $type, RESET, ": No test suite found\n";
 		mkdir $type_folder if ($create);
-	}
-
-	if (! -f "$type_folder/run_tests.pl") {
-		my $test_script = "run_tests";
-		copy "${test_script}_template.pl", "$type_folder/$test_script.pl";
+		next if (!$create);
 	}
 
 	# Lists all the C source and header files in the test folder
 	my @test_files = <$type_folder/*.{c,h}>;
 	if (scalar @test_files == 0) {
-		print STDERR RED, "No test suite found for '$type'\n", RESET;
+		print RED, $type, RESET, ": No test in folder\n";
 	} elsif (scalar @test_files < $options->{$type}->{count}) {
-		print STDERR YELLOW, "You should have at least ", $options->{$type}->{count},
-			" tests for '$type', you currently have ", scalar @test_files, "\n", RESET;
+		print YELLOW, $type, RESET, ": You should have at least ", $options->{$type}->{count},
+			" tests, you currently have ", scalar @test_files, "\n";
+	} else {
+		print GREEN, $type, RESET, ": Found\n";
+		if (run_tests($base_folder, @test_files)) {
+			print GREEN, "\tPassed!\n", RESET;
+		}
 	}
 
 	my $filename = "TODO.md";
 	write_todo("$type_folder/$filename", $type);
+}
+
+##
+## run_tests()
+##
+## Params:
+##   $cmd: Betty command (style or doc)
+##   @files: List of files to be tested (C source files)
+##
+## Returns: 1 when clean, 0 on failure
+##
+sub run_tests {
+
+	my ($cmd, @files) = @_;
+	my $clean = 1;
+
+	foreach my $file (sort @files) {
+		my @errors = ();
+		my $expected = "$file.stdout";
+
+		if (! -f $expected) {
+			push(@errors, "Error: $expected does not exist\n");
+		} else {
+			my $output = `$betty_cli $cmd -b $file`;
+			my $expected_output = `cat $expected`;
+			if ($output ne $expected_output) {
+				push(@errors, "Mismatch output for $file\n\n");
+				push(@errors, "Output:\n");
+				push(@errors, "$output\n");
+				push(@errors, "Expected:\n");
+				push(@errors, $expected_output);
+			}
+		}
+
+		if (scalar @errors > 0) {
+			my $report_file = "$file.report";
+
+			open(my $rp, '>', $report_file) || die "Couldn't open file '$report_file' $!";
+
+			print $rp join('', @errors);
+			print STDERR "\t", join("\t", @errors);
+
+			close $rp;
+			$clean = 0;
+		}
+	}
+
+	return $clean
 }
