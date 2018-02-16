@@ -23,19 +23,22 @@ use diagnostics;
 use Term::ANSIColor qw(:constants);
 use Getopt::Long qw(:config no_auto_abbrev);
 use File::Copy qw(copy);
+use File::Spec;
+use File::Basename;
 
 my $V = "1.0.0";
+my $P = dirname(File::Spec->rel2abs( __FILE__ ));
 
 # Path to the old Betty-Style script
-my $old_betty_style = "../betty-style.pl";
+my $old_betty_style = "$P/betty-style.pl";
 die "$old_betty_style is missing!\n" if (! -f $old_betty_style);
 
 # Path to the folder containing the test suites for bett-style
-my $base_folder = "style";
+my $base_folder = "$P/tests/style";
 die "$base_folder is missing!\n" if (! -e $base_folder);
 
 # Path to the new Betty script (the one that will be tested)
-my $betty_cli = "../betty-cli.pl";
+my $betty_cli = "$P/betty-cli.pl";
 die "$betty_cli is missing!\n" if (! -f $betty_cli);
 
 # Debug mode.
@@ -200,6 +203,11 @@ sub write_todo {
 
 read_script();
 
+my $total_good = 0;
+my $total_warn = 0;
+my $total_err = 0;
+my $exit = 0;
+
 # check the test folder corresponding to each type found in betty-style script
 foreach my $type (sort keys $options) {
 	my $type_folder = "$base_folder/$type";
@@ -207,6 +215,7 @@ foreach my $type (sort keys $options) {
 	# The corresponding test folder does not exist
 	if (! -e $type_folder) {
 		print RED, $type, RESET, ": No test suite found\n";
+		$total_err++;
 		mkdir $type_folder if ($create);
 		next if (!$create);
 	}
@@ -215,19 +224,33 @@ foreach my $type (sort keys $options) {
 	my @test_files = <$type_folder/*.{c,h}>;
 	if (scalar @test_files == 0) {
 		print RED, $type, RESET, ": No test in folder\n";
+		my $filename = "TODO.md";
+		write_todo("$type_folder/$filename", $type);
+		$total_err++;
+		next;
 	} elsif (scalar @test_files < $options->{$type}->{count}) {
 		print YELLOW, $type, RESET, ": You should have at least ", $options->{$type}->{count},
 			" tests, you currently have ", scalar @test_files, "\n";
+		my $filename = "TODO.md";
+		write_todo("$type_folder/$filename", $type);
+		$total_warn++;
 	} else {
 		print GREEN, $type, RESET, ": Found\n";
-		if (run_tests($base_folder, @test_files)) {
-			print GREEN, "\tPassed!\n", RESET;
-		}
+		$total_good++;
 	}
-
-	my $filename = "TODO.md";
-	write_todo("$type_folder/$filename", $type);
+	if (run_tests($base_folder, @test_files)) {
+		print GREEN, "\tPassed ", scalar @test_files * 3, " tests!\n", RESET;
+	} else {
+		$exit = 1;
+	}
 }
+
+print "\n";
+print GREEN, $total_good, RESET, ", ";
+print YELLOW, $total_warn, RESET, ", ";
+print RED, $total_err, RESET, "\n";
+
+exit ($exit);
 
 ##
 ## run_tests()
@@ -243,14 +266,20 @@ sub run_tests {
 	my ($cmd, @files) = @_;
 	my $clean = 1;
 
-	foreach my $file (sort @files) {
-		my @errors = ();
-		my $expected = "$file.stdout";
+	my @c = split("/", $cmd);
+	$cmd = pop @c;
+	my $path = join("/", @c);
 
+	foreach my $file (sort @files) {
+		$file =~ s/^.*\/style\//style\//;
+		$file =~ s/^.*\/doc\//doc\//;
+		my @errors = ();
+
+		my $expected = "$path/$file.normal";
 		if (! -f $expected) {
 			push(@errors, "Error: $expected does not exist\n");
 		} else {
-			my $output = `$betty_cli $cmd -b $file`;
+			my $output = `cd $P/tests ; $betty_cli $cmd $file`;
 			my $expected_output = `cat $expected`;
 			if ($output ne $expected_output) {
 				push(@errors, "Mismatch output for $file\n\n");
@@ -261,9 +290,39 @@ sub run_tests {
 			}
 		}
 
-		if (scalar @errors > 0) {
-			my $report_file = "$file.report";
+		$expected = "$path/$file.brief";
+		if (! -f $expected) {
+			push(@errors, "Error: $expected does not exist\n");
+		} else {
+			my $output = `cd $P/tests ; $betty_cli $cmd -b $file`;
+			my $expected_output = `cat $expected`;
+			if ($output ne $expected_output) {
+				push(@errors, "Mismatch output for $file\n\n");
+				push(@errors, "Output:\n");
+				push(@errors, "$output\n");
+				push(@errors, "Expected:\n");
+				push(@errors, $expected_output);
+			}
+		}
 
+		$expected = "$path/$file.context";
+		if (! -f $expected) {
+			push(@errors, "Error: $expected does not exist\n");
+		} else {
+			my $output = `cd $P/tests ; $betty_cli $cmd -c $file`;
+			my $expected_output = `cat $expected`;
+			if ($output ne $expected_output) {
+				push(@errors, "Mismatch output for $file\n\n");
+				push(@errors, "Output:\n");
+				push(@errors, "$output\n");
+				push(@errors, "Expected:\n");
+				push(@errors, $expected_output);
+			}
+		}
+
+		my $report_file = "$path/$file.report";
+		unlink $report_file if (-f $report_file);
+		if (scalar @errors > 0) {
 			open(my $rp, '>', $report_file) || die "Couldn't open file '$report_file' $!";
 
 			print $rp join('', @errors);

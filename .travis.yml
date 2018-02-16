@@ -1,4 +1,4 @@
-script: bash test
+script: perl tests-manager.pl
 branches:
   only:
     - master
