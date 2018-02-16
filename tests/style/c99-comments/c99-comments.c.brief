@@ -1,0 +1,2 @@
+style/c99-comments/c99-comments.c:1[0,30]: Do not use C99 '//' comments [c99-comments]
+style/c99-comments/c99-comments.c:7[31,58]: Do not use C99 '//' comments [c99-comments]

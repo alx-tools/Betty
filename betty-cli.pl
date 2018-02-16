@@ -107,6 +107,11 @@ my $options = {
 				desc => 'Check for prohibited space inside square brackets',
 				type => 'Switch',
 				value => 1
+			},
+			'c99-comments' => {
+				desc => 'Check for usage of C99 comments',
+				type => 'Switch',
+				value => 1
 			}
 		}
 	},
@@ -834,7 +839,7 @@ sub process_style {
 				$lead =~ s/\t/        /g;
 			}
 			WARN("bracket-space",
-			    "space prohibited before open square bracket '['",
+			    "Space prohibited before open square bracket '['",
 			    $line, $prefix, $where - 1 + length $lead);
 		}
 
@@ -848,7 +853,7 @@ sub process_style {
 					$lead =~ s/\t/        /g;
 				}
 				WARN("bracket-space-in",
-				    "space prohibited after that open square bracket",
+				    "Space prohibited after that open square bracket",
 				    $line, $prefix, $where - 1 + length $lead);
 			}
 			while ($line =~ /(\s+)\]/g) {
@@ -858,9 +863,18 @@ sub process_style {
 					$lead =~ s/\t/        /g;
 				}
 				WARN("bracket-space-in",
-				    "space prohibited before that close square bracket",
+				    "Space prohibited before that close square bracket",
 				    $line, $prefix, $where - 1 + length $lead);
 			}
+		}
+
+		# c99-comments
+		# no C99 '//' comments
+		if (s_option('c99-comments') &&
+		    $line =~ m{(//.*)}) {
+			WARN("c99-comments",
+			    "Do not use C99 '//' comments",
+			    $line, $1);
 		}
 
 		$prevline = $line;

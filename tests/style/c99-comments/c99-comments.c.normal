@@ -1,0 +1,4 @@
+style/c99-comments/c99-comments.c:
+    line 1: Do not use C99 '//' comments [c99-comments]
+    line 7: Do not use C99 '//' comments [c99-comments]
+Total: 2 errors, 9 lines checked in 1 file
