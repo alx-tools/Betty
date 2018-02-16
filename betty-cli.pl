@@ -726,7 +726,7 @@ sub process_style {
 		    $line =~ /^\s*(extern\s+.*)\s*$/g) {
 			WARN("avoid-externs",
 			    "externs should be avoided in '.c' files",
-			    $line, $1);
+			    $line);
 		}
 
 		# blank-before-decl

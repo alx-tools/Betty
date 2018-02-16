@@ -1,5 +1,4 @@
 style/avoid-externs/extern_function.c:
     line 4: externs should be avoided in '.c' files [avoid-externs]
         extern void test_func(void)
-        ^-------------------------^
 Total: 1 error, 14 lines checked in 1 file
