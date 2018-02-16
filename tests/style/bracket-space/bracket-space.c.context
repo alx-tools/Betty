@@ -1,0 +1,35 @@
+style/bracket-space/bracket-space.c:
+    line 6: space prohibited before open square bracket '[' [bracket-space]
+        int a [10];
+             ^
+    line 7: space prohibited before open square bracket '[' [bracket-space]
+        int b[10] [10];
+                 ^
+    line 9: space prohibited before open square bracket '[' [bracket-space]
+        a [1] = 2;
+         ^
+    line 11: space prohibited before open square bracket '[' [bracket-space]
+        b[2] [2] = 3;
+            ^
+    line 12: space prohibited before open square bracket '[' [bracket-space]
+        b[2]   [3] = 4;
+            ^-^
+    line 14: space prohibited before open square bracket '[' [bracket-space]
+        printf("a [1] = %d\n", a [1]);
+                 ^
+    line 14: space prohibited before open square bracket '[' [bracket-space]
+        printf("a [1] = %d\n", a [1]);
+                                ^
+    line 15: space prohibited before open square bracket '[' [bracket-space]
+        printf("b[2] [2] = %d\n", b[2] [2]);
+                    ^
+    line 15: space prohibited before open square bracket '[' [bracket-space]
+        printf("b[2] [2] = %d\n", b[2] [2]);
+                                      ^
+    line 16: space prohibited before open square bracket '[' [bracket-space]
+        printf("b[2]   [3] = %d\n", b[2]   [3]);
+                    ^-^
+    line 16: space prohibited before open square bracket '[' [bracket-space]
+        printf("b[2]   [3] = %d\n", b[2]   [3]);
+                                        ^-^
+Total: 11 errors, 18 lines checked in 1 file

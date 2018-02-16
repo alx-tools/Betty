@@ -1,0 +1,13 @@
+style/bracket-space/bracket-space.c:
+    line 6: space prohibited before open square bracket '[' [bracket-space]
+    line 7: space prohibited before open square bracket '[' [bracket-space]
+    line 9: space prohibited before open square bracket '[' [bracket-space]
+    line 11: space prohibited before open square bracket '[' [bracket-space]
+    line 12: space prohibited before open square bracket '[' [bracket-space]
+    line 14: space prohibited before open square bracket '[' [bracket-space]
+    line 14: space prohibited before open square bracket '[' [bracket-space]
+    line 15: space prohibited before open square bracket '[' [bracket-space]
+    line 15: space prohibited before open square bracket '[' [bracket-space]
+    line 16: space prohibited before open square bracket '[' [bracket-space]
+    line 16: space prohibited before open square bracket '[' [bracket-space]
+Total: 11 errors, 18 lines checked in 1 file

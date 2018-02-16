@@ -97,6 +97,11 @@ my $options = {
 				desc => 'Check for block comment trailing line style',
 				type => 'Switch',
 				value => 1
+			},
+			'bracket-space' => {
+				desc => 'Check for prohibited space before open square bracket',
+				type => 'Switch',
+				value => 1
 			}
 		}
 	},
@@ -631,16 +636,16 @@ sub betty_style {
 }
 
 our $prefix = '';
-sub report {
-	my ($type, $msg, $line, $region) = @_;
+sub WARN {
+	my ($type, $msg, $line, $region, $r_begin, $r_end) = @_;
 
 	$msg = (split('\n', $msg))[0];
 
 	my $output = '';
 	my $line_no = (split(":", $prefix))[1]; # Line number only
 	$line =~ s/\t/        /g if (defined $line);
-	my $r_begin = index($line, $region) if (defined $line && defined $region);
-	my $r_end = $r_begin + length($region) if (defined $line && defined $region);
+	$r_begin = index($line, $region) if (!defined $r_begin && defined $line && defined $region);
+	$r_end = $r_begin + length($region) if (!defined $r_end && defined $line && defined $region);
 
 	$output .= RED if (-t STDOUT && s_option('color'));
 	$output .= "line " if (!s_option('brief'));
@@ -655,6 +660,10 @@ sub report {
 	$output = '';
 	# Print context
 	if (defined $line && !s_option('brief') && s_option('context')) {
+		my $leading = 0;
+		if ($line =~ /^(\s+)/) {
+			$leading = length $1;
+		}
 		$line =~ s/^\s+//g;
 		$line =~ s/\s+$//g;
 
@@ -663,13 +672,13 @@ sub report {
 			$output .= "    $line\n";
 			$output .= RESET if (-t STDOUT && s_option('color'));
 			push(@report, $output);
+			our $clean = 0;
+			$total_errs++;
 			return 1;
 		}
 
-		my $region_idx = index($line, $region);
-
-		my $l1 = substr($line, 0, $region_idx);
-		my $l2 = substr($line, $region_idx + length $region);
+		my $l1 = substr($line, 0, $r_begin - $leading);
+		my $l2 = substr($line, ($r_begin - $leading) + length $region);
 
 		$output .= BRIGHT_BLACK if (-t STDOUT && s_option('color'));
 		$output .= "    $l1";
@@ -681,23 +690,16 @@ sub report {
 		push(@report, $output);
 
 		$output = "    ";
-		$output .= " " x $region_idx;
-		$output .= "^" . "-" x ((length $region) - 2) . "^\n";
+		$output .= " " x ($r_begin - $leading);
+		$output .= "^" . "-" x ((length $region) - 2);
+		$output .= "^" if ((length $region) >= 2);
+		$output .= "\n";
 		push(@report, $output);
 	}
 
+	our $clean = 0;
+	$total_errs++;
 	return 1;
-}
-
-sub WARN {
-	my ($type, $msg, $line, $region) = @_;
-
-	if (report($type, $msg, $line, $region)) {
-		our $clean = 0;
-		$total_errs++;
-		return 1;
-	}
-	return 0;
 }
 
 ##
@@ -741,9 +743,7 @@ sub process_style {
 		if (s_option('assign-in-cond') &&
 		    $line =~ /\b(if|while|switch)\s*\(.*([a-zA-Z0-9_]+\s*$assign_r\s*[a-zA-Z0-9_]+)/ ||
 		    $line =~ /\b(for)\s*\([^;]*;[^;]*([a-zA-Z0-9_]+\s*$assign_r\s*[a-zA-Z0-9_]+)/) {
-
 			my ($cond, $region) = ($1, $2);
-
 			WARN("assign-in-cond",
 			    "Do not use assignment in '$cond' condition",
 			    $line, $region);
@@ -817,6 +817,20 @@ sub process_style {
 			WARN("block-comment-trailing",
 			    "Block comments use a trailing '*/' on a separate line",
 			    $line, $1);
+		}
+
+		# bracket-space
+		# check for spacing round square brackets
+		while (s_option('bracket-space') &&
+		    $line =~ /(\s+)\[/g) {
+			my ($lead, $where, $prefix) = (0, $-[1], $1);
+			if ($line =~ /^(\s+)/) {
+				$lead = $1;
+				$lead =~ s/\t/        /g;
+			}
+			WARN("bracket-space",
+			    "space prohibited before open square bracket '['",
+			    $line, $prefix, $where - 1 + length $lead);
 		}
 
 		$prevline = $line;
