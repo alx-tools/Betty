@@ -1,4 +1,5 @@
 style/blank-before-decl/blank-before-decl.c:
+    line 7: Blank lines aren't necessary after an open brace [blank-line-brace]
     line 8: No blank lines before declarations [blank-before-decl]
     line 10: No blank lines before declarations [blank-before-decl]
-Total: 2 errors, 16 lines checked in 1 file
+Total: 3 errors, 16 lines checked in 1 file
