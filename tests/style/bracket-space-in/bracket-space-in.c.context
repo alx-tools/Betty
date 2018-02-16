@@ -1,0 +1,80 @@
+style/bracket-space-in/bracket-space-in.c:
+    line 6: space prohibited after that open square bracket [bracket-space-in]
+        int a[ 10 ];
+              ^
+    line 6: space prohibited before that close square bracket [bracket-space-in]
+        int a[ 10 ];
+                 ^
+    line 7: space prohibited after that open square bracket [bracket-space-in]
+        int b[  10  ][   10   ];
+              ^^
+    line 7: space prohibited after that open square bracket [bracket-space-in]
+        int b[  10  ][   10   ];
+                      ^-^
+    line 7: space prohibited before that close square bracket [bracket-space-in]
+        int b[  10  ][   10   ];
+                  ^^
+    line 7: space prohibited before that close square bracket [bracket-space-in]
+        int b[  10  ][   10   ];
+                           ^-^
+    line 9: space prohibited after that open square bracket [bracket-space-in]
+        a[ 1] = 2;
+          ^
+    line 10: space prohibited before that close square bracket [bracket-space-in]
+        a[2 ] = 1;
+           ^
+    line 12: space prohibited after that open square bracket [bracket-space-in]
+        b[  2][2  ] = 3;
+          ^^
+    line 12: space prohibited before that close square bracket [bracket-space-in]
+        b[  2][2  ] = 3;
+                ^^
+    line 13: space prohibited after that open square bracket [bracket-space-in]
+        b[2   ][   3] = 4;
+                ^-^
+    line 13: space prohibited before that close square bracket [bracket-space-in]
+        b[2   ][   3] = 4;
+           ^-^
+    line 15: space prohibited after that open square bracket [bracket-space-in]
+        printf("a[ 1] = %d\n", a[1 ]);
+                  ^
+    line 15: space prohibited before that close square bracket [bracket-space-in]
+        printf("a[ 1] = %d\n", a[1 ]);
+                                  ^
+    line 16: space prohibited after that open square bracket [bracket-space-in]
+        printf("b[2  ][  2] = %d\n", b[ 2  ][  2 ]);
+                       ^^
+    line 16: space prohibited after that open square bracket [bracket-space-in]
+        printf("b[2  ][  2] = %d\n", b[ 2  ][  2 ]);
+                                       ^
+    line 16: space prohibited after that open square bracket [bracket-space-in]
+        printf("b[2  ][  2] = %d\n", b[ 2  ][  2 ]);
+                                             ^^
+    line 16: space prohibited before that close square bracket [bracket-space-in]
+        printf("b[2  ][  2] = %d\n", b[ 2  ][  2 ]);
+                   ^^
+    line 16: space prohibited before that close square bracket [bracket-space-in]
+        printf("b[2  ][  2] = %d\n", b[ 2  ][  2 ]);
+                                         ^^
+    line 16: space prohibited before that close square bracket [bracket-space-in]
+        printf("b[2  ][  2] = %d\n", b[ 2  ][  2 ]);
+                                                ^
+    line 17: space prohibited after that open square bracket [bracket-space-in]
+        printf("b[   2][3   ] = %d\n", b[   2 ][ 3   ]);
+                  ^-^
+    line 17: space prohibited after that open square bracket [bracket-space-in]
+        printf("b[   2][3   ] = %d\n", b[   2 ][ 3   ]);
+                                         ^-^
+    line 17: space prohibited after that open square bracket [bracket-space-in]
+        printf("b[   2][3   ] = %d\n", b[   2 ][ 3   ]);
+                                                ^
+    line 17: space prohibited before that close square bracket [bracket-space-in]
+        printf("b[   2][3   ] = %d\n", b[   2 ][ 3   ]);
+                         ^-^
+    line 17: space prohibited before that close square bracket [bracket-space-in]
+        printf("b[   2][3   ] = %d\n", b[   2 ][ 3   ]);
+                                             ^
+    line 17: space prohibited before that close square bracket [bracket-space-in]
+        printf("b[   2][3   ] = %d\n", b[   2 ][ 3   ]);
+                                                  ^-^
+Total: 26 errors, 19 lines checked in 1 file

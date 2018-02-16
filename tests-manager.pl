@@ -154,7 +154,6 @@ sub read_script {
 read_script();
 
 my $total_good = 0;
-my $total_warn = 0;
 my $total_err = 0;
 my $exit = 0;
 
@@ -176,10 +175,6 @@ foreach my $type (sort keys $options) {
 		print RED, $type, RESET, ": No test in folder\n";
 		$total_err++;
 		next;
-	} elsif (scalar @test_files < $options->{$type}->{count}) {
-		print YELLOW, $type, RESET, ": You should have at least ", $options->{$type}->{count},
-			" tests, you currently have ", scalar @test_files, "\n";
-		$total_warn++;
 	} else {
 		print GREEN, $type, RESET, ": Found\n";
 		$total_good++;
@@ -193,7 +188,6 @@ foreach my $type (sort keys $options) {
 
 print "\n";
 print GREEN, $total_good, RESET, ", ";
-print YELLOW, $total_warn, RESET, ", ";
 print RED, $total_err, RESET, "\n";
 
 exit ($exit);

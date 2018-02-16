@@ -102,6 +102,11 @@ my $options = {
 				desc => 'Check for prohibited space before open square bracket',
 				type => 'Switch',
 				value => 1
+			},
+			'bracket-space-in' => {
+				desc => 'Check for prohibited space inside square brackets',
+				type => 'Switch',
+				value => 1
 			}
 		}
 	},
@@ -831,6 +836,31 @@ sub process_style {
 			WARN("bracket-space",
 			    "space prohibited before open square bracket '['",
 			    $line, $prefix, $where - 1 + length $lead);
+		}
+
+		# bracket-space-in
+		# check spacing on square brackets
+		if (s_option('bracket-space-in')) {
+			while ($line =~ /\[(\s+)\S/g) {
+				my ($lead, $where, $prefix) = (0, $-[1], $1);
+				if ($line =~ /^(\s+)/) {
+					$lead = $1;
+					$lead =~ s/\t/        /g;
+				}
+				WARN("bracket-space-in",
+				    "space prohibited after that open square bracket",
+				    $line, $prefix, $where - 1 + length $lead);
+			}
+			while ($line =~ /(\s+)\]/g) {
+				my ($lead, $where, $prefix) = (0, $-[1], $1);
+				if ($line =~ /^(\s+)/) {
+					$lead = $1;
+					$lead =~ s/\t/        /g;
+				}
+				WARN("bracket-space-in",
+				    "space prohibited before that close square bracket",
+				    $line, $prefix, $where - 1 + length $lead);
+			}
 		}
 
 		$prevline = $line;
