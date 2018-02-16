@@ -151,56 +151,6 @@ sub read_script {
 	}
 }
 
-# write_todo subroutine
-# $path: Path to the file to write in
-# $type: Warning type / option name
-#
-# Writes a Markdown to-do template in the test folder corresponding to $type
-# This file will contain a reminder of:
-#  - What is to be tested
-#  - How many different test are needed
-#  - Where to find the different references to it type in the bett-style script
-sub write_todo {
-	my ($path, $type) = @_;
-
-	open(my $fh, '>', $path) || die "Couldn't open file '$path' $!";
-
-	# Prints the title (warning type / command-line option name)
-	print $fh "# $type\n\n";
-
-	if (!exists($options->{$type})) {
-		print STDERR "Couldn't find option $type\n";
-		return;
-	}
-
-	my $prefix = $options->{$type}->{prefix};
-	my $suffix = $options->{$type}->{suffix};
-
-	# Prints the corresponding command-line option
-	print $fh "### Option\n\n";
-	print $fh "```\n";
-	print $fh $prefix, $type, $suffix, "\n";
-	print $fh "```\n\n";
-
-	# Prints the command-line description
-	print $fh "### Description\n\n";
-	print $fh $options->{$type}->{desc}, "\n\n";
-
-	# Prints
-	print $fh "### TODO\n\n";
-	my $plural = "";
-	$plural = "s" if ($options->{$type}->{count} > 1);
-	print $fh $options->{$type}->{count}, " check$plural to write\n\n";
-
-	# Prints the lines in betty-style where the type is referenced
-	for (my $i = 0; $i < $options->{$type}->{count}; ++$i) {
-		print $fh " - betty-style.pl: ";
-		print $fh @{$options->{$type}->{lines}}[$i], "\n";
-	}
-
-	close $fh;
-}
-
 read_script();
 
 my $total_good = 0;
@@ -224,15 +174,11 @@ foreach my $type (sort keys $options) {
 	my @test_files = <$type_folder/*.{c,h}>;
 	if (scalar @test_files == 0) {
 		print RED, $type, RESET, ": No test in folder\n";
-		my $filename = "TODO.md";
-		write_todo("$type_folder/$filename", $type);
 		$total_err++;
 		next;
 	} elsif (scalar @test_files < $options->{$type}->{count}) {
 		print YELLOW, $type, RESET, ": You should have at least ", $options->{$type}->{count},
 			" tests, you currently have ", scalar @test_files, "\n";
-		my $filename = "TODO.md";
-		write_todo("$type_folder/$filename", $type);
 		$total_warn++;
 	} else {
 		print GREEN, $type, RESET, ": Found\n";
