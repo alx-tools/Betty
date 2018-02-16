@@ -1,0 +1,1 @@
+style/avoid-externs/extern_variable.c:4[0,19]: externs should be avoided in '.c' files [avoid-externs]

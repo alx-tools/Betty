@@ -1,0 +1,3 @@
+style/avoid-externs/extern_variable.c:
+    line 4: externs should be avoided in '.c' files [avoid-externs]
+Total: 1 error, 14 lines checked in 1 file

@@ -1,0 +1,1 @@
+style/avoid-externs/extern_function.c:4[0,27]: externs should be avoided in '.c' files [avoid-externs]

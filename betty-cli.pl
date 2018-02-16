@@ -67,6 +67,11 @@ my $options = {
 				desc => 'Check for assignment in condition',
 				type => 'Switch',
 				value => 1
+			},
+			'avoid-externs' => {
+				desc => 'Check for externs in C source files',
+				type => 'Switch',
+				value => 1
 			}
 		}
 	},
@@ -698,6 +703,16 @@ sub process_style {
 			WARN("assign-in-cond",
 			    "Do not use assignment in '$cond' condition",
 			    $line, $region);
+		}
+
+		# avoid-externs
+		# check for new externs in .c files
+		if (s_option('avoid-externs') &&
+		    $filename =~ /\.c$/ &&
+		    $line =~ /^\s*(extern\s+.*)\s*$/g) {
+			WARN("avoid-externs",
+			    "externs should be avoided in '.c' files",
+			    $line, $1);
 		}
 
 		$prevline = $line;
