@@ -3078,9 +3078,13 @@ sub process {
 			# bitfield continuation
 		      $sline =~ /^\+\s+$Ident\s*:\s*\d+\s*[,;]/ ||
 			# other possible extensions of declaration lines
-		      $sline =~ /^\+\s+\(?\s*(?:$Compare|$Assignment|$Operators)/) &&
+		      $sline =~ /^\+\s+\(?\s*(?:$Compare|$Assignment|$Operators)/ ||
+			# array of function pointers
+		      $sline =~ /\+\s+($Ident)\s*\(\*+$Ident(?:\[\S*\])?\)\s*\((?:(?:,\s*)?$Ident)*\);/ ||
+		      $sline =~ /\+\s+($Ident)\s*\(\*+$Ident(?:\[\S*\])?\)\s*\((?:(?:,\s*)?$Ident)*\)\s*=/) &&
 			# indentation of previous and current line are the same
 		    (($prevline =~ /\+(\s+)\S/) && $sline =~ /^\+$1\S/)) {
+
 			if (WARN("LINE_SPACING",
 				 "Missing a blank line after declarations\n" . $hereprev) &&
 			    $fix) {
@@ -3908,7 +3912,7 @@ sub process {
 		if ($line =~ /(})/g) {
 			$inscope -= $#-;
 		}
-		
+
 		if ($inscope >= 1 && $infunc == 1) {
 			$funclines++;
 			if ($funclines > $max_func_length + 1) {
