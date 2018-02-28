@@ -3106,6 +3106,18 @@ sub process {
 			}
 		}
 
+# check for multiple instructions on a single line
+		if ($rawline =~ /;/) {
+			my $pure = $rawline;
+			$pure =~ s/\/\*+.*//;
+			$pure =~ s/.*\*+\///;
+			my $count = () = $pure =~ /;/g;
+			if ($count > 1 && $pure !~ /\bfor\b/) {
+				WARN("MULTI_INS",
+				    "Multiple instructions on a single line is forbidden\n");
+			}
+		}
+
 # check we are in a valid C source file if not then ignore this hunk
 		next if ($realfile !~ /\.(h|c)$/);
 

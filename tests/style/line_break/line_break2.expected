@@ -1,3 +1,6 @@
 tests/style/line_break/line_break2.c:11: WARNING: Block comments use * on subsequent lines
 tests/style/line_break/line_break2.c:11: WARNING: Block comments use a trailing */ on a separate line
-total: 0 errors, 2 warnings, 14 lines checked
+tests/style/line_break/line_break2.c:13: WARNING: Multiple instructions on a single line is forbidden
+tests/style/line_break/line_break2.c:22: WARNING: Multiple instructions on a single line is forbidden
+tests/style/line_break/line_break2.c:23: WARNING: Multiple instructions on a single line is forbidden
+total: 0 errors, 5 warnings, 27 lines checked
