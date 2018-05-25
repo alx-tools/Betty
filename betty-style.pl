@@ -5268,14 +5268,14 @@ sub process {
 		}
 
 # check for spaces before a quoted newline
-		if ($rawline =~ /^.*\".*\s\\n/) {
-			if (WARN("QUOTED_WHITESPACE_BEFORE_NEWLINE",
-				 "unnecessary whitespace before a quoted newline\n" . $herecurr) &&
-			    $fix) {
-				$fixed[$fixlinenr] =~ s/^(\+.*\".*)\s+\\n/$1\\n/;
-			}
+		# if ($rawline =~ /^.*\".*\s\\n/) {
+		# 	if (WARN("QUOTED_WHITESPACE_BEFORE_NEWLINE",
+		# 		 "unnecessary whitespace before a quoted newline\n" . $herecurr) &&
+		# 	    $fix) {
+		# 		$fixed[$fixlinenr] =~ s/^(\+.*\".*)\s+\\n/$1\\n/;
+		# 	}
 
-		}
+		# }
 
 # concatenated string without spaces between elements
 		if ($line =~ /$String[A-Z_]/ || $line =~ /[A-Za-z0-9_]$String/) {
