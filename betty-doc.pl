@@ -2867,8 +2867,12 @@ sub process_file($) {
 	    $_ !~ /;\s*$/)
 	{
 		# print STDOUT "$1 found: $2\n";
-		if (!length $identifier || $identifier ne "$1 $2") {
-			print STDERR "${file}:$.: warning: no description found for $1 $2\n";
+		if (!length $identifier ||
+		    !defined $2 ||
+		    (defined $1 && defined $2 &&$identifier ne "$1 $2")) {
+			print STDERR "${file}:$.: warning: no description found for $1";
+			print STDERR " $2" if (defined $2);
+			print STDERR "\n";
 			++$warnings;
 		}
 	}
