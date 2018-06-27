@@ -132,6 +132,11 @@ my $options = {
 				desc => 'Check if spaces are used instead of tabs',
 				type => 'Switch',
 				value => 1
+			},
+			'complex-macro' => {
+				desc => 'Check for complex macro not enclosed in parentheses',
+				type => 'Switch',
+				value => 1
 			}
 		}
 	},

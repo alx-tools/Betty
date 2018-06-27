@@ -155,13 +155,13 @@ sub help {
 	print << "EOM";
 Usage: $P [OPTION]... FILE...
 Options:
-  --verbose                       Verbose mode
-  -b, --brief                     Brief mode. One line per warning. No summary
+  --verbose                      Verbose mode
+  -b, --brief                    Brief mode. One line per warning. No summary
   --[no]color                    Use colors when output is STDOUT (default: on)
 
   --[no]trailing-whitespace      Check for trailing whitespaces (default: on)
   --[no]long-line                Check for long lines (default: on)
-  --long-line-max=n               When --long-line is enaled, set the maximum length of a line (default: 80)
+  --long-line-max=n              When --long-line is enaled, set the maximum length of a line (default: 80)
   --[no]eof-newline              Check for new line at end of file (default: on)
   --[no]code-indent              Check if spaces are used instead of tabs (default: on)
   --[no]space-before-tab         Check if spaces are used before a tab (default: on)
@@ -196,9 +196,9 @@ Options:
   --[no]pointer-location         Check for bad pointer location (default: on)
   --[no]func-open-brace          Check for function open brace on the next line (default: on)
   --[no]long-func                Check for long functions (default: on)
-  --long-func-max=n               When --long-func is enable, set the maximum number of lines per function (default: 40)
+  --long-func-max=n              When --long-func is enable, set the maximum number of lines per function (default: 40)
   --[no]count-func               Check for too many functions declared in a single file (default: on)
-  --max-funcs=n                   When --count-func is enable, set the maximum number of functions declared in a single file (default: 5)
+  --max-funcs=n                  When --count-func is enable, set the maximum number of functions declared in a single file (default: 5)
   --[no]struct-open-brace        Check for struct/union/enum open brace on the next line (default: on)
   --[no]struct-def               Check for struct/union/enum definition in .c files (default: on)
   --[no]func-ptr-space           Check for a space errors when declaring a pointer to function (default: on)
@@ -219,7 +219,7 @@ Options:
   --[no]return-void              Check for useless void return (default: on)
   --[no]const-comp               Check for operands order when comparing with a constant (default: on)
   --[no]ctrl-space               Check for space after control statement keyword (default: on)
-  --[no]assign-in-cond             Check for assignment in if condition (default: on)
+  --[no]assign-in-cond           Check for assignment in if condition (default: on)
   --[no]trailing-statements      Check for trailing statements on a single line (default: on)
   --[no]hexa-bool-test           Check for bitwise test written as boolean (default: on)
   --[no]if-after-brace           Check for if just after a closing brace (default: on)
@@ -266,8 +266,8 @@ Options:
   --[no]missing-break            Check for missing break in switch/case statement (default: on)
   --[no]default-no-break         Check for missing break in switch/default statement (default: on)
 
-  -h, --help                      Display this help and exit
-  -v, --version                   Display the version of the srcipt and exit
+  -h, --help                     Display this help and exit
+  -v, --version                  Display the version of the srcipt and exit
 
   Options starting with --[no] are boolean options.
   Use --option to enable it.
