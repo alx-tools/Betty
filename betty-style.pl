@@ -3111,6 +3111,8 @@ sub process {
 			my $pure = $rawline;
 			$pure =~ s/\/\*+.*//;
 			$pure =~ s/.*\*+\///;
+			$pure =~ s/['][^']*[']//g;
+			$pure =~ s/["][^"]*["]//g;
 			my $count = () = $pure =~ /;/g;
 			if ($count > 1 && $pure !~ /\bfor\b/) {
 				WARN("MULTI_INS",
