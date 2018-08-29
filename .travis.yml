@@ -12,3 +12,4 @@ script: bash test.sh
 branches:
   only:
     - master
+    - v2
