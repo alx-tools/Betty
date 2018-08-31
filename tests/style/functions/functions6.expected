@@ -1,0 +1,9 @@
+tests/style/functions/functions6.c:43: WARNING: More than 40 lines in a function
+tests/style/functions/functions6.c:44: WARNING: More than 40 lines in a function
+tests/style/functions/functions6.c:45: WARNING: More than 40 lines in a function
+tests/style/functions/functions6.c:46: WARNING: More than 40 lines in a function
+tests/style/functions/functions6.c:47: WARNING: More than 40 lines in a function
+tests/style/functions/functions6.c:48: WARNING: More than 40 lines in a function
+tests/style/functions/functions6.c:49: WARNING: More than 40 lines in a function
+tests/style/functions/functions6.c:50: WARNING: More than 40 lines in a function
+total: 0 errors, 8 warnings, 51 lines checked

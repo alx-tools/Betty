@@ -2248,8 +2248,9 @@ sub process {
 	$fixlinenr = -1;
 	my $nbfunc = 0;
 	my $infunc = 0;
+	my $infuncproto = 0;
+	my $funcprotovalid = 0; # Prevline ended a valid function prototype (no trailing ';')
 	my $inscope = 0;
-	my $infunction_params = 0;
 	my $funclines = 0;
 
 	foreach my $line (@lines) {
@@ -3629,7 +3630,8 @@ sub process {
 
 # Check for global variables (not allowed).
 		if ($allow_global_variables == 0 &&
-		    $inscope == 0 && $infunction_params == 0) {
+		    $inscope == 0 &&
+		    $infuncproto == 0) {
 			if ($line =~ /^\+\s*$Type\s*$Ident(?:\s+$Modifier)*(?:\s*=\s*.*)?;/ ||
 			    $line =~ /^\+\s*$Declare\s*\(\s*\*\s*$Ident\s*\)\s*[=,;:\[\(].*;/ ||
 			    $line =~ /^\+\s*$Ident(?:\s+|\s*\*\s*)$Ident\s*[=,;\[]/ ||
@@ -3704,21 +3706,6 @@ sub process {
 			    $fix) {
 				$fixed[$fixlinenr] =~ s/(\b($Type)\s+($Ident))\s*\(\s*\)/$2 $3(void)/;
 			}
-		}
-
-#check if in function parameters section
-		if ($line =~ /\b$Type\s+$Ident\s*\(/ ||
-		    $line =~ /\b$Ident(?:\s+|\s*\*+\s*)$Ident\s*\(/ &&
-		    $line !~ /(?:else|if|while|for|switch)/) {
-			if ($line =~ /(\()/g) {
-				$infunction_params += $#-;
-			}
-			if ($line =~ /(\))/g) {
-				$infunction_params -= $#-;
-			}
-		}
-		if ($infunction_params > 0 && $line =~ /(\))/g) {
-			$infunction_params -= $#-;
 		}
 
 # check for uses of DEFINE_PCI_DEVICE_TABLE
@@ -3897,46 +3884,55 @@ sub process {
 			}
 		}
 
+# Detect possible multiline function definition
+		if (!$infuncproto && $line =~ /^.((?:typedef\s*)?(?:(?:$Storage|$Inline)\s*(?:$Attribute\s*)?)*\s*$Type\s*(?:\b$Ident|\(\*\s*$Ident\))\s*)\(/s) {
+			$funcprotovalid = 0;
+			$infuncproto = 0;
+
+			if ($line =~ /\)\s*$/ && ($line =~ tr/(// == $line =~ tr/)//)) {
+				# Line ends with closing parenthesis -> End of function prototype
+				$funcprotovalid = 1;
+			}
+			else {
+				$infuncproto = 1;
+			}
+		}
+		elsif ($infuncproto && $line =~ /\)\s*$/ && ($line =~ tr/(// == ($line =~ tr/)// - 1))) {
+			# Line ends with closing parenthesis -> End of function prototype
+			$funcprotovalid = 1;
+			$infuncproto = 0;
+		}
+
 # check number of functions
 # and number of lines per function
 		if ($line =~ /({)/g) {
 			$inscope += $#-;
-			if ($prevline =~ /^(.(?:typedef\s*)?(?:(?:$Storage|$Inline)\s*)*\s*$Type\s*(?:\b$Ident|\(\*\s*$Ident\))\s*)\(/s && $inscope == 1) {
+			if ($funcprotovalid && $inscope == 1) {
 				$infunc = 1;
 				$nbfunc++;
-				$funclines = 0;
+				$funclines = -1;
 				if ($max_funcs > 0 && $nbfunc > $max_funcs) {
 					my $tmpline = $realline - 1;
-					if ($showfile) {
-						$prefix = "$realfile:$tmpline: ";
-					} elsif ($emacs) {
-						if ($file) {
-							$prefix = "$realfile:$tmpline: ";
-						} else {
-							$prefix = "$realfile:$tmpline: ";
-						}
-					}
+					$prefix = "$realfile:$tmpline: ";
 					ERROR("FUNCTIONS",
 					  "More than $max_funcs functions in the file\n");
 				}
 			}
-			else {
-				$infunc = 0;
-			}
 		}
 		if ($line =~ /(})/g) {
 			$inscope -= $#-;
+			$infunc = 0 if ($inscope == 0);
+			$funclines = 0 if ($infunc == 0);
 		}
 
 		if ($inscope >= 1 && $infunc == 1) {
 			$funclines++;
-			if ($funclines > $max_func_length + 1) {
+			if ($funclines > $max_func_length) {
 				WARN("FUNCTIONS",
 				  "More than $max_func_length lines in a function\n");
 			}
-		} else {
-			$funclines = 0;
 		}
+		# printf "[${infunc}][${inscope}|${infuncproto}][${funclines}]${line}\n";
 
 # open braces for enum, union and struct go on the same line.
 		# if ($line =~ /^.\s*{/ &&
