@@ -167,7 +167,7 @@ my $options = {
 sub help {
 	my $exitcode = (@_) or 0;
 
-	for my $key (sort keys $options) {
+	for my $key (sort keys %{$options}) {
 		my $cmd = $options->{$key};
 		print "betty $key ";
 
@@ -189,7 +189,7 @@ sub help {
 
 		# Print command options
 		if (exists($cmd->{options})) {
-			for my $opt_key (sort keys $cmd->{options}) {
+			for my $opt_key (sort keys %{$cmd->{options}}) {
 				my $option = $cmd->{options}->{$opt_key};
 
 				my $real_option = "--";
@@ -242,7 +242,7 @@ help(0) if ($#ARGV == -1);
 # Analyse ARGV to determine command
 my $cmd = shift @ARGV;
 my $found = 0;
-for my $key (sort keys $options) {
+for my $key (sort keys %{$options}) {
 	last if ($found == 1);
 	$found = 1 if ($key eq $cmd);
 
@@ -263,7 +263,7 @@ my %get_opts = ();
 my $cmd_hash = $options->{$cmd};
 if (exists($cmd_hash->{options})) {
 	my $options = $cmd_hash->{options};
-	for my $opt_key (sort keys $options) {
+	for my $opt_key (sort keys %{$options}) {
 		my $option = $options->{$opt_key};
 
 		my @elements = ();
@@ -726,7 +726,8 @@ sub WARN {
 
 		$output = "    ";
 		$output .= " " x ($r_begin - $leading);
-		$output .= "^" . "-" x ((length $region) - 2);
+		$output .= "^";
+		$output .= "-" x ((length $region) - 2) if (length $region > 2);
 		$output .= "^" if ((length $region) >= 2);
 		$output .= "\n";
 		push(@report, $output);
