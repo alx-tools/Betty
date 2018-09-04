@@ -3,9 +3,9 @@
 # Tests manager
 # Manages the test suites fot Betty
 #
-# This script read the betty-style.pl scripts and finds all the the warnings
+# This script reads the betty-style.pl scripts and finds all the the warnings
 # that can be triggered
-# For each warning, it will check that a corresponfing folder exists in the
+# For each warning, it will check whether a corresponding folder exists in the
 # test folder and contains at least a test suite.
 # If a warning happens N times in the script, then at least N tests must be
 # written in the test suite.
