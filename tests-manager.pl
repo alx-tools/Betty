@@ -144,7 +144,7 @@ sub read_script {
 	close(IN);
 
 	if ($debug) {
-		foreach my $warn (sort keys $options) {
+		foreach my $warn (sort keys %{$options}) {
 			printf "[%02d] -> %s\n", $options->{$warn}->{count}, $warn;
 		}
 		print "Total: $count\n";
@@ -158,7 +158,7 @@ my $total_err = 0;
 my $exit = 0;
 
 # check the test folder corresponding to each type found in betty-style script
-foreach my $type (sort keys $options) {
+foreach my $type (sort keys %{$options}) {
 	my $type_folder = "$base_folder/$type";
 
 	# The corresponding test folder does not exist
