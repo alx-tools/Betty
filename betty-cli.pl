@@ -8,7 +8,6 @@ use diagnostics;
 
 use feature 'say';
 
-use List::MoreUtils qw{any};
 use Term::ANSIColor qw(:constants);
 local $Term::ANSIColor::AUTORESET = 1;
 use Getopt::Long qw(:config no_auto_abbrev);

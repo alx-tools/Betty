@@ -13,10 +13,6 @@ APP_PATH="/opt/betty"
 BIN_PATH="/usr/local/bin"
 MAN_PATH="/usr/local/share/man/man1"
 
-echo -e "Installing dependencies.."
-
-apt-get install -y liblist-moreutils-perl
-
 echo -e "Installing binaries.."
 
 mkdir -p "${APP_PATH}"

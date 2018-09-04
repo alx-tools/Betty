@@ -5,8 +5,6 @@ perl:
   - "5.22"
   - "5.20"
   - "5.18"
-before_install:
- - sudo apt-get install -y liblist-moreutils-perl
 install: true
 sudo: false
 script: perl tests-manager.pl
