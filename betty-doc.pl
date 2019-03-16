@@ -2865,7 +2865,8 @@ sub process_file($) {
 	}
 
 	if ($_ =~ /^\s*(?:typedef\s+)?(enum|union|struct)(?:\s+($Ident))?\s*.*/s &&
-	    $_ !~ /;\s*$/)
+	    $_ !~ /;\s*$/ &&
+		$_ !~ /\(.*\)\s*$/)
 	{
 		# print STDOUT "$1 found: $2\n";
 		if (!length $identifier ||
