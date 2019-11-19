@@ -1,1 +1,2 @@
-tests/doc/doc14.c:22: warning: no description found for function constructor
+tests/doc/doc14.c:35: warning: no description found for function constructor
+tests/doc/doc14.c:48: warning: no description found for function constructor

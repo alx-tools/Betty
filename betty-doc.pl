@@ -2805,7 +2805,7 @@ our $NonptrType	= qr{
 	  }x;
 our $Type	= qr{
 		$NonptrType\b
-		(?:(?:\s|\*|\[\])+\s*const\b|(?:\s|\*\s*(?:const\s*)?|\[\])+|(?:\s*\[\s*\])+)?
+		(?:(?:\s|\*|\[\])+\s*const\b|(?:\s|\*\s*(?:const\b\s*)?|\[\])+|(?:\s*\[\s*\])+)?
 		(?:\s+$Inline|\s+$Modifier)*
 	  }x;
 
