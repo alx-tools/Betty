@@ -3054,9 +3054,13 @@ sub process {
 			# actual declarations
 		    ($prevline =~ /^\+\s+$Declare\s*$Ident\s*[=,;:\[]/ ||
 			# function pointer declarations
-		     $prevline =~ /^\+\s+$Declare\s*\(\s*\*\s*$Ident\s*\)\s*[=,;:\[\(]/ ||
+		     $prevline =~ /^\+\s+$Declare\s*\(\s*\*+\s*$Ident\s*\)\s*[=,;:\[\(]/ ||
 			# foo bar; where foo is some local typedef or #define
-		     $prevline =~ /^\+\s+$Ident(?:\s+|\s*\*\s*)$Ident\s*[=,;\[]/ ||
+		     $prevline =~ /^\+\s+$Ident(?:\s+|\s*\*+\s*)$Ident\s*[=,;\[]/ ||
+			# const foo bar; where foo is some local typedef or #define
+		     $prevline =~ /^\+\s+\bconst\b\s+$Ident(?:\s+|\s*\*+\s*)$Ident\s*[=,;\[]/ ||
+			# foo const bar; where foo is some local typedef or #define
+		     $prevline =~ /^\+\s+$Ident\s+\bconst\b(?:\s+|\s*\*+\s*)$Ident\s*[=,;\[]/ ||
 			# known declaration macros
 		     $prevline =~ /^\+\s+$declaration_macros/) &&
 			# for "else if" which can look like "$Ident $Ident"
@@ -3068,9 +3072,13 @@ sub process {
 			# looks like a declaration
 		    !($sline =~ /^\+\s+$Declare\s*$Ident\s*[=,;:\[]/ ||
 			# function pointer declarations
-		      $sline =~ /^\+\s+$Declare\s*\(\s*\*\s*$Ident\s*\)\s*[=,;:\[\(]/ ||
+		      $sline =~ /^\+\s+$Declare\s*\(\s*\*+\s*$Ident\s*\)\s*[=,;:\[\(]/ ||
 			# foo bar; where foo is some local typedef or #define
-		      $sline =~ /^\+\s+$Ident(?:\s+|\s*\*\s*)$Ident\s*[=,;\[]/ ||
+		      $sline =~ /^\+\s+$Ident(?:\s+|\s*\*+\s*)$Ident\s*[=,;\[]/ ||
+			# const foo bar; where foo is some local typedef or #define
+		      $sline =~ /^\+\s+\bconst\b\s+$Ident(?:\s+|\s*\*+\s*)$Ident\s*[=,;\[]/ ||
+			# foo const bar; where foo is some local typedef or #define
+		      $sline =~ /^\+\s+$Ident\s+\bconst\b(?:\s+|\s*\*+\s*)$Ident\s*[=,;\[]/ ||
 			# known declaration macros
 		      $sline =~ /^\+\s+$declaration_macros/ ||
 			# start of struct or union or enum
