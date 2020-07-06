@@ -3913,7 +3913,7 @@ sub process {
 
 # check number of functions
 # and number of lines per function
-		if ($line =~ /({)/g) {
+		if ($line =~ /(\{)/g) {
 			$inscope += $#-;
 			if ($funcprotovalid && $inscope == 1) {
 				$infunc = 1;
