@@ -2035,7 +2035,7 @@ sub dump_struct($$) {
 	my $members = $3;
 
 	# ignore embedded structs or unions
-	$members =~ s/({.*})//g;
+	$members =~ s/(\{.*})//g;
 	$nested = $1;
 
 	# ignore members marked private:
