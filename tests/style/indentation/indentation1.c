@@ -27,6 +27,12 @@ int main(int argc, char *argv[])
 		return (1);
 	}
 
+	if (1 < 1 + 1)
+		if (!func(1, 2))
+			if (!func(1, 2))
+				if (!func(1, 2))
+					return (0);
+
 	if (1 <= 2)
 		num1 = atoi(argv[1]);
 	num2 = atoi(argv[2]);
