@@ -2,4 +2,5 @@ tests/style/variables/variables3.c:8: WARNING: typedefs should be avoided in .c 
 tests/style/variables/variables3.c:10: WARNING: struct definition should be avoided in .c files
 tests/style/variables/variables3.c:15: WARNING: enum definition should be avoided in .c files
 tests/style/variables/variables3.c:21: WARNING: union definition should be avoided in .c files
-total: 0 errors, 4 warnings, 36 lines checked
+tests/style/variables/variables3.c:34: WARNING: line over 80 characters (85)
+total: 0 errors, 5 warnings, 36 lines checked

@@ -1,6 +1,7 @@
 tests/style/variables/variables0.c:1: ERROR: global variables are not allowed
 tests/style/variables/variables0.c:2: ERROR: global variables are not allowed
 tests/style/variables/variables0.c:3: ERROR: global variables are not allowed
+tests/style/variables/variables0.c:3: WARNING: Expected 0 leading tabs
 tests/style/variables/variables0.c:4: ERROR: global variables are not allowed
 tests/style/variables/variables0.c:5: ERROR: global variables are not allowed
-total: 5 errors, 0 warnings, 12 lines checked
+total: 5 errors, 1 warnings, 12 lines checked

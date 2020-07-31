@@ -2,4 +2,5 @@ tests/style/headers/headers2.c:1: WARNING: typedefs should be avoided in .c file
 tests/style/headers/headers2.c:3: WARNING: struct definition should be avoided in .c files
 tests/style/headers/headers2.c:8: WARNING: enum definition should be avoided in .c files
 tests/style/headers/headers2.c:14: WARNING: union definition should be avoided in .c files
-total: 0 errors, 4 warnings, 29 lines checked
+tests/style/headers/headers2.c:27: WARNING: line over 80 characters (85)
+total: 0 errors, 5 warnings, 29 lines checked
