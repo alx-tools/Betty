@@ -3603,9 +3603,13 @@ sub process {
 		if ($line !~ /^\+\s*#/ &&
 		    $line !~ /^\+\s*$/ &&
 		    $line !~ /^\+ +/) {
-			my $expected_indent = $realscope + $onelinescope + $incond + $inparams;
+			my $expected_indent = $realscope + $incond + $inparams;
 			$expected_indent-- if ($line =~ /^\+\s*(case\s+\S+|default)\s*:/);
-			# print "[$expected_indent] <$line>\n\t$realscope | $onelinescope | $incond | $inparams\n";
+			# print "[$expected_indent] <$line>\n\t$realscope | $incond | $inparams\n";
+
+			if ($onelinescope != 0) {
+				$expected_indent = ($previndent / 8) + 1;
+			}
 
 			my $line_indent = $indent;
 			if ($rawline =~ /^\+\s*( +)\*/) {
