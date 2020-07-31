@@ -1,2 +1,3 @@
-tests/style/line_break/line_break0.c:3: WARNING: line over 80 characters (81)
-total: 0 errors, 1 warnings, 4 lines checked
+tests/style/line_break/line_break0.c:3: WARNING: line over 80 characters (563)
+tests/style/line_break/line_break0.c:3: WARNING: Expected 1 leading tabs
+total: 0 errors, 2 warnings, 4 lines checked

@@ -1,0 +1,16 @@
+tests/style/indentation/indentation2.c:4: WARNING: Expected 0 leading tabs
+tests/style/indentation/indentation2.c:5: WARNING: Expected 0 leading tabs
+tests/style/indentation/indentation2.c:11: WARNING: Expected 0 leading tabs
+tests/style/indentation/indentation2.c:13: WARNING: Expected 1 leading tabs
+tests/style/indentation/indentation2.c:15: WARNING: Expected 2 leading tabs
+tests/style/indentation/indentation2.c:16: WARNING: Expected 2 leading tabs
+tests/style/indentation/indentation2.c:17: WARNING: Expected 1 leading tabs
+tests/style/indentation/indentation2.c:19: WARNING: Expected 1 leading tabs
+tests/style/indentation/indentation2.c:20: WARNING: Expected 2 leading tabs
+tests/style/indentation/indentation2.c:24: WARNING: Expected 1 leading tabs
+tests/style/indentation/indentation2.c:26: WARNING: Expected 2 leading tabs
+tests/style/indentation/indentation2.c:30: WARNING: Expected 1 leading tabs
+tests/style/indentation/indentation2.c:31: WARNING: Expected 1 leading tabs
+tests/style/indentation/indentation2.c:32: WARNING: Expected 1 leading tabs
+tests/style/indentation/indentation2.c:34: WARNING: Expected 2 leading tabs
+total: 0 errors, 15 warnings, 39 lines checked

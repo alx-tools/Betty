@@ -1092,12 +1092,6 @@ sub line_stats {
 	return (length($line), length($white));
 }
 
-sub real_length {
-	my ($line) = @_;
-
-	return (length($line));
-}
-
 my $sanitise_quote = '';
 
 sub sanitise_line_reset {
@@ -2094,6 +2088,13 @@ sub pos_last_openparen {
 	return length(expand_tabs(substr($line, 0, $last_openparen))) + 1;
 }
 
+sub count {
+	my ($s, $r) = @_;
+
+	my $count = () = "$s" =~ /$r/g;
+	return $count;
+}
+
 sub process {
 	my $filename = shift;
 
@@ -2104,7 +2105,6 @@ sub process {
 	my $stashrawline="";
 
 	my $length;
-	my $real_length;
 	my $indent;
 	my $previndent=0;
 	my $stashindent=0;
@@ -2250,14 +2250,22 @@ sub process {
 	my $infunc = 0;
 	my $infuncproto = 0;
 	my $funcprotovalid = 0; # Prevline ended a valid function prototype (no trailing ';')
+	my $realscope = 0;
 	my $inscope = 0;
 	my $funclines = 0;
+	my $incond = 0;
+	my $condparentheses_depth = 0;
+	my $inparams = 0;
+	my $paramsparentheses_depth = 0;
 
 	foreach my $line (@lines) {
 		$linenr++;
 		$fixlinenr++;
 		my $sline = $line;	#copy of $line
 		$sline =~ s/$;/ /g;	#with comments as spaces
+		my $previnscope = $realscope;
+		$realscope = $inscope;
+		my $onelinescope = 0;
 
 		my $rawline = $rawlines[$linenr - 1];
 
@@ -2290,7 +2298,6 @@ sub process {
 
 			# Measure the line length and indent.
 			($length, $indent) = line_stats($rawline);
-			$real_length = real_length($rawline);
 
 			# Track the previous line.
 			($prevline, $stashline) = ($stashline, $line);
@@ -2361,6 +2368,120 @@ sub process {
 		my $hereprev = "$here\n$prevrawline\n$rawline\n";
 
 		$cnt_lines++ if ($realcnt != 0);
+
+# Check for global variables (not allowed).
+		if ($allow_global_variables == 0 &&
+		    $inscope == 0 &&
+		    $infuncproto == 0) {
+			if ($line =~ /^\+\s*$Type\s*$Ident(?:\s+$Modifier)*(?:\s*=\s*.*)?;/ ||
+			    $line =~ /^\+\s*$Declare\s*\(\s*\*\s*$Ident\s*\)\s*[=,;:\[\(].*;/ ||
+			    $line =~ /^\+\s*$Ident(?:\s+|\s*\*\s*)$Ident\s*[=,;\[]/ ||
+			    $line =~ /^\+\s*$declaration_macros/) {
+				ERROR("GLOBAL_DECLARATION",
+					"global variables are not allowed\n" . $herecurr);
+			}
+		}
+
+# Detect possible multiline function definition
+		if (!$infuncproto && $line =~ /^.((?:typedef\s*)?(?:(?:$Storage|$Inline)\s*(?:$Attribute\s*)?)*\s*$Type\s*(?:\b$Ident|\(\*\s*$Ident\))\s*)\(/s) {
+			$funcprotovalid = 0;
+			$infuncproto = 0;
+
+			if ($line =~ /\)\s*$/ && ($line =~ tr/(// == $line =~ tr/)//)) {
+				# Line ends with closing parenthesis -> End of function prototype
+				$funcprotovalid = 1;
+			}
+			else {
+				$infuncproto = 1;
+			}
+		}
+		elsif ($infuncproto && $line =~ /\)\s*$/ && ($line =~ tr/(// == ($line =~ tr/)// - 1))) {
+			# Line ends with closing parenthesis -> End of function prototype
+			$funcprotovalid = 1;
+			$infuncproto = 0;
+		}
+
+# Check whether current line is part of
+# a multi line condition
+		if ($incond == 1 && $prevline =~ /\)/g) {
+			$condparentheses_depth -= count($prevline, qr/\)/);
+			$incond = 0 if ($condparentheses_depth == 0);
+			# print "[$incond] <$prevline>\n";
+		}
+
+		if ($incond == 0 &&
+		    $prevline =~ /(?:if|else|while|for)\s*\(/ &&
+		    $prevline =~ /\(/g) {
+			$condparentheses_depth += count($prevline, qr/\(/);
+			if ($prevline =~ /\)/g) {
+				$condparentheses_depth -= count($prevline, qr/\)/);
+			}
+			if ($condparentheses_depth > 0 &&
+			    $line =~ /\(/g) {
+				$condparentheses_depth += count($line, qr/\(/);
+			}
+			$incond = 1 if ($condparentheses_depth > 0);
+		}
+
+# Check whether current line is part of
+# a multi line parameters list
+		if ($inparams == 1 && $prevline =~ /\)/g) {
+			$paramsparentheses_depth -= count($prevline, qr/\)/);
+			$inparams = 0 if ($paramsparentheses_depth == 0);
+		}
+
+		if ($inparams == 0 &&
+		    $prevline =~ /$Ident\(/ &&
+		    $prevline !~ /;\s*$/ &&
+		    $prevline =~ /\(/g) {
+			$paramsparentheses_depth += count($prevline, qr/\(/);
+			if ($prevline =~ /\)/g) {
+				$paramsparentheses_depth -= count($prevline, qr/\)/);
+			}
+			if ($paramsparentheses_depth > 0 &&
+			    $line =~ /\(/g) {
+				$paramsparentheses_depth += count($line, qr/\(/);
+			}
+			$inparams = 1 if ($paramsparentheses_depth > 0);
+		}
+
+# check number of functions
+# and number of lines per function
+		if ($line =~ /(\{)/g) {
+			$inscope += $#-; # TODO: Change to count()
+			if ($funcprotovalid && $inscope == 1) {
+				$infunc = 1;
+				$nbfunc++;
+				$funclines = -1;
+				if ($max_funcs > 0 && $nbfunc > $max_funcs) {
+					my $tmpline = $realline - 1;
+					$prefix = "$realfile:$tmpline: ";
+					ERROR("FUNCTIONS",
+					  "More than $max_funcs functions in the file\n");
+				}
+			}
+		}
+		elsif ($previnscope == $realscope &&
+		       $incond == 0 &&
+		       $prevline !~ /^.\s*\#/ &&
+		       $prevline =~ /\+\s*(if|else|while|for|do)/) {
+			$onelinescope = 1;
+		}
+
+		if ($line =~ /(})/g) {
+			$inscope -= $#-;
+			$infunc = 0 if ($inscope == 0);
+			$funclines = 0 if ($infunc == 0);
+			$realscope = $inscope;
+		}
+
+		if ($inscope >= 1 && $infunc == 1) {
+			$funclines++;
+			if ($funclines > $max_func_length) {
+				WARN("FUNCTIONS",
+				  "More than $max_func_length lines in a function\n");
+			}
+		}
 
 # Check if the commit log has what seems like a diff which can confuse patch
 		if ($in_commit_log && !$commit_log_has_diff &&
@@ -2810,7 +2931,7 @@ sub process {
 # if LONG_LINE is ignored, the other 2 types are also ignored
 #
 
-		if ($line =~ /^\+/ && $real_length > $max_line_length) {
+		if ($line =~ /^\+/ && $length > $max_line_length) {
 			my $msg_type = "LONG_LINE";
 
 			# Check the allowed long line types first
@@ -2843,7 +2964,7 @@ sub process {
 			if ($msg_type ne "" &&
 			    (show_type("LONG_LINE") || show_type($msg_type))) {
 				WARN($msg_type,
-				     "line over $max_line_length characters ($real_length)\n" . $herecurr);
+				     "line over $max_line_length characters ($length)\n" . $herecurr);
 			}
 		}
 
@@ -3117,6 +3238,7 @@ sub process {
 		}
 
 # check for multiple instructions on a single line
+# TODO
 		if ($rawline =~ /;/) {
 			my $pure = $rawline;
 			$pure =~ s/\/\*+.*//;
@@ -3466,7 +3588,7 @@ sub process {
 				$stat_real = "[...]\n$stat_real";
 			}
 
-			#print "line<$line> prevline<$prevline> indent<$indent> sindent<$sindent> check<$check> continuation<$continuation> s<$s> cond_lines<$cond_lines> stat_real<$stat_real> stat<$stat>\n";
+			# print "line<$line> prevline<$prevline> indent<$indent> sindent<$sindent> check<$check> continuation<$continuation> s<$s> cond_lines<$cond_lines> stat_real<$stat_real> stat<$stat>\n";
 
 			if ($check && $s ne '' &&
 			    (($sindent % 8) != 0 ||
@@ -3474,6 +3596,25 @@ sub process {
 			     ($sindent > $indent + 8))) {
 				WARN("SUSPECT_CODE_INDENT",
 				     "suspect code indent for conditional statements ($indent, $sindent)\n" . $herecurr . "$stat_real\n");
+			}
+		}
+
+# Check for correct indentation
+		if ($line !~ /^\+\s*#/ &&
+		    $line !~ /^\+\s*$/ &&
+		    $line !~ /^\+ +/) {
+			my $expected_indent = $realscope + $onelinescope + $incond + $inparams;
+			$expected_indent-- if ($line =~ /^\+\s*(case\s+\S+|default)\s*:/);
+			# print "[$expected_indent] <$line>\n\t$realscope | $onelinescope | $incond | $inparams\n";
+
+			my $line_indent = $indent;
+			if ($rawline =~ /^\+\s*( +)\*/) {
+				$line_indent -= $#-;
+			}
+
+			if ($line_indent != (8 * $expected_indent)) {
+				WARN("LINE_INDENT",
+					"Expected $expected_indent leading tabs\n");
 			}
 		}
 
@@ -3634,19 +3775,6 @@ sub process {
 		    $suppress_export{$linenr} == 2) {
 			WARN("EXPORT_SYMBOL",
 			     "EXPORT_SYMBOL(foo); should immediately follow its function/variable\n" . $herecurr);
-		}
-
-# Check for global variables (not allowed).
-		if ($allow_global_variables == 0 &&
-		    $inscope == 0 &&
-		    $infuncproto == 0) {
-			if ($line =~ /^\+\s*$Type\s*$Ident(?:\s+$Modifier)*(?:\s*=\s*.*)?;/ ||
-			    $line =~ /^\+\s*$Declare\s*\(\s*\*\s*$Ident\s*\)\s*[=,;:\[\(].*;/ ||
-			    $line =~ /^\+\s*$Ident(?:\s+|\s*\*\s*)$Ident\s*[=,;\[]/ ||
-			    $line =~ /^\+\s*$declaration_macros/) {
-				ERROR("GLOBAL_DECLARATION",
-					"global variables are not allowed\n" . $herecurr);
-			}
 		}
 
 # check for global initialisers.
@@ -3891,56 +4019,6 @@ sub process {
 				}
 			}
 		}
-
-# Detect possible multiline function definition
-		if (!$infuncproto && $line =~ /^.((?:typedef\s*)?(?:(?:$Storage|$Inline)\s*(?:$Attribute\s*)?)*\s*$Type\s*(?:\b$Ident|\(\*\s*$Ident\))\s*)\(/s) {
-			$funcprotovalid = 0;
-			$infuncproto = 0;
-
-			if ($line =~ /\)\s*$/ && ($line =~ tr/(// == $line =~ tr/)//)) {
-				# Line ends with closing parenthesis -> End of function prototype
-				$funcprotovalid = 1;
-			}
-			else {
-				$infuncproto = 1;
-			}
-		}
-		elsif ($infuncproto && $line =~ /\)\s*$/ && ($line =~ tr/(// == ($line =~ tr/)// - 1))) {
-			# Line ends with closing parenthesis -> End of function prototype
-			$funcprotovalid = 1;
-			$infuncproto = 0;
-		}
-
-# check number of functions
-# and number of lines per function
-		if ($line =~ /(\{)/g) {
-			$inscope += $#-;
-			if ($funcprotovalid && $inscope == 1) {
-				$infunc = 1;
-				$nbfunc++;
-				$funclines = -1;
-				if ($max_funcs > 0 && $nbfunc > $max_funcs) {
-					my $tmpline = $realline - 1;
-					$prefix = "$realfile:$tmpline: ";
-					ERROR("FUNCTIONS",
-					  "More than $max_funcs functions in the file\n");
-				}
-			}
-		}
-		if ($line =~ /(})/g) {
-			$inscope -= $#-;
-			$infunc = 0 if ($inscope == 0);
-			$funclines = 0 if ($infunc == 0);
-		}
-
-		if ($inscope >= 1 && $infunc == 1) {
-			$funclines++;
-			if ($funclines > $max_func_length) {
-				WARN("FUNCTIONS",
-				  "More than $max_func_length lines in a function\n");
-			}
-		}
-		# printf "[${infunc}][${inscope}|${infuncproto}][${funclines}]${line}\n";
 
 # open braces for enum, union and struct go on the same line.
 		# if ($line =~ /^.\s*{/ &&
