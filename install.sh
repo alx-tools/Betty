@@ -1,11 +1,5 @@
 #!/bin/bash
 
-if [ "$(id -u)" != "0" ]
-then
-	echo "Sorry, you are not root."
-	exit 1
-fi
-
 BETTY_STYLE="betty-style"
 BETTY_DOC="betty-doc"
 BETTY_WRAPPER="betty"
@@ -13,6 +7,22 @@ BETTY_WRAPPER="betty"
 APP_PATH="/opt/betty"
 BIN_PATH="/usr/local/bin"
 MAN_PATH="/usr/local/share/man/man1"
+
+if [[ $HOME = ${TERMUX_HOME_PATH} ]]
+then
+	APP_PATH = "/data/data/com.termux/files/opt/betty"
+	BIN_PATH = "/data/data/com.termux/files/usr/bin"
+	MAN_PATH = "data/data/com.termux/files/usr/share/man/man1"
+
+	echo -e "Installing perl"
+
+	apt install perl
+
+elif [ "$(id -u)" != "0" ]
+then
+	echo "Sorry, you are not root."
+	exit 1
+fi
 
 echo -e "Installing binaries.."
 
