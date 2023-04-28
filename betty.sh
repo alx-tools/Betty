@@ -9,9 +9,12 @@ BIN_PATH="/usr/local/bin"
 BETTY_STYLE="betty-style"
 BETTY_DOC="betty-doc"
 
-if [[ $HOME = "/data/data/com.termux/files/home/$USER" ]]
+TERMUX_HOME_PATH="/data/data/com.termux/files/home"
+TERMUX_BIN_PATH="/data/data/com.termux/files/usr/bin"
+
+if [[ $HOME = ${TERMUX_HOME_PATH} ]]
 then
-        BIN_PATH = "/data/data/com.termux/files/usr/bin"
+        BIN_PATH=${TERMUX_BIN_PATH}
 fi
 
 if [ "$#" = "0" ]; then

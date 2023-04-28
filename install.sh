@@ -8,16 +8,21 @@ APP_PATH="/opt/betty"
 BIN_PATH="/usr/local/bin"
 MAN_PATH="/usr/local/share/man/man1"
 
-if [[ $HOME = "/data/data/com.termux/files/home" ]]
+TERMUX_HOME_PATH="/data/data/com.termux/files/home"
+TERMUX_APP_PATH="/data/data/com.termux/files/opt/betty"
+TERMUX_BIN_PATH="/data/data/com.termux/files/usr/bin"
+TERMUX_MAN_PATH="data/data/com.termux/files/usr/share/man/man1"
+
+if [[ $HOME = ${TERMUX_HOME_PATH} ]]
 then
 
-APP_PATH="/data/data/com.termux/files/opt/betty"
-BIN_PATH="/data/data/com.termux/files/usr/bin"
-MAN_PATH="data/data/com.termux/files/usr/share/man/man1"
+	APP_PATH=${TERMUX_APP_PATH}
+	BIN_PATH=${TERMUX_BIN_PATH}
+	MAN_PATH=${TERMUX_MAN_PATH}
 
-echo -e "Installing perl"
+	echo -e "Installing perl"
 
-apt install perl
+	apt install perl
 
 elif [ "$(id -u)" != "0" ]
 then
