@@ -8,7 +8,7 @@ APP_PATH="/opt/betty"
 BIN_PATH="/usr/local/bin"
 MAN_PATH="/usr/local/share/man/man1"
 
-if [[ $HOME = "/data/data/com.termux/files/home/$USER" ]]
+if [[ $HOME = "/data/data/com.termux/files/home" ]]
 then
 	APP_PATH = "/data/data/com.termux/files/opt/betty"
 	BIN_PATH = "/data/data/com.termux/files/usr/bin"
