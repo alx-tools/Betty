@@ -20,7 +20,7 @@ then
 	BIN_PATH=${TERMUX_BIN_PATH}
 	MAN_PATH=${TERMUX_MAN_PATH}
 
-	echo -e "Installing perl"
+	echo -e "Installing perl.."
 
 	apt install perl
 
