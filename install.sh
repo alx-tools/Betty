@@ -20,15 +20,15 @@ then
 	BIN_PATH=${TERMUX_BIN_PATH}
 	MAN_PATH=${TERMUX_MAN_PATH}
 
-	echo -e "Installing perl.."
-
-	apt install perl
-
 elif [ "$(id -u)" != "0" ]
 then
 	echo "Sorry, you are not root."
 	exit 1
 fi
+
+echo -e "Installing perl.."
+
+apt install perl
 
 echo -e "Installing binaries.."
 
