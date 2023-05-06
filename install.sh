@@ -11,7 +11,7 @@ MAN_PATH="/usr/local/share/man/man1"
 TERMUX_HOME_PATH="/data/data/com.termux/files/home"
 TERMUX_APP_PATH="/data/data/com.termux/files/opt/betty"
 TERMUX_BIN_PATH="/data/data/com.termux/files/usr/bin"
-TERMUX_MAN_PATH="data/data/com.termux/files/usr/share/man/man1"
+TERMUX_MAN_PATH="/data/data/com.termux/files/usr/share/man/man1"
 
 if [[ $HOME = ${TERMUX_HOME_PATH} ]]
 then
