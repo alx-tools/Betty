@@ -2,8 +2,8 @@
 
 if [ "$(id -u)" != "0" ]
 then
-	echo "Sorry, you are not root."
-	exit 1
+    echo "Sorry, you are not root."
+    exit 1
 fi
 
 BETTY_STYLE="betty-style"
@@ -40,6 +40,11 @@ cp "man/${BETTY_DOC}.1" "${MAN_PATH}"
 
 echo -e "Updating man database.."
 
-mandb
+if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+    mandb
+elif [[ "$OSTYPE" == "darwin"* ]]; then
+    echo "On macOS, 'mandb' is not required. Skipping this step."
+fi
 
 echo -e "All set."
+
